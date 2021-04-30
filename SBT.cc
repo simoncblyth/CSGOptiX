@@ -79,13 +79,12 @@ SBT::setFoundry
 
 **/
 
-void SBT::setFoundry(const Foundry* foundry_)
+void SBT::setFoundry(const CSGFoundry* foundry_)
 {
     foundry = foundry_ ; 
 
-    createGAS();      // uploads aabb of all prim of all shapes to create GAS
+    createGAS();  
     createIAS(); 
-  //  setTop(geo->top); 
 
     createHitgroup(); 
     checkHitgroup(); 
@@ -273,9 +272,8 @@ NB layer_idx is local to the solid.
 
 unsigned SBT::getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const 
 {
-    assert( geo ); 
     unsigned num_gas = vgas.size(); 
-    unsigned num_solid = geo->getNumSolid(); 
+    unsigned num_solid = foundry->getNumSolid(); 
     assert( num_gas == num_solid ); 
 
     unsigned offset_sbt = _getOffset(solid_idx_, layer_idx_ ); 
@@ -415,7 +413,7 @@ void SBT::createHitgroup()
             { 
                 unsigned localPrimIdx = is_1NN ? j : k ;   
                 unsigned globalPrimIdx = primOffset + localPrimIdx ;   
-                const CSGPrim* prim = geo->getPrim( globalPrimIdx ); 
+                const CSGPrim* prim = foundry->getPrim( globalPrimIdx ); 
                 setPrimData( hg->data, prim ); 
                 dumpPrimData( hg->data ); 
 

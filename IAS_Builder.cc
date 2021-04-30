@@ -38,7 +38,7 @@ void IAS_Builder::Build(IAS& ias, const std::vector<qat4>& ias_inst, const SBT* 
     unsigned flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
  
     std::vector<OptixInstance> instances ;  
-    for(unsigned i=0 ; i < num_trs ; i++)
+    for(unsigned i=0 ; i < num_ias_inst ; i++)
     {
         const qat4& q = ias_inst[i] ;   
         unsigned ins_idx, gas_idx, ias_idx ;  
@@ -50,7 +50,7 @@ void IAS_Builder::Build(IAS& ias, const std::vector<qat4>& ias_inst, const SBT* 
         OptixInstance instance = {} ; 
         q.copy_columns_3x4( instance.transform ); 
 
-        instance.instanceId = identity ; 
+        instance.instanceId = ins_idx ;  // perhaps bitpack gas_idx, ias_idx ?
         instance.sbtOffset = sbt->getOffset(gas_idx, prim_idx );            
         instance.visibilityMask = 255;
         instance.flags = flags ;

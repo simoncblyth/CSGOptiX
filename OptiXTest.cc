@@ -5,9 +5,7 @@ OptiXTest
 **/
 #include <iostream>
 #include <cstdlib>
-
 #include <optix.h>
-
 #if OPTIX_VERSION < 70000
 #else
 #include <optix_stubs.h>
@@ -38,7 +36,6 @@ OptiXTest
 
 struct AS ; 
 
-
 int main(int argc, char** argv)
 {
 #if OPTIX_VERSION < 70000
@@ -59,8 +56,6 @@ int main(int argc, char** argv)
     unsigned height = 720u ; 
     unsigned depth = 1u ; 
 
-    unsigned cameratype = Util::GetEValue<unsigned>("CAMERATYPE", 0u ); 
-
     CSGFoundry foundry ; 
     Geo geo(&foundry) ;  
     geo.write(outdir);  
@@ -68,6 +63,7 @@ int main(int argc, char** argv)
     const float4 gce = geo.getCenterExtent() ;  
     glm::vec4 ce(gce.x,gce.y,gce.z, gce.w*1.4f );   // defines the center-extent of the region to view
 
+    unsigned cameratype = Util::GetEValue<unsigned>("CAMERATYPE", 0u ); 
     glm::vec4 eye_model ; 
     Util::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0,1.0"); 
 
@@ -87,22 +83,19 @@ int main(int argc, char** argv)
     params.plan = foundry.d_plan ; 
     params.tran = foundry.d_tran ; 
     params.itra = foundry.d_itra ; 
-    
 
 #if OPTIX_VERSION < 70000
-
     Six six(ptx_path, &params); 
     six.setFoundry(&foundry);
     six.setTop(geo.top); 
     six.launch(); 
     six.save(outdir); 
-
 #else
     Ctx ctx(&params) ;
-
     PIP pip(ptx_path); 
     SBT sbt(&pip);
     sbt.setFoundry(&foundry); 
+    sbt.setTop(geo.top);
 
     AS* top = sbt.getTop(); 
     params.handle = top->handle ; 
@@ -120,6 +113,5 @@ int main(int argc, char** argv)
     frame.download(); 
     frame.write(outdir);  
 #endif
-
     return 0 ; 
 }
