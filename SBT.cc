@@ -7,16 +7,12 @@
 
 #include <optix.h>
 #include <optix_stubs.h>
-
 #include <cuda_runtime.h>
-#include "sutil_vec_math.h"    // roundUp
+
+#include "sutil_vec_math.h"  
+
 #include "OPTIX_CHECK.h"
 #include "CUDA_CHECK.h"
-
-#include <glm/glm.hpp>
-
-
-#include "Geo.h"
 
 #include "CSGFoundry.h"
 #include "CSGSolid.h"
@@ -55,7 +51,7 @@ SBT::SBT(const PIP* pip_)
     miss(nullptr),
     hitgroup(nullptr),
     check(nullptr),
-    geo(nullptr),
+    foundry(nullptr),
     is_1NN(false),
     is_11N(true)  
 {
@@ -74,8 +70,8 @@ void SBT::init()
 
 
 /**
-SBT::setGeo
--------------
+SBT::setFoundry
+------------------
 
 1. creates GAS using aabb obtained via geo
 2. creates IAS
@@ -83,18 +79,16 @@ SBT::setGeo
 
 **/
 
-void SBT::setGeo(const Geo* geo_)
+void SBT::setFoundry(const Foundry* foundry_)
 {
-    geo = geo_ ; 
+    foundry = foundry_ ; 
 
-    const CSGFoundry* foundry = geo->foundry ; 
+    createGAS();      // uploads aabb of all prim of all shapes to create GAS
+    createIAS(); 
+  //  setTop(geo->top); 
 
-    createGAS(foundry);      // uploads aabb of all prim of all shapes to create GAS
-    createIAS(geo); 
-    setTop(geo->top); 
-
-    createHitgroup(geo); // creates Hitgroup SBT records   
-    checkHitgroup(geo); 
+    createHitgroup(); 
+    checkHitgroup(); 
 }
 
 
@@ -118,10 +112,10 @@ void SBT::createMiss()
 
 void SBT::updateMiss()
 {
-    //glm::vec3 purple(0.3f, 0.1f, 0.5f); 
-    //glm::vec3 white( 1.0f, 1.0f, 1.0f); 
-    glm::vec3 lightgrey( 0.9f, 0.9f, 0.9f); 
-    const glm::vec3& bkg = lightgrey  ; 
+    //float3 purple = make_float3(0.3f, 0.1f, 0.5f); 
+    //float3 white = make_float3( 1.0f, 1.0f, 1.0f); 
+    float3 lightgrey = make_float3( 0.9f, 0.9f, 0.9f); 
+    const float3& bkg = lightgrey  ; 
    
     miss->data.r = bkg.x ;
     miss->data.g = bkg.y ;
@@ -170,30 +164,19 @@ Note that the prim could be a CSG tree of constituent nodes each
 with their own aabb, but only one aabb corresponding to the overall 
 prim extent is used.
 
-
 **/
 
-void SBT::createGAS(const CSGFoundry* foundry)  
+void SBT::createGAS()  
 {
     unsigned num_solid = foundry->getNumSolid(); 
-    for(unsigned solidIdx=0 ; solidIdx < num_solid ; solidIdx++)
+    std::cout << "SBT::createGAS num_solid " << num_solid << std::endl ;  
+
+    for(unsigned i=0 ; i < num_solid ; i++)
     {
-        CSGPrimSpec ps = foundry->getPrimSpec(solidIdx); 
+        CSGPrimSpec ps = foundry->getPrimSpec(i); 
         GAS gas = {} ;  
         GAS_Builder::Build(gas, ps);
         vgas.push_back(gas);  
-    }
-}
-
-void SBT::createIAS(const Geo* geo)
-{
-    unsigned num_grid = geo->getNumGrid(); 
-    for(unsigned i=0 ; i < num_grid ; i++)
-    {
-        const Grid* gr = geo->getGrid(i) ;    
-        IAS ias = {} ;  
-        IAS_Builder::Build(ias, gr, this );
-        vias.push_back(ias);  
     }
 }
 
@@ -203,11 +186,37 @@ const GAS& SBT::getGAS(unsigned gas_idx) const
     return vgas[gas_idx]; 
 }
 
+
+void SBT::createIAS()
+{
+    unsigned num_ias = foundry->getNumUniqueIAS() ; 
+    for(unsigned i=0 ; i < num_ias ; i++)
+    {
+        unsigned ias_idx = foundry->ias[i]; 
+        createIAS(ias_idx); 
+    }
+}
+
+void SBT::createIAS(unsigned ias_idx)
+{
+    unsigned num_inst = foundry->getNumInst(); 
+    unsigned num_ias_inst = foundry->getNumInstancesIAS(ias_idx); 
+
+    std::vector<qat4> ias_inst ; 
+    foundry->getInstanceTransformsIAS(ias_inst, ias_idx );
+    assert( num_ias_inst == ias_inst.size() ); 
+
+    IAS ias = {} ;  
+    IAS_Builder::Build(ias, ias_inst, this );
+    vias.push_back(ias);  
+}
+
 const IAS& SBT::getIAS(unsigned ias_idx) const 
 {
     assert( ias_idx < vias.size()); 
     return vias[ias_idx]; 
 }
+
 
 
 AS* SBT::getTop() const 
@@ -358,9 +367,9 @@ Note:
 
 **/
 
-void SBT::createHitgroup(const Geo* geo)
+void SBT::createHitgroup()
 {
-    unsigned num_solid = geo->getNumSolid(); 
+    unsigned num_solid = foundry->getNumSolid(); 
     unsigned num_gas = vgas.size(); 
     assert( num_gas == num_solid ); 
     unsigned tot_rec = getTotalRec(); 
@@ -387,7 +396,7 @@ void SBT::createHitgroup(const Geo* geo)
         unsigned num_bi = gas.bis.size(); 
         if(is_11N) assert( num_bi == 1 ); // 11N mode every GAS has only one BI with aabb for each CSGPrim 
 
-        const CSGSolid* so = geo->getSolid(solidIdx) ;
+        const CSGSolid* so = foundry->getSolid(solidIdx) ;
         int numPrim = so->numPrim ; 
         int primOffset = so->primOffset ; 
 
@@ -466,10 +475,10 @@ void SBT::dumpPrimData( const HitGroupData& data ) const
         ; 
 }
 
-void SBT::checkHitgroup(const Geo* geo)
+void SBT::checkHitgroup()
 {
-    unsigned num_solid = geo->getNumSolid(); 
-    unsigned num_prim = geo->getNumPrim(); 
+    unsigned num_solid = foundry->getNumSolid(); 
+    unsigned num_prim = foundry->getNumPrim(); 
     unsigned num_sbt = sbt.hitgroupRecordCount ;
     std::cout 
         << "SBT::checkHitgroup" 
@@ -487,7 +496,7 @@ void SBT::checkHitgroup(const Geo* geo)
     for(unsigned i=0 ; i < num_prim ; i++)
     {
         unsigned globalPrimIdx = i ; 
-        const CSGPrim* prim = geo->getPrim(globalPrimIdx);         
+        const CSGPrim* prim = foundry->getPrim(globalPrimIdx);         
 
         dumpPrimData( hg->data ); 
         checkPrimData( hg->data, prim ); 

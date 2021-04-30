@@ -16,7 +16,6 @@ Aim to minimize geometry specifics in here ...
 
 **/
 struct PIP ; 
-struct Geo ; 
 struct CSGFoundry ; 
 struct CSGPrim ; 
 
@@ -27,7 +26,9 @@ struct SBT
     Miss*         miss ;
     HitGroup*     hitgroup ;
     HitGroup*     check ;
-    const Geo*    geo ; 
+
+    const CSGFoundry*  foundry ; 
+
     bool          is_1NN ;  // 1NN:true is smallest bbox chopped 
     bool          is_11N ; 
  
@@ -43,7 +44,6 @@ struct SBT
 
 
     SBT( const PIP* pip_ ); 
-    void setGeo(const Geo* geo_); 
 
     AS* getAS(const char* spec) const ;
     void setTop(const char* spec) ;
@@ -58,8 +58,15 @@ struct SBT
     void createMiss();  
     void updateMiss();  
 
-    void createIAS(const Geo* geo);
-    void createGAS(const CSGFoundry* foundry);
+    void setFoundry(const CSGFoundry* foundry); 
+
+    void createHitgroup();
+    void checkHitgroup();
+
+    void createIAS();
+    void createIAS(unsigned ias_idx);
+
+    void createGAS();
 
     void setPrimData( HitGroupData& data, const CSGPrim* prim);
     void dumpPrimData( const HitGroupData& data ) const ;
@@ -73,8 +80,7 @@ struct SBT
 
     unsigned getTotalRec() const ;
 
-    void createHitgroup(const Geo* geo);
-    void checkHitgroup(const Geo* geo); 
+
 
 };
 

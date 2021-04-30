@@ -48,11 +48,11 @@ printf "$var\n${!var}" | tr ":" "\n"
 #tmin=0.5
 tmin=0.1
 
-#geometry=parade
+geometry=parade
 #geometry=sphere_containing_grid_of_spheres
 #geometry=layered_sphere
 #geometry=layered_zsphere
-geometry=clustered_sphere
+#geometry=clustered_sphere
 #geometry=sphe # 0
 #geometry=zsph # 1 
 #geometry=cone # 2
@@ -76,8 +76,8 @@ geometry=clustered_sphere
 clusterspec=-1:2:1,-1:2:1,-1:2:1
 clusterunit=500
 
-
-gridmodulo=12,13,14
+gridmodulo=0,1,2
+#gridmodulo=12,13,14
 #gridmodulo=9,10
 #gridmodulo=5,6
 #gridmodulo=10

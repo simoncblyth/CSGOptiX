@@ -3,11 +3,10 @@
 #include <vector>
 #include <optixu/optixpp_namespace.h>
 
-struct Geo ; 
 struct CSGFoundry ; 
-struct Grid ; 
-struct Params ; 
 struct CSGSolid ; 
+
+struct Params ; 
 
 struct Six
 {
@@ -20,31 +19,29 @@ struct Six
     const char*       ptx_path ; 
     unsigned          entry_point_index ; 
     unsigned          optix_device_ordinal ; 
-    const Geo*        geo ; 
     const CSGFoundry* foundry ; 
 
     std::vector<optix::Geometry> solids ; 
-    std::vector<optix::Group>    assemblies ; 
-
+    std::vector<optix::Group>    groups ; 
 
     Six(const char* ptx_path, const Params* params_);  
 
     void initContext();
-    void initPipeline();
-    void setGeo(const Geo* geo);
-    void convert();
-
     template<typename T> void createContextBuffer( T* d_ptr, unsigned num_item, const char* name ); 
 
+    void initPipeline();
+
+    void setFoundry(const CSGFoundry* foundry);
+    void create();
+    void createGAS();
+    void createIAS();
+
+    optix::Group            createIAS(unsigned ias_idx);
     optix::GeometryInstance createGeometryInstance(unsigned solid_idx, unsigned identity);
     optix::Geometry         createGeometry(unsigned solid_idx);
-    
-    void convertSolids();
-    void convertGroups();  // pre-7 IAS 
-    optix::Group createAssembly(unsigned ias_idx);
-
+ 
+    void setTop(const char* spec);
     void launch();
     void save(const char* outdir) ; 
-
 
 };

@@ -36,9 +36,8 @@ OptiXTest
 #include "SBT.h"
 #endif
 
-
-
 struct AS ; 
+
 
 int main(int argc, char** argv)
 {
@@ -93,7 +92,8 @@ int main(int argc, char** argv)
 #if OPTIX_VERSION < 70000
 
     Six six(ptx_path, &params); 
-    six.setGeo(&geo); 
+    six.setFoundry(&foundry);
+    six.setTop(geo.top); 
     six.launch(); 
     six.save(outdir); 
 
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
 
     PIP pip(ptx_path); 
     SBT sbt(&pip);
-    sbt.setGeo(&geo);    // creates GAS, IAS, SBT records 
+    sbt.setFoundry(&foundry); 
 
     AS* top = sbt.getTop(); 
     params.handle = top->handle ; 

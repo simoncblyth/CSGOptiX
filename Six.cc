@@ -1,25 +1,20 @@
+
 #include <iostream>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #include "Params.h"
-#include "InstanceId.h"
-#include "Geo.h"
 
 #include "sutil_vec_math.h"
+#include "OpticksCSG.h"
 #include "CSGFoundry.h"
 #include "CSGSolid.h"
 #include "CSGPrim.h"
-#include "OpticksCSG.h"
 #include "CSGNode.h"
-
-
-#include "Grid.h"
-#include "Six.h"
 
 #include "SIMG.hh" 
 #include "NP.hh"
+
+#include "Six.h"
+
     
 Six::Six(const char* ptx_path_, const Params* params_)
     :
@@ -29,7 +24,6 @@ Six::Six(const char* ptx_path_, const Params* params_)
     ptx_path(strdup(ptx_path_)),
     entry_point_index(0u),
     optix_device_ordinal(0u),
-    geo(nullptr),
     foundry(nullptr)
 {
     initContext();
@@ -85,69 +79,26 @@ template void Six::createContextBuffer( qat4*,  unsigned, const char* ) ;
 template void Six::createContextBuffer( float*, unsigned, const char* ) ; 
 
 
-/**
-
-Six::setGeo
--------------
-
-Needs generalization, get away from the specific example of Geo/Grids
-
-Top object mechanics should not be here.
-**/
-
-
-void Six::setGeo(const Geo* geo_)  // HMM: maybe makes more sense to get given directly the lower level CSGFoundry ?
+void Six::setFoundry(const CSGFoundry* foundry_)  // HMM: maybe makes more sense to get given directly the lower level CSGFoundry ?
 {
-    geo = geo_ ; 
-    foundry = geo->foundry ; 
-    convert(); 
+    foundry = foundry_ ; 
+    create(); 
 }
     
-void Six::convert()
+void Six::create()
 {
-    unsigned num_solid = foundry->getNumSolid(); 
-    std::cout << "Six::convert num_solid " << num_solid << std::endl ;  
-
     createContextBuffer<CSGNode>(   foundry->d_node, foundry->getNumNode(), "node_buffer" ); 
-    createContextBuffer<qat4>(   foundry->d_itra, foundry->getNumItra(), "itra_buffer" ); 
-    createContextBuffer<float4>( foundry->d_plan, foundry->getNumPlan(), "plan_buffer" ); 
-    // these "global" context buffers have no offsets
+    createContextBuffer<qat4>(      foundry->d_itra, foundry->getNumItra(), "itra_buffer" ); 
+    createContextBuffer<float4>(    foundry->d_plan, foundry->getNumPlan(), "plan_buffer" ); 
 
-    convertSolids(); 
-    convertGroups(); 
-
-    const char* spec = geo->top ;  
-    char c = spec[0]; 
-    assert( c == 'i' || c == 'g' );  
-    int idx = atoi( spec + 1 );  
-
-    std::cout << "Six::setGeo spec " << spec << std::endl ; 
-    if( c == 'i' )
-    {
-        assert( idx < assemblies.size() ); 
-        optix::Group grp = assemblies[idx]; 
-        context["top_object"]->set( grp );
-    }
-    else if( c == 'g' )
-    {
-        assert( idx < solids.size() ); 
-
-        optix::GeometryGroup gg = context->createGeometryGroup();
-        gg->setChildCount(1);
-     
-        unsigned identity = 1u + idx ;  
-        optix::GeometryInstance pergi = createGeometryInstance(idx, identity); 
-        gg->setChild( 0, pergi );
-        gg->setAcceleration( context->createAcceleration("Trbvh") );
-
-        context["top_object"]->set( gg );
-    }
+    createGAS(); 
+    createIAS(); 
 }
 
-void Six::convertSolids()
+void Six::createGAS()
 {
-    unsigned num_solid = foundry->getNumSolid();   // just pass thru to foundry  
-    std::cout << "Six::createShapes num_solid " << num_solid << std::endl ;  
+    unsigned num_solid = foundry->getNumSolid();   
+    std::cout << "Six::createGAS num_solid " << num_solid << std::endl ;  
 
     for(unsigned i=0 ; i < num_solid ; i++)
     {
@@ -156,25 +107,25 @@ void Six::convertSolids()
     }
 }
 
-void Six::convertGroups()
+void Six::createIAS()
 {
-    unsigned num_ias = foundry->ias.size() ; 
+    unsigned num_ias = foundry->getNumUniqueIAS() ; 
     for(unsigned i=0 ; i < num_ias ; i++)
     {
         unsigned ias_idx = foundry->ias[i]; 
-        optix::Group assembly = createAssembly(ias_idx); 
-        assemblies.push_back(assembly); 
+        optix::Group group = createIAS(ias_idx); 
+        groups.push_back(group); 
     }
 }
 
-optix::Group Six::createAssembly(unsigned ias)
+optix::Group Six::createIAS(unsigned ias_idx)
 {
     unsigned num_inst = foundry->getNumInst(); 
-    unsigned ias_inst = foundry->getNumInstancesIAS(ias); 
+    unsigned ias_inst = foundry->getNumInstancesIAS(ias_idx); 
     std::cout 
-        << "Six::createAssembly"
+        << "Six::createIAS"
+        << " ias_idx " << ias_idx
         << " num_inst " << num_inst 
-        << " ias " << ias
         << " ias_inst " << ias_inst 
         << std::endl
         ; 
@@ -182,21 +133,21 @@ optix::Group Six::createAssembly(unsigned ias)
 
     const char* accel = "Trbvh" ; 
     optix::Acceleration instance_accel = context->createAcceleration(accel);
-    optix::Acceleration assembly_accel  = context->createAcceleration(accel);
+    optix::Acceleration group_accel  = context->createAcceleration(accel);
 
-    optix::Group assembly = context->createGroup();
-    assembly->setChildCount( ias_inst );
-    assembly->setAcceleration( assembly_accel );  
+    optix::Group group = context->createGroup();
+    group->setChildCount( ias_inst );
+    group->setAcceleration( group_accel );  
 
     unsigned count = 0 ; 
     for(unsigned i=0 ; i < num_inst ; i++)
     {
         const qat4* qc = foundry->getInst(i); 
-        unsigned ins_idx,  gas_idx, ias_idx ;
-        qc->getIdentity( ins_idx,  gas_idx, ias_idx ); 
+        unsigned ins_idx,  gas_idx, ias_idx_ ;
+        qc->getIdentity( ins_idx,  gas_idx, ias_idx_ ); 
         assert( ins_idx == i ); 
 
-        if( ias_idx == ias )
+        if( ias_idx_ == ias_idx )
         {
             const float* qcf = qc->cdata(); 
             qat4 q(qcf);        // copy to clear identity before passing to OptiX
@@ -205,7 +156,7 @@ optix::Group Six::createAssembly(unsigned ias)
             optix::Transform xform = context->createTransform();
             bool transpose = true ; 
             xform->setMatrix(transpose, q.data(), 0); 
-            assembly->setChild(count, xform);
+            group->setChild(count, xform);
 
             optix::GeometryInstance pergi = createGeometryInstance(gas_idx, ins_idx); 
             optix::GeometryGroup perxform = context->createGeometryGroup();
@@ -217,8 +168,7 @@ optix::Group Six::createAssembly(unsigned ias)
         }
     }
     assert( count == ias_inst ); 
-
-    return assembly ;
+    return group ;
 }
 
 optix::GeometryInstance Six::createGeometryInstance(unsigned gas_idx, unsigned ins_idx)
@@ -268,6 +218,39 @@ optix::Geometry Six::createGeometry(unsigned solid_idx)
  
     return solid ; 
 }
+
+
+void Six::setTop(const char* spec)
+{
+    char c = spec[0]; 
+    assert( c == 'i' || c == 'g' );  
+    int idx = atoi( spec + 1 );  
+
+    std::cout << "Six::setTop spec " << spec << std::endl ; 
+    if( c == 'i' )
+    {
+        assert( idx < groups.size() ); 
+        optix::Group grp = groups[idx]; 
+        context["top_object"]->set( grp );
+    }
+    else if( c == 'g' )
+    {
+        assert( idx < solids.size() ); 
+
+        optix::GeometryGroup gg = context->createGeometryGroup();
+        gg->setChildCount(1);
+     
+        unsigned identity = 1u + idx ;  
+        optix::GeometryInstance pergi = createGeometryInstance(idx, identity); 
+        gg->setChild( 0, pergi );
+        gg->setAcceleration( context->createAcceleration("Trbvh") );
+
+        context["top_object"]->set( gg );
+    }
+}
+
+
+
 
 void Six::launch()
 {
