@@ -64,4 +64,5 @@ make install
 [ $? -ne 0 ] && echo $0 : install FAIL && exit 2
 
 
+exit 0
 

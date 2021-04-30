@@ -6,13 +6,13 @@
 #include <cuda_runtime.h>
 #include "sutil_vec_math.h"    // roundUp
 
+
 #include "CUDA_CHECK.h"
 #include "OPTIX_CHECK.h"
 
-#include <glm/gtx/string_cast.hpp>
-#include <glm/gtc/type_ptr.hpp>
+//#include <glm/gtx/string_cast.hpp>
+//#include <glm/gtc/type_ptr.hpp>
 
-#include "Grid.h"
 #include "Ctx.h"
 
 #include "InstanceId.h"
@@ -32,27 +32,29 @@ of the GAS.
 
 **/
 
-void IAS_Builder::Build(IAS& ias, const Grid* gr, const SBT* sbt) // static 
+void IAS_Builder::Build(IAS& ias, const std::vector<qat4>& trs, const SBT* sbt) // static 
 {
-    unsigned num_tr = gr->trs.size() ; 
-    std::cout << "IAS_Builder::Build num_tr " << num_tr << std::endl ; 
-    assert( num_tr > 0); 
-    const float* vals =   (float*)gr->trs.data() ;
+    unsigned num_trs = trs.size() ; 
+    std::cout << "IAS_Builder::Build num_trs " << num_trs << std::endl ; 
+    assert( num_trs > 0); 
+    const float* vals =   (float*)trs.data() ;
     unsigned flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
  
     std::vector<OptixInstance> instances ;  
-    for(unsigned i=0 ; i < num_tr ; i++)
+    for(unsigned i=0 ; i < num_trs ; i++)
     {
+        const qat4& tr = trs[i] ;   
+        unsigned identity = tr.identity() ;   
+
+/*
         glm::mat4 mat(1.0f) ; 
         memcpy( glm::value_ptr(mat), (void*)(vals + i*16), 16*sizeof(float));
-        
         glm::mat4 imat = glm::transpose(mat);
-
         glm::uvec4 idv ; // after transposiing the last row contains the identity info 
         memcpy( glm::value_ptr(idv), &imat[3], 4*sizeof(float) ); 
-
-
         unsigned identity = idv.x ; 
+*/
+
         unsigned ins_idx ; 
         unsigned gas_idx ; 
         InstanceId::Decode( ins_idx, gas_idx, identity );
@@ -61,7 +63,10 @@ void IAS_Builder::Build(IAS& ias, const Grid* gr, const SBT* sbt) // static
         const GAS& gas = sbt->getGAS(gas_idx); 
 
         OptixInstance instance = {} ; 
-        memcpy( instance.transform, glm::value_ptr(imat), 12*sizeof( float ) );
+        //memcpy( instance.transform, glm::value_ptr(imat), 12*sizeof( float ) );
+
+        tr.copy_columns_3x4( instance.transform ); 
+
         instance.instanceId = identity ; 
         instance.sbtOffset = sbt->getOffset(gas_idx, prim_idx );            
         instance.visibilityMask = 255;
