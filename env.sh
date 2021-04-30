@@ -1,24 +1,46 @@
 #!/bin/bash 
 
+export CSG_PREFIX=${CSG_PREFIX:-/usr/local/csg}
+
+if [ -z "$OPTIX_PREFIX" ]; then 
+    echo $0 : missing required envvar OPTIX_PREFIX 
+    exit 1 
+fi 
+if [ ! -d "$OPTIX_PREFIX"  ]; then 
+    echo $0 : OPTIX_PREFIX $OPTIX_PREFIX directory does not exist
+    exit 2
+fi 
+if [ -z "$CSG_PREFIX" ]; then 
+    echo $0 : missing required envvar CSG_PREFIX 
+    exit 1 
+fi 
+if [ ! -d "$CSG_PREFIX"  ]; then 
+    echo $0 : CSG_PREFIX $CSG_PREFIX directory does not exist
+    exit 2
+fi 
+
+
 sdir=$(pwd)
 name=$(basename $sdir)
 
-export CSG_PREFIX=/usr/local/csg
 export PREFIX=/tmp/$USER/opticks/$name
 buildenv=$PREFIX/build/buildenv.sh
 if [ -f $buildenv ]; then 
     source $buildenv 
 fi
-export PATH=$PREFIX/bin:$PATH
 
 case $(uname) in
   Darwin) var=DYLD_LIBRARY_PATH ; lib="lib" ;;
   Linux)  var=LD_LIBRARY_PATH ; lib="lib64"  ;;  
 esac
-export $var=$PREFIX/$lib:${CSG_PREFIX}/$lib
+
+export PATH=$PREFIX/bin:$PATH
+export $var=$PREFIX/$lib:${CSG_PREFIX}/$lib:${OPTIX_PREFIX}/lib64
+export BIN=$(which $name 2>/dev/null)
+
+printf "$var\n${!var}" | tr ":" "\n" 
 
 
-export BIN=$(which $name)
 
 #tmin=2.0
 #tmin=1.5

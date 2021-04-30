@@ -42,7 +42,7 @@ include_directories(
     ${CUDA_INCLUDE_DIRS}
     ${CSG_INCLUDE_DIRS}
     ${OptiX_INCLUDE}
-    ${CMAKE_INSTALL_PREFIX}/externals/glm/glm
+    $ENV{GLM_PREFIX}
     ${CMAKE_CURRENT_SOURCE_DIR} 
 )
 
