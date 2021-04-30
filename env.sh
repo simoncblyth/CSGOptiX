@@ -1,11 +1,23 @@
 #!/bin/bash 
 
 sdir=$(pwd)
-name=OptiXTest
-export PREFIX=/tmp/$USER/opticks/$name
-source $PREFIX/build/buildenv.sh 
+name=$(basename $sdir)
 
+export CSG_PREFIX=/usr/local/csg
+export PREFIX=/tmp/$USER/opticks/$name
+buildenv=$PREFIX/build/buildenv.sh
+if [ -f $buildenv ]; then 
+    source $buildenv 
+fi
 export PATH=$PREFIX/bin:$PATH
+
+case $(uname) in
+  Darwin) var=DYLD_LIBRARY_PATH ; lib="lib" ;;
+  Linux)  var=LD_LIBRARY_PATH ; lib="lib64"  ;;  
+esac
+export $var=$PREFIX/$lib:${CSG_PREFIX}/$lib
+
+
 export BIN=$(which $name)
 
 #tmin=2.0

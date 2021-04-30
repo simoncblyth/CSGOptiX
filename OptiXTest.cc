@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     const char* prefix = getenv("PREFIX");  assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     const char* outdir = getenv("OUTDIR");  assert( outdir && "expecting OUTDIR envvar " );
 
-    const char* cmake_target = "OptiXTest" ; 
+    const char* cmake_target = "CSGOptiX" ; 
     const char* ptx_path = Util::PTXPath( prefix, cmake_target, ptxname ) ; 
     std::cout << " ptx_path " << ptx_path << std::endl ; 
 

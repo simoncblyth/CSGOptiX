@@ -3,8 +3,8 @@
 #include "sutil_vec_math.h"
 #include "qat4.h"
 
-#include "intersect_node.h"
-#include "intersect_tree.h"
+#include "csg_intersect_node.h"
+#include "csg_intersect_tree.h"
 
 #include "Binding.h"
 #include "Params.h"
@@ -154,7 +154,7 @@ extern "C" __global__ void __intersection__is()
     int numNode = hg->numNode ; 
     int nodeOffset = hg->nodeOffset ; 
 
-    const Node* node = params.node + nodeOffset ;  
+    const CSGNode* node = params.node + nodeOffset ;  
     const float4* plan = params.plan ;  
     const qat4*   itra = params.itra ;  
 

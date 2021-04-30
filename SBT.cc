@@ -18,6 +18,7 @@
 
 #include "Geo.h"
 
+#include "CSGFoundry.h"
 #include "CSGSolid.h"
 #include "CSGNode.h"
 
@@ -86,7 +87,9 @@ void SBT::setGeo(const Geo* geo_)
 {
     geo = geo_ ; 
 
-    createGAS(geo);      // uploads aabb of all prim of all shapes to create GAS
+    const CSGFoundry* foundry = geo->foundry ; 
+
+    createGAS(foundry);      // uploads aabb of all prim of all shapes to create GAS
     createIAS(geo); 
     setTop(geo->top); 
 
@@ -175,7 +178,7 @@ void SBT::createGAS(const CSGFoundry* foundry)
     unsigned num_solid = foundry->getNumSolid(); 
     for(unsigned solidIdx=0 ; solidIdx < num_solid ; solidIdx++)
     {
-        PrimSpec ps = foundry->getPrimSpec(solidIdx); 
+        CSGPrimSpec ps = foundry->getPrimSpec(solidIdx); 
         GAS gas = {} ;  
         GAS_Builder::Build(gas, ps);
         vgas.push_back(gas);  
@@ -382,9 +385,9 @@ void SBT::createHitgroup(const Geo* geo)
         unsigned solidIdx = i ;    
         const GAS& gas = vgas[i] ;    
         unsigned num_bi = gas.bis.size(); 
-        if(is_11N) assert( num_bi == 1 ); // 11N mode every GAS has only one BI with aabb for each Prim 
+        if(is_11N) assert( num_bi == 1 ); // 11N mode every GAS has only one BI with aabb for each CSGPrim 
 
-        const Solid* so = geo->getSolid(solidIdx) ;
+        const CSGSolid* so = geo->getSolid(solidIdx) ;
         int numPrim = so->numPrim ; 
         int primOffset = so->primOffset ; 
 
@@ -403,7 +406,7 @@ void SBT::createHitgroup(const Geo* geo)
             { 
                 unsigned localPrimIdx = is_1NN ? j : k ;   
                 unsigned globalPrimIdx = primOffset + localPrimIdx ;   
-                const Prim* prim = geo->getPrim( globalPrimIdx ); 
+                const CSGPrim* prim = geo->getPrim( globalPrimIdx ); 
                 setPrimData( hg->data, prim ); 
                 dumpPrimData( hg->data ); 
 
@@ -436,7 +439,7 @@ void SBT::createHitgroup(const Geo* geo)
     sbt.hitgroupRecordCount = tot_rec ;
 }
 
-void SBT::setPrimData( HitGroupData& data, const Prim* prim)
+void SBT::setPrimData( HitGroupData& data, const CSGPrim* prim)
 {
     data.numNode = prim->numNode(); 
     data.nodeOffset = prim->nodeOffset();  
@@ -444,7 +447,7 @@ void SBT::setPrimData( HitGroupData& data, const Prim* prim)
     //data.planOffset = prim->planOffset();  
 }
 
-void SBT::checkPrimData( HitGroupData& data, const Prim* prim)
+void SBT::checkPrimData( HitGroupData& data, const CSGPrim* prim)
 {
     assert( data.numNode == prim->numNode() ); 
     assert( data.nodeOffset == prim->nodeOffset() );  
@@ -484,7 +487,7 @@ void SBT::checkHitgroup(const Geo* geo)
     for(unsigned i=0 ; i < num_prim ; i++)
     {
         unsigned globalPrimIdx = i ; 
-        const Prim* prim = geo->getPrim(globalPrimIdx);         
+        const CSGPrim* prim = geo->getPrim(globalPrimIdx);         
 
         dumpPrimData( hg->data ); 
         checkPrimData( hg->data, prim ); 

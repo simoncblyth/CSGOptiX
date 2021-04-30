@@ -17,6 +17,7 @@ Aim to minimize geometry specifics in here ...
 **/
 struct PIP ; 
 struct Geo ; 
+struct CSGFoundry ; 
 struct CSGPrim ; 
 
 struct SBT 

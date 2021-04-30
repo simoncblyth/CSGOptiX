@@ -23,7 +23,7 @@ GAS_Builder::Build
 
 **/
 
-void GAS_Builder::Build( GAS& gas, const  PrimSpec& psd )  // static
+void GAS_Builder::Build( GAS& gas, const  CSGPrimSpec& psd )  // static
 {
     std::cout 
         << "GAS_Builder::Build"
@@ -41,7 +41,7 @@ GAS_Builder::Build_11N GAS:BI:AABB  1:1:N  one BI with multiple AABB
 ------------------------------------------------------------------------
 **/
 
-void GAS_Builder::Build_11N( GAS& gas, const PrimSpec& psd )
+void GAS_Builder::Build_11N( GAS& gas, const CSGPrimSpec& psd )
 {
     std::cout << "[ GAS_Builder::Build_11N" << std::endl ;  
     BI bi = MakeCustomPrimitivesBI_11N(psd);
@@ -62,7 +62,7 @@ Hmm : separate aabb allocations for every GAS ?
 
 **/
 
-BI GAS_Builder::MakeCustomPrimitivesBI_11N(const PrimSpec& ps)
+BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
 {
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
     unsigned stride_in_floats = ps.stride_in_bytes / sizeof(float) ;
@@ -87,7 +87,7 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const PrimSpec& ps)
     {
         std::vector<float> tmp ; 
         ps.gather(tmp); 
-        PrimSpec::Dump(tmp); 
+        CSGPrimSpec::Dump(tmp); 
         std::cout << "GAS_Builder::MakeCustomPrimitivesBI_11N : YUCK : RE-UPLOADING bbox/sbtIndexOffset " << std::endl ; 
 
         bi.sbt_index = new unsigned[ps.num_prim];

@@ -2,7 +2,7 @@
 
 #include <vector>
 #include "GAS.h"
-#include "Prim.h"
+#include "CSGPrim.h"
 #include "BI.h"
 
 //struct Shape ; 
@@ -25,9 +25,9 @@ struct GAS_Builder
     //static void Build_11N( GAS& gas, const float* aabb_base, unsigned num_aabb, unsigned stride_in_bytes );
 
 
-    static void Build(     GAS& gas, const PrimSpec& psd );
-    static void Build_11N( GAS& gas, const PrimSpec& psd );
-    static BI MakeCustomPrimitivesBI_11N(const PrimSpec& psd);
+    static void Build(     GAS& gas, const CSGPrimSpec& psd );
+    static void Build_11N( GAS& gas, const CSGPrimSpec& psd );
+    static BI MakeCustomPrimitivesBI_11N(const CSGPrimSpec& psd);
 
 
     static void Build_1NN( GAS& gas, const float* aabb_base, unsigned num_aabb, unsigned stride_in_bytes  );
