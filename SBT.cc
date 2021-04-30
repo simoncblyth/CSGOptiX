@@ -17,8 +17,10 @@
 
 
 #include "Geo.h"
-#include "Solid.h"
-#include "Node.h"
+
+#include "CSGSolid.h"
+#include "CSGNode.h"
+
 #include "Binding.h"
 #include "Params.h"
 
@@ -168,12 +170,12 @@ prim extent is used.
 
 **/
 
-void SBT::createGAS(const Geo* geo)   // just pass-thru to Foundry 
+void SBT::createGAS(const CSGFoundry* foundry)  
 {
-    unsigned num_solid = geo->getNumSolid(); 
+    unsigned num_solid = foundry->getNumSolid(); 
     for(unsigned solidIdx=0 ; solidIdx < num_solid ; solidIdx++)
     {
-        PrimSpec ps = geo->getPrimSpec(solidIdx); 
+        PrimSpec ps = foundry->getPrimSpec(solidIdx); 
         GAS gas = {} ;  
         GAS_Builder::Build(gas, ps);
         vgas.push_back(gas);  

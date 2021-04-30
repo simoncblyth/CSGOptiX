@@ -17,7 +17,7 @@ Aim to minimize geometry specifics in here ...
 **/
 struct PIP ; 
 struct Geo ; 
-struct Prim ; 
+struct CSGPrim ; 
 
 struct SBT 
 {
@@ -58,10 +58,11 @@ struct SBT
     void updateMiss();  
 
     void createIAS(const Geo* geo);
-    void createGAS(const Geo* geo);
-    void setPrimData( HitGroupData& data, const Prim* prim);
+    void createGAS(const CSGFoundry* foundry);
+
+    void setPrimData( HitGroupData& data, const CSGPrim* prim);
     void dumpPrimData( const HitGroupData& data ) const ;
-    void checkPrimData( HitGroupData& data, const Prim* prim);
+    void checkPrimData( HitGroupData& data, const CSGPrim* prim);
 
     const GAS& getGAS(unsigned gas_idx) const ;
     const IAS& getIAS(unsigned ias_idx) const ;
@@ -70,8 +71,8 @@ struct SBT
     unsigned _getOffset(unsigned shape_idx_ , unsigned layer_idx_ ) const ;
 
     unsigned getTotalRec() const ;
-    void createHitgroup(const Geo* geo);
 
+    void createHitgroup(const Geo* geo);
     void checkHitgroup(const Geo* geo); 
 
 };

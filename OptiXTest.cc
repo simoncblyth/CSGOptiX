@@ -104,7 +104,6 @@ int main(int argc, char** argv)
     SBT sbt(&pip);
     sbt.setGeo(&geo);    // creates GAS, IAS, SBT records 
 
-
     AS* top = sbt.getTop(); 
     params.handle = top->handle ; 
 

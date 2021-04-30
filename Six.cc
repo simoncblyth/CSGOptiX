@@ -64,7 +64,6 @@ void Six::initPipeline()
     material->setClosestHitProgram( entry_point_index, context->createProgramFromPTXFile( ptx_path, "closest_hit" ));
 }
 
-
 template<typename T>
 void Six::createContextBuffer( T* d_ptr, unsigned num_item, const char* name )
 {
@@ -82,6 +81,17 @@ void Six::createContextBuffer( T* d_ptr, unsigned num_item, const char* name )
 template void Six::createContextBuffer( CSGNode*,  unsigned, const char* ) ; 
 template void Six::createContextBuffer( qat4*,  unsigned, const char* ) ; 
 template void Six::createContextBuffer( float*, unsigned, const char* ) ; 
+
+
+/**
+
+Six::setGeo
+-------------
+
+Needs generalization, get away from the specific example of Geo/Grids
+
+Top object mechanics should not be here.
+**/
 
 
 void Six::setGeo(const Geo* geo)  // HMM: maybe makes more sense to get given directly the lower level CSGFoundry ?
@@ -141,6 +151,7 @@ void Six::createSolids(const CSGFoundry* foundry)
 }
 
 /**
+Not used
 **/
 
 optix::GeometryGroup Six::createSimple(const Geo* geo)
@@ -158,6 +169,23 @@ optix::GeometryGroup Six::createSimple(const Geo* geo)
     return gg ; 
 }
 
+
+/**
+
+Hmm are thinking of vector of transforms (with 4th column instrumentation)
+in the foundry to be the general model for instances.
+
+In general want to try single IAS for everything, but to support 
+multiple IAS need to also have an ias_index in the 4th column.
+
+So 4th column needs::
+
+    instance_index    # favor global, but could be local to the IAS 
+    gas_index         # clearly global
+    ias_index         # clearly global  
+
+**/
+
 void Six::createGrids(const Geo* geo)
 {
     unsigned num_grid = geo->getNumGrid(); 
@@ -169,12 +197,15 @@ void Six::createGrids(const Geo* geo)
     }
 }
 
-
 /**
 Six::convertGrid
 ------------------
 
 Identity interpretation needs to match what IAS_Builder::Build is doing 
+
+Note nothing specific to the grid, just needs the vector of transforms.
+Using qat4 would be simpler that using glm::mat4 here due to inherent 
+multi-typing.
 
 **/
 
@@ -287,13 +318,12 @@ void Six::launch()
 
 void Six::save(const char* outdir) 
 {
-    const unsigned char* data = (const unsigned char*)pixels_buffer->map();  
-
     int channels = 4 ; 
     int quality = 50 ; 
+
+    const unsigned char* data = (const unsigned char*)pixels_buffer->map();  
     SIMG img(int(params->width), int(params->height), channels,  data ); 
     img.writeJPG(outdir, "pixels.jpg", quality); 
-
     pixels_buffer->unmap(); 
 
     NP::Write(outdir, "posi.npy",  (float*)posi_buffer->map(), params->height, params->width, 4 );

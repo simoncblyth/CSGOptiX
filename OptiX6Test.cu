@@ -51,7 +51,6 @@ rtDeclareVariable(unsigned,  intersect_identity,   attribute intersect_identity,
 rtDeclareVariable(unsigned, identity,  ,);   
 // "identity" is planted into pergi["identity"] 
 
-
 rtDeclareVariable(rtObject,      top_object, , );
 
 rtBuffer<CSGPrim> prim_buffer;
@@ -112,44 +111,6 @@ RT_PROGRAM void intersect(int primIdx)
     }
 }
 
-
-
-/*
-RT_PROGRAM void intersect(int primIdx)
-{
-    const Node* node = &node_buffer[primIdx] ;   // only working because simple 1:1 Prim:Node
-    const float3 center = make_float3( node->q0.f.x, node->q0.f.y, node->q0.f.z) ;
-    const float  radius = node->q0.f.w ; 
-
-    const float  t_min = ray.tmin ; 
-    const float3 O     = ray.origin - center;
-    const float3 D     = ray.direction ; 
- 
-    float b = dot(O, D);
-    float c = dot(O, O)-radius*radius;
-    float d = dot(D, D);
-    float disc = b*b-d*c;
-
-    float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // ray has segment within sphere for sdisc > 0.f 
-    float root1 = (-b - sdisc)/d ;
-    float root2 = (-b + sdisc)/d ;  // root2 > root1 always
-
-    float t_cand = sdisc > 0.f ? ( root1 > t_min ? root1 : root2 ) : t_min ; 
-    bool valid_isect = t_cand > t_min ;
-
-    if(valid_isect)
-    {
-        if(rtPotentialIntersection(t_cand))
-        {
-            position = ray.origin + t_cand*ray.direction ;   
-            shading_normal = ( O + t_cand*D )/radius;
-            intersect_identity = (( (1u+primIdx) & 0xff ) << 24 ) | ( identity & 0x00ffffff ) ; 
-            rtReportIntersection(0);
-        }
-    }
-}
-*/
-
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
     const CSGPrim* prim = &prim_buffer[primIdx] ; 
@@ -174,5 +135,4 @@ RT_PROGRAM void closest_hit()
     float3 isect = ray.origin + t*ray.direction ;
     prd.posi = make_float4( isect, __uint_as_float(intersect_identity) );
 }
-
 
