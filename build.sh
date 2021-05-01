@@ -1,7 +1,6 @@
 #!/bin/bash -l 
 
 sdir=$(pwd)
-name=$(basename $sdir)
 
 source ./env.sh 
 
@@ -9,9 +8,14 @@ if [ -z "$PREFIX" -o ! -d "$PREFIX" ]; then
    echo $0 PREFIX envvar not defined or directory $PREFIX does not exist 
    exit 1 
 fi
+if [ -z "$NAME" ]; then
+   echo $0 NAME envvar not defined
+   exit 2
+fi
+
 
 bdir=$PREFIX/build 
-echo bdir $bdir name $name PREFIX $PREFIX
+echo bdir $bdir NAME $NAME PREFIX $PREFIX
 
 rm -rf $bdir && mkdir -p $bdir 
 [ ! -d $bdir ] && exit 1
@@ -21,6 +25,7 @@ cd $bdir && pwd
 glm-version(){ echo 0.9.9.8 ; }
 glm-name(){    echo glm-$(glm-version) ; }
 glm-dir(){     echo $PREFIX/externals/glm/$(glm-name) ; }
+glm-prefix(){  echo $(glm-dir)/glm ; }
 glm-url(){     echo https://github.com/g-truc/glm/releases/download/$(glm-version)/$(glm-name).zip ; }
 glm-dist(){    echo $(dirname $(glm-dir))/$(basename $(glm-url)) ; }
 glm-get(){
@@ -45,9 +50,13 @@ glm-get(){
 }
 glm-get
 
+if [ "${GLM_PREFIX}" == "$(glm-prefix)" ]; then
+   echo $BASH_SOURCE GLM_PREFIX $GLM_PREFIX is consistent with glm-prefix $(glm-prefix)
+else
+   echo $BASH_SOURCE GLM_PREFIX $GLM_PREFIX is NOT consistent with glm-prefix $(glm-prefix)
+   exit 2 
+fi
  
-export GLM_PREFIX=$(glm-dir)/glm
-
 
 cmake $sdir \
      -DCMAKE_BUILD_TYPE=Debug \
@@ -56,7 +65,7 @@ cmake $sdir \
      -DCMAKE_INSTALL_PREFIX=$PREFIX
 
 rm -f $PREFIX/ptx/*.ptx
-rm -f $PREFIX/bin/$name
+rm -f $PREFIX/bin/$NAME
 
 make
 [ $? -ne 0 ] && echo $0 : make FAIL && exit 1

@@ -1,6 +1,7 @@
 #!/bin/bash 
 
 export CSG_PREFIX=${CSG_PREFIX:-/usr/local/csg}
+export CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
 
 if [ -z "$OPTIX_PREFIX" ]; then 
     echo $0 : missing required envvar OPTIX_PREFIX 
@@ -21,9 +22,17 @@ fi
 
 
 sdir=$(pwd)
-name=$(basename $sdir)
+name=CSGOptiXTest
 
+export NAME=$name
 export PREFIX=/tmp/$USER/opticks/$name
+export GLM_PREFIX=$PREFIX/externals/glm/glm-0.9.9.8/glm   # MUST match whats done in build.sh 
+
+
+if [ ! -d "$PREFIX" ]; then 
+    mkdir -p $PREFIX
+fi
+
 buildenv=$PREFIX/build/buildenv.sh
 if [ -f $buildenv ]; then 
     source $buildenv 
@@ -34,9 +43,11 @@ case $(uname) in
   Linux)  var=LD_LIBRARY_PATH ; lib="lib64"  ;;  
 esac
 
-export PATH=$PREFIX/bin:$PATH
+export PATH=$PREFIX/lib:$PATH
 export $var=$PREFIX/$lib:${CSG_PREFIX}/$lib:${OPTIX_PREFIX}/lib64
 export BIN=$(which $name 2>/dev/null)
+
+[ -z "$BIN" ] && echo $BASH_SOURCE : failed to find executable $name 
 
 printf "$var\n${!var}" | tr ":" "\n" 
 
@@ -166,3 +177,5 @@ printf "$fmt" EYE $EYE
 printf "$fmt" LAYERS $LAYERS
 printf "$fmt" OUTDIR $OUTDIR
 
+
+return 0 

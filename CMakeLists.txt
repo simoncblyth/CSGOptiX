@@ -59,8 +59,10 @@ list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 set(SOURCES)
 set(CU_SOURCES)
 
+
+# OptiXTest.cc
+
 list(APPEND SOURCES
-    OptiXTest.cc
     Frame.cc 
     Params.cc 
 )
@@ -78,7 +80,7 @@ if(OptiX_VERSION_ GREATER_EQUAL 70000)
         SBT.cc 
     )
 else()
-   list(APPEND CU_SOURCES OptiX6Test.cu)
+   list(APPEND CU_SOURCES OptiX6Test.cu  geo_OptiX6Test.cu )
    list(APPEND SOURCES  
         Six.cc 
    )
@@ -90,7 +92,9 @@ CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )
 message(STATUS "_generated_OBJ_files ${_generated_OBJ_files}") 
 message(STATUS "_generated_PTX_files ${_generated_PTX_files}") 
 
-add_executable( ${name} ${_generated_OBJ_files} ${_generated_PTX_files} ${SOURCES} )
+#add_executable( ${name} ${_generated_OBJ_files} ${_generated_PTX_files} ${SOURCES} )
+
+add_library( ${name} SHARED ${SOURCES} ${HEADERS}  ${_generated_OBJ_files} ${_generated_PTX_files}   )
 
 target_link_libraries(${name} 
      PUBLIC 
@@ -98,6 +102,8 @@ target_link_libraries(${name}
          ImpOptiX
          CSG
 )
-install(TARGETS ${name}               DESTINATION bin)
+install(TARGETS ${name}               DESTINATION lib)
 install(FILES ${_generated_PTX_files} DESTINATION ptx)
+
+add_subdirectory(tests)
 

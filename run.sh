@@ -3,6 +3,8 @@
 spec=$1
 
 source ./env.sh 
+[ $? -ne 0 ] && echo $0 FAIL from ./env.sh && exit 1 
+
 
 echo RM OUTDIR $OUTDIR
 rm -rf $OUTDIR
@@ -19,7 +21,7 @@ mkdir -p $OUTDIR/grid/2
 mkdir -p $OUTDIR/foundry
 
 
-echo $0 
+echo $0 BIN $BIN spec $spec
 
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Linux" ]; then

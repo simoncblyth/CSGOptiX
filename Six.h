@@ -17,6 +17,7 @@ struct Six
 
     const Params*     params ; 
     const char*       ptx_path ; 
+    const char*       geo_ptx_path ; 
     unsigned          entry_point_index ; 
     unsigned          optix_device_ordinal ; 
     const CSGFoundry* foundry ; 
@@ -24,21 +25,20 @@ struct Six
     std::vector<optix::Geometry> solids ; 
     std::vector<optix::Group>    groups ; 
 
-    Six(const char* ptx_path, const Params* params_);  
-
+    Six(const char* ptx_path, const char* geo_ptx_path, const Params* params_);  
     void initContext();
-    template<typename T> void createContextBuffer( T* d_ptr, unsigned num_item, const char* name ); 
-
     void initPipeline();
-
     void setFoundry(const CSGFoundry* foundry);
+
     void create();
+    void createContextBuffers();
     void createGAS();
     void createIAS();
 
-    optix::Group            createIAS(unsigned ias_idx);
-    optix::GeometryInstance createGeometryInstance(unsigned solid_idx, unsigned identity);
-    optix::Geometry         createGeometry(unsigned solid_idx);
+    template<typename T> void createContextBuffer( T* d_ptr, unsigned num_item, const char* name ); 
+    optix::Group              createIAS(unsigned ias_idx);
+    optix::GeometryInstance   createGeometryInstance(unsigned solid_idx, unsigned identity);
+    optix::Geometry           createGeometry(unsigned solid_idx);
  
     void setTop(const char* spec);
     void launch();

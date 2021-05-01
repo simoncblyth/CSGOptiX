@@ -18,7 +18,7 @@ OptiXTest
 #include "Util.h"
 #include "CSGPrim.h"
 #include "CSGFoundry.h"
-#include "Geo.h"
+#include "DemoGeo.h"
 #include "View.h"
 
 #include "Frame.h"
@@ -40,6 +40,7 @@ int main(int argc, char** argv)
 {
 #if OPTIX_VERSION < 70000
     const char* ptxname = "OptiX6Test" ; 
+    const char* geo_ptxname = "geo_OptiX6Test" ; 
 #else
     const char* ptxname = "OptiX7Test" ; 
 #endif
@@ -57,10 +58,10 @@ int main(int argc, char** argv)
     unsigned depth = 1u ; 
 
     CSGFoundry foundry ; 
-    Geo geo(&foundry) ;  
-    geo.write(outdir);  
+    DemoGeo demogeo(&foundry) ;  
+    demogeo.write(outdir);  
 
-    const float4 gce = geo.getCenterExtent() ;  
+    const float4 gce = demogeo.getCenterExtent() ;  
     glm::vec4 ce(gce.x,gce.y,gce.z, gce.w*1.4f );   // defines the center-extent of the region to view
 
     unsigned cameratype = Util::GetEValue<unsigned>("CAMERATYPE", 0u ); 
@@ -73,7 +74,7 @@ int main(int argc, char** argv)
     view.save(outdir); 
 
     Params params ; 
-    params.setView(view.eye, view.U, view.V, view.W, geo.tmin, geo.tmax, cameratype ); 
+    params.setView(view.eye, view.U, view.V, view.W, demogeo.tmin, demogeo.tmax, cameratype ); 
     params.setSize(width, height, depth); 
 
     foundry.dump(); 
@@ -85,9 +86,13 @@ int main(int argc, char** argv)
     params.itra = foundry.d_itra ; 
 
 #if OPTIX_VERSION < 70000
-    Six six(ptx_path, &params); 
+
+    const char* geo_ptx_path = Util::PTXPath( prefix, cmake_target, geo_ptxname ) ; 
+    std::cout << " geo_ptx_path " << geo_ptx_path << std::endl ; 
+
+    Six six(ptx_path, geo_ptx_path, &params); 
     six.setFoundry(&foundry);
-    six.setTop(geo.top); 
+    six.setTop(demogeo.top); 
     six.launch(); 
     six.save(outdir); 
 #else
@@ -95,7 +100,7 @@ int main(int argc, char** argv)
     PIP pip(ptx_path); 
     SBT sbt(&pip);
     sbt.setFoundry(&foundry); 
-    sbt.setTop(geo.top);
+    sbt.setTop(demogeo.top);
 
     AS* top = sbt.getTop(); 
     params.handle = top->handle ; 

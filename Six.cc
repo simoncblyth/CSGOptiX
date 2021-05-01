@@ -16,12 +16,13 @@
 #include "Six.h"
 
     
-Six::Six(const char* ptx_path_, const Params* params_)
+Six::Six(const char* ptx_path_, const char* geo_ptx_path_, const Params* params_)
     :
     context(optix::Context::create()),
     material(context->createMaterial()),
     params(params_),
     ptx_path(strdup(ptx_path_)),
+    geo_ptx_path(strdup(geo_ptx_path_)),
     entry_point_index(0u),
     optix_device_ordinal(0u),
     foundry(nullptr)
@@ -34,8 +35,8 @@ void Six::initContext()
 {
     context->setRayTypeCount(1);
     context->setPrintEnabled(true);
-    context->setPrintBufferSize(4096);
-    context->setPrintLaunchIndex(0); 
+    context->setPrintBufferSize(40960);
+    context->setPrintLaunchIndex(-1,-1,-1); 
     context->setEntryPointCount(1);
 
     context[ "tmin"]->setFloat( params->tmin );  
@@ -87,12 +88,64 @@ void Six::setFoundry(const CSGFoundry* foundry_)  // HMM: maybe makes more sense
     
 void Six::create()
 {
+    createContextBuffers(); 
+    createGAS(); 
+    createIAS(); 
+}
+
+
+/**
+Six::createContextBuffers
+---------------------------
+
+NB the CSGPrim prim_buffer is not here as that is specific 
+to each geometry "solid"
+
+These CSGNode float4 planes and qat4 inverse transforms are 
+here because those are globally referenced.
+
+**/
+void Six::createContextBuffers()
+{
     createContextBuffer<CSGNode>(   foundry->d_node, foundry->getNumNode(), "node_buffer" ); 
     createContextBuffer<qat4>(      foundry->d_itra, foundry->getNumItra(), "itra_buffer" ); 
     createContextBuffer<float4>(    foundry->d_plan, foundry->getNumPlan(), "plan_buffer" ); 
+}
 
-    createGAS(); 
-    createIAS(); 
+
+/**
+Six::createGeometry
+----------------------
+
+**/
+
+optix::Geometry Six::createGeometry(unsigned solid_idx)
+{
+    const CSGSolid* so = foundry->solid.data() + solid_idx ; 
+    unsigned primOffset = so->primOffset ;  
+    unsigned numPrim = so->numPrim ; 
+    CSGPrim* d_pr = foundry->d_prim + primOffset ; 
+
+    std::cout 
+        << "Six::createSolidGeometry"
+        << " solid_idx " << std::setw(3) << solid_idx
+        << " numPrim " << std::setw(3) << numPrim 
+        << " primOffset " << std::setw(3) << primOffset
+        << " d_pr " << d_pr
+        << std::endl 
+        ;
+
+    optix::Geometry solid = context->createGeometry();
+    solid->setPrimitiveCount( numPrim );
+    solid->setBoundingBoxProgram( context->createProgramFromPTXFile( geo_ptx_path , "bounds" ) );
+    solid->setIntersectionProgram( context->createProgramFromPTXFile( geo_ptx_path , "intersect" ) ) ; 
+
+    optix::Buffer prim_buffer = context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_USER, numPrim );
+    prim_buffer->setElementSize( sizeof(CSGPrim) ); 
+    prim_buffer->setDevicePointer(optix_device_ordinal, d_pr ); 
+    solid["prim_buffer"]->set( prim_buffer );
+ 
+    return solid ; 
 }
 
 void Six::createGAS()
@@ -173,13 +226,7 @@ optix::Group Six::createIAS(unsigned ias_idx)
 
 optix::GeometryInstance Six::createGeometryInstance(unsigned gas_idx, unsigned ins_idx)
 {
-    std::cout 
-        << "Six::createGeometryInstance"
-        << " gas_idx " << gas_idx
-        << " ins_idx " << ins_idx
-        << std::endl 
-        ;   
-
+    //std::cout << "Six::createGeometryInstance" << " gas_idx " << gas_idx << " ins_idx " << ins_idx << std::endl ;   
     optix::Geometry solid = solids[gas_idx]; 
 
     optix::GeometryInstance pergi = context->createGeometryInstance() ;
@@ -189,34 +236,6 @@ optix::GeometryInstance Six::createGeometryInstance(unsigned gas_idx, unsigned i
     pergi["identity"]->setUint(ins_idx);
 
     return pergi ; 
-}
-
-optix::Geometry Six::createGeometry(unsigned solid_idx)
-{
-    const CSGSolid* so = foundry->solid.data() + solid_idx ; 
-    unsigned primOffset = so->primOffset ;  
-    unsigned numPrim = so->numPrim ; 
-    CSGPrim* d_pr = foundry->d_prim + primOffset ; 
-
-    std::cout 
-        << "Six::createSolidGeometry"
-        << " solid_idx " << solid_idx
-        << " primOffset " << primOffset
-        << " numPrim " << numPrim 
-        << std::endl 
-        ;
-
-    optix::Geometry solid = context->createGeometry();
-    solid->setPrimitiveCount( numPrim );
-    solid->setBoundingBoxProgram( context->createProgramFromPTXFile( ptx_path , "bounds" ) );
-    solid->setIntersectionProgram( context->createProgramFromPTXFile( ptx_path , "intersect" ) ) ; 
-
-    optix::Buffer prim_buffer = context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_USER, numPrim );
-    prim_buffer->setElementSize( sizeof(CSGPrim) ); 
-    prim_buffer->setDevicePointer(optix_device_ordinal, d_pr ); 
-    solid["prim_buffer"]->set( prim_buffer );
- 
-    return solid ; 
 }
 
 

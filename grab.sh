@@ -5,12 +5,18 @@ source ./env.sh
 [ -z "$OUTDIR" ] && echo OUTDIR not defined && return 1 
 
 jpg=$OUTDIR/pixels.jpg
+_jpg=$OUTDIR/_pixels.jpg
 npy=$OUTDIR/posi.npy
 mkdir -p $OUTDIR 
 
 
+
 jpg_()
 {
+   if [ -f "${jpg}" ]; then
+       cp ${jpg} ${_jpg} 
+   fi 
+
    local cmd="scp P:$jpg $jpg"
    echo $cmd
    eval $cmd
