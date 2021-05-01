@@ -44,7 +44,7 @@ case $(uname) in
 esac
 
 export PATH=$PREFIX/lib:$PATH
-export $var=$PREFIX/$lib:${CSG_PREFIX}/$lib:${OPTIX_PREFIX}/lib64
+export $var=$PREFIX/lib:${CSG_PREFIX}/$lib:${OPTIX_PREFIX}/lib64
 export BIN=$(which $name 2>/dev/null)
 
 [ -z "$BIN" ] && echo $BASH_SOURCE : failed to find executable $name 
