@@ -5,7 +5,6 @@
 #include "CUDA_CHECK.h"
 
 #include "NP.hh"
-#include "Util.h"
 #include "Frame.h"
 
 #define SIMG_IMPLEMENTATION 1 
@@ -88,13 +87,11 @@ void Frame::download_isect()
 }
 
 
-void Frame::write(const char* outdir) const 
+void Frame::write(const char* outdir, int jpg_quality) const 
 {
     std::cout << "Frame::write " << outdir << std::endl ; 
-    bool yflip = false ; 
-    int quality = Util::GetEValue<int>("QUALITY", 50); 
     writePNG(outdir, "pixels.png");  
-    writeJPG(outdir, "pixels.jpg", quality);  
+    writeJPG(outdir, "pixels.jpg", jpg_quality);  
     writeNP(  outdir, "posi.npy" );
 }
 

@@ -15,10 +15,12 @@ OptiXTest
 #include <glm/glm.hpp>
 
 #include "sutil_vec_math.h"
-#include "Util.h"
+
+#include "DemoUtil.h"
+#include "DemoGeo.h"
+
 #include "CSGPrim.h"
 #include "CSGFoundry.h"
-#include "DemoGeo.h"
 #include "View.h"
 
 #include "Frame.h"
@@ -50,7 +52,7 @@ int main(int argc, char** argv)
     const char* outdir = getenv("OUTDIR");  assert( outdir && "expecting OUTDIR envvar " );
 
     const char* cmake_target = "CSGOptiX" ; 
-    const char* ptx_path = Util::PTXPath( prefix, cmake_target, ptxname ) ; 
+    const char* ptx_path = DemoUtil::PTXPath( prefix, cmake_target, ptxname ) ; 
     std::cout << " ptx_path " << ptx_path << std::endl ; 
 
     unsigned width = 1280u ; 
@@ -64,9 +66,9 @@ int main(int argc, char** argv)
     const float4 gce = demogeo.getCenterExtent() ;  
     glm::vec4 ce(gce.x,gce.y,gce.z, gce.w*1.4f );   // defines the center-extent of the region to view
 
-    unsigned cameratype = Util::GetEValue<unsigned>("CAMERATYPE", 0u ); 
+    unsigned cameratype = DemoUtil::GetEValue<unsigned>("CAMERATYPE", 0u ); 
     glm::vec4 eye_model ; 
-    Util::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0,1.0"); 
+    DemoUtil::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0,1.0"); 
 
     View view = {} ; 
     view.update(eye_model, ce, width, height) ; 
@@ -87,7 +89,7 @@ int main(int argc, char** argv)
 
 #if OPTIX_VERSION < 70000
 
-    const char* geo_ptx_path = Util::PTXPath( prefix, cmake_target, geo_ptxname ) ; 
+    const char* geo_ptx_path = DemoUtil::PTXPath( prefix, cmake_target, geo_ptxname ) ; 
     std::cout << " geo_ptx_path " << geo_ptx_path << std::endl ; 
 
     Six six(ptx_path, geo_ptx_path, &params); 
@@ -116,7 +118,9 @@ int main(int argc, char** argv)
     CUDA_SYNC_CHECK();
 
     frame.download(); 
-    frame.write(outdir);  
+
+    int jpg_quality = DemoUtil::GetEValue<int>("QUALITY", 50); 
+    frame.write(outdir, jpg_quality);  
 #endif
     return 0 ; 
 }

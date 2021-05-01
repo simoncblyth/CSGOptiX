@@ -9,9 +9,9 @@
 #include "CSGPrim.h"
 #include "CSGFoundry.h"
 
-#include "Util.h"
+#include "DemoUtil.h"
 #include "DemoGeo.h"
-#include "Grid.h"
+#include "DemoGrid.h"
 
 DemoGeo::DemoGeo(CSGFoundry* foundry_)
     :
@@ -27,8 +27,8 @@ void DemoGeo::init()
     float tminf(0.1) ; 
     float tmaxf(10000.f) ; 
 
-    std::string geometry = Util::GetEValue<std::string>("GEOMETRY", "sphere_containing_grid_of_spheres" ); 
-    unsigned layers = Util::GetEValue<unsigned>("LAYERS", 1) ; 
+    std::string geometry = DemoUtil::GetEValue<std::string>("GEOMETRY", "sphere_containing_grid_of_spheres" ); 
+    unsigned layers = DemoUtil::GetEValue<unsigned>("LAYERS", 1) ; 
 
     std::cout
         << "DemoGeo::init"
@@ -45,7 +45,7 @@ void DemoGeo::init()
     {
         init_parade(tminf, tmaxf);
     }
-    else if(Util::StartsWith(geometry.c_str(), "clustered_"))
+    else if(DemoUtil::StartsWith(geometry.c_str(), "clustered_"))
     {
         init_clustered( geometry.c_str() + strlen("clustered_"), tminf, tmaxf ); 
     }
@@ -75,14 +75,14 @@ void DemoGeo::init()
         << std::endl 
         ; 
 
-    float e_tminf = Util::GetEValue<float>("TMIN", -1.0) ; 
+    float e_tminf = DemoUtil::GetEValue<float>("TMIN", -1.0) ; 
     if(e_tminf > 0.f )
     {
         tmin = ce.w*e_tminf ; 
         std::cout << "DemoGeo::init e_tminf TMIN " << e_tminf << " override tmin " << tmin << std::endl ; 
     }
     
-    float e_tmaxf = Util::GetEValue<float>("TMAX", -1.0) ; 
+    float e_tmaxf = DemoUtil::GetEValue<float>("TMAX", -1.0) ; 
     if(e_tmaxf > 0.f )
     {
         tmax = ce.w*e_tmaxf ; 
@@ -104,10 +104,11 @@ Container sphere "extent" needs to be sqrt(3) larger than the grid extent.
 void DemoGeo::init_sphere_containing_grid_of_spheres(float& tminf, float& tmaxf, unsigned layers )
 {
     std::cout << "DemoGeo::init_sphere_containing_grid_of_spheres : layers " << layers << std::endl ; 
+    foundry->makeDemoSolids();  
+    unsigned num_solid = foundry->getNumSolid() ; 
 
     unsigned ias_idx = 0 ; 
-    unsigned num_solid = 3 ; 
-    const float4 ce = Grid::AddInstances(foundry, ias_idx, num_solid) ; 
+    const float4 ce = DemoGrid::AddInstances(foundry, ias_idx, num_solid) ; 
 
     float big_radius = float(ce.w)*sqrtf(3.f) ;
     std::cout << " big_radius " << big_radius << std::endl ; 
@@ -131,7 +132,7 @@ void DemoGeo::init_parade(float& tminf, float& tmaxf )
     unsigned num_solid = foundry->getNumSolid() ; 
 
     unsigned ias_idx = 0 ; 
-    const float4 ce = Grid::AddInstances( foundry, ias_idx, num_solid ); 
+    const float4 ce = DemoGrid::AddInstances( foundry, ias_idx, num_solid ); 
 
     top = strdup("i0") ; 
     setCenterExtent(ce); 
@@ -153,8 +154,8 @@ to the bbox at Prim+Node(?) level.
 **/
 void DemoGeo::init_clustered(const char* name, float& tminf, float& tmaxf )
 {
-    float unit = Util::GetEValue<float>("CLUSTERUNIT", 200.f ); 
-    std::string clusterspec = Util::GetEValue<std::string>("CLUSTERSPEC","-1:2:1,-1:2:1,-1:2:1") ; 
+    float unit = DemoUtil::GetEValue<float>("CLUSTERUNIT", 200.f ); 
+    std::string clusterspec = DemoUtil::GetEValue<std::string>("CLUSTERSPEC","-1:2:1,-1:2:1,-1:2:1") ; 
 
     std::cout 
         << "DemoGeo::init_clustered " << name 
@@ -165,7 +166,7 @@ void DemoGeo::init_clustered(const char* name, float& tminf, float& tmaxf )
 
     bool inbox = false ; 
     std::array<int,9> cl ; 
-    Util::ParseGridSpec(cl, clusterspec.c_str()); // string parsed into array of 9 ints 
+    DemoUtil::ParseGridSpec(cl, clusterspec.c_str()); // string parsed into array of 9 ints 
     CSGSolid* so = foundry->makeClustered(name, cl[0],cl[1],cl[2],cl[3],cl[4],cl[5],cl[6],cl[7],cl[8], unit, inbox ); 
     std::cout << "DemoGeo::init_layered" << name << " so.center_extent " << so->center_extent << std::endl ; 
 
@@ -229,7 +230,7 @@ void DemoGeo::write(const char* dir) const
     *(u+1) = 0 ; //getNumGrid(); 
     *(u+2) = 0 ; //InstanceId::ins_bits ; 
     *(u+3) = 0 ; //InstanceId::gas_bits ; 
-    *(u+4) = Util::Encode4(top) ; 
+    *(u+4) = DemoUtil::Encode4(top) ; 
     uspec.save(dir, "uspec.npy"); 
 
     NP fspec("<f4", 4); 

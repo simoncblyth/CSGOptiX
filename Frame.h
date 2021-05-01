@@ -24,7 +24,7 @@ struct Frame
     void download_pixels();
     void download_isect();
 
-    void write(const char* outdir) const ;
+    void write(const char* outdir, int jpg_quality) const ;
     void writePNG(const char* dir, const char* name) const ;
     void writeJPG(const char* dir, const char* name, int quality) const ;
     void writeNP( const char* dir, const char* name) const ;

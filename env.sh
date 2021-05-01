@@ -52,7 +52,6 @@ export BIN=$(which $name 2>/dev/null)
 printf "$var\n${!var}" | tr ":" "\n" 
 
 
-
 #tmin=2.0
 #tmin=1.5
 #tmin=1.0
@@ -82,12 +81,11 @@ geometry=parade
 #geometry=rcyl  # 15
 
 
-
 #clusterspec=-3:4:1,-3:4:1,-3:4:1
 clusterspec=-1:2:1,-1:2:1,-1:2:1
 clusterunit=500
 
-gridmodulo=0,1,2
+gridmodulo=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14
 #gridmodulo=12,13,14
 #gridmodulo=9,10
 #gridmodulo=5,6
@@ -106,7 +104,8 @@ gridspec=-10:11:2,-10:11:2,0:6:3
 gridscale=200.0
 
 
-eye=-0.7,-0.7,0.15,1.0
+#eye=-0.7,-0.7,0.15,1.0
+eye=-0.7,-0.7,-0.1,1.0
 #eye=-0.5,0.0,0.15,1.0
 #eye=-0.5,-0.5,-0.5,1.0
 #eye=-1.0,-1.0,0.0,1.0
@@ -119,10 +118,10 @@ cameratype=0
 #cameratype=1
 
 # number of concentric layers in compound shapes
-#layers=1     
+layers=1     
 #layers=2
 #layers=3
-layers=20
+#layers=20
 
 
 snap=/tmp/${geometry}_zsphere_grid.sh 

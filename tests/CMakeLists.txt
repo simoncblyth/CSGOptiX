@@ -6,10 +6,15 @@ set(TEST_SOURCES
     CSGOptiXTest.cc
 )
 
+set(DEMO_SOURCES 
+    DemoGeo.cc
+    DemoGrid.cc
+    DemoUtil.cc
+)
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
-    add_executable(${TGT} ${SRC} DemoGeo.cc)
+    add_executable(${TGT} ${SRC} ${DEMO_SOURCES})
 
     add_test(${name}.${TGT} ${TGT})
 
