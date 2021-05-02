@@ -4,8 +4,10 @@ source ./env.sh
 
 [ -z "$OUTDIR" ] && echo OUTDIR not defined && return 1 
 
+OUTFOLD=$(dirname $OUTDIR)
+
+
 jpg=$OUTDIR/pixels.jpg
-_jpg=$OUTDIR/_pixels.jpg
 npy=$OUTDIR/posi.npy
 mkdir -p $OUTDIR 
 
@@ -13,14 +15,11 @@ mkdir -p $OUTDIR
 
 jpg_()
 {
-   if [ -f "${jpg}" ]; then
-       cp ${jpg} ${_jpg} 
-   fi 
-
    local cmd="scp P:$jpg $jpg"
    echo $cmd
    eval $cmd
    open $jpg 
+
 }
 
 npy_()
@@ -33,7 +32,7 @@ npy_()
 
 all_()
 {
-   local cmd="rsync -rtz  --progress P:$OUTDIR/ $OUTDIR/"
+   local cmd="rsync -rtz  --progress P:$OUTFOLD/ $OUTFOLD/"
    echo $cmd
    eval $cmd
 

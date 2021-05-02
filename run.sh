@@ -21,16 +21,16 @@ mkdir -p $OUTDIR/grid/2
 mkdir -p $OUTDIR/foundry
 
 
-echo $0 BIN $BIN spec $spec
+echo $0 BINARY $BINARY spec $spec
 
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Linux" ]; then
-       gdb -ex r --args $BIN $spec
+       gdb -ex r --args $BINARY $spec
     elif [ "$(uname)" == "Darwin" ]; then
-       lldb_ $BIN $spec
+       lldb_ $BINARY $spec
     fi
 else
-    $BIN $spec
+    $BINARY $spec
 fi 
 
 [ $? -ne 0 ] && echo $0 : run  FAIL && exit 3
@@ -38,7 +38,7 @@ fi
 jpg=$OUTDIR/pixels.jpg
 npy=$OUTDIR/posi.npy
 
-echo BIN    : $BIN 
+echo BINARY : $BINARY 
 echo OUTDIR : $OUTDIR
 echo spec : $spec
 echo jpg  : $jpg

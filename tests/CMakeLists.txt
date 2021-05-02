@@ -9,7 +9,6 @@ set(TEST_SOURCES
 set(DEMO_SOURCES 
     DemoGeo.cc
     DemoGrid.cc
-    DemoUtil.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

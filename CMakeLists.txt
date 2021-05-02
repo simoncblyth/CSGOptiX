@@ -4,6 +4,7 @@ project(${name})
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
+include(GNUInstallDirs)
 
 find_package(CUDA REQUIRED)   
 find_package(CSG REQUIRED)
@@ -65,6 +66,12 @@ set(CU_SOURCES)
 list(APPEND SOURCES
     Frame.cc 
     Params.cc 
+    CSGOptiX.cc
+    Util.cc
+)
+
+list(APPEND HEADERS
+    CSGOptiX.h
 )
 
 if(OptiX_VERSION_ GREATER_EQUAL 70000)
@@ -104,6 +111,24 @@ target_link_libraries(${name}
 )
 install(TARGETS ${name}               DESTINATION lib)
 install(FILES ${_generated_PTX_files} DESTINATION ptx)
+install(FILES ${HEADERS}              DESTINATION include)
 
 add_subdirectory(tests)
+
+
+
+
+set(CONFIG_DEST ${CMAKE_INSTALL_LIBDIR}/cmake/${name})
+set(CSGOptiX_INCLUDE_DIRS "include")
+install(TARGETS ${name}  DESTINATION ${CMAKE_INSTALL_LIBDIR} EXPORT ${name}Targets )
+install(EXPORT ${name}Targets FILE ${name}Targets.cmake DESTINATION ${CONFIG_DEST}) 
+include(CMakePackageConfigHelpers)
+configure_package_config_file ( 
+       "${name}Config.cmake.in" "${CMAKE_BINARY_DIR}/${name}Config.cmake"
+       INSTALL_DESTINATION "${CONFIG_DEST}"
+       PATH_VARS CSGOptiX_INCLUDE_DIRS 
+)
+install(FILES ${CMAKE_BINARY_DIR}/${name}Config.cmake DESTINATION ${CONFIG_DEST})
+
+
 

@@ -4,7 +4,7 @@
 
 #include "sutil_vec_math.h"
 
-#include "DemoUtil.h"
+#include "Util.h"
 #include "DemoGrid.h"
 #include "AABB.h"
 
@@ -22,17 +22,17 @@ DemoGrid::DemoGrid( CSGFoundry* foundry_, unsigned ias_idx_, unsigned num_solid_
     foundry(foundry_),
     ias_idx(ias_idx_),
     num_solid(num_solid_),
-    gridscale(DemoUtil::GetEValue<float>("GRIDSCALE", 1.f))
+    gridscale(Util::GetEValue<float>("GRIDSCALE", 1.f))
 {
-    std::string gridspec = DemoUtil::GetEValue<std::string>("GRIDSPEC","-10:11,2,-10:11:2,-10:11,2") ; 
-    DemoUtil::ParseGridSpec(grid, gridspec.c_str());      // string parsed into array of 9 ints 
-    DemoUtil::GetEVector(solid_modulo, "GRIDMODULO", "0,1" ); 
-    DemoUtil::GetEVector(solid_single, "GRIDSINGLE", "2" ); 
+    std::string gridspec = Util::GetEValue<std::string>("GRIDSPEC","-10:11,2,-10:11:2,-10:11,2") ; 
+    Util::ParseGridSpec(grid, gridspec.c_str());      // string parsed into array of 9 ints 
+    Util::GetEVector(solid_modulo, "GRIDMODULO", "0,1" ); 
+    Util::GetEVector(solid_single, "GRIDSINGLE", "2" ); 
 
     std::cout << "GRIDSPEC " << gridspec << std::endl ; 
     std::cout << "GRIDSCALE " << gridscale << std::endl ; 
-    std::cout << "GRIDMODULO " << DemoUtil::Present(solid_modulo) << std::endl ; 
-    std::cout << "GRIDSINGLE " << DemoUtil::Present(solid_single) << std::endl ; 
+    std::cout << "GRIDMODULO " << Util::Present(solid_modulo) << std::endl ; 
+    std::cout << "GRIDSINGLE " << Util::Present(solid_single) << std::endl ; 
 
     init();   // add qat4 instances to foundry 
 }
@@ -42,7 +42,7 @@ const float4 DemoGrid::center_extent() const
 {
     int3 imn = make_int3( 0, 0, 0);  
     int3 imx = make_int3( 0, 0, 0);  
-    DemoUtil::GridMinMax(grid, imn, imx); 
+    Util::GridMinMax(grid, imn, imx); 
 
     float3 mn = gridscale*make_float3( float(imn.x), float(imn.y), float(imn.z) ) ;
     float3 mx = gridscale*make_float3( float(imx.x), float(imx.y), float(imx.z) ) ;

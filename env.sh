@@ -22,12 +22,12 @@ fi
 
 
 sdir=$(pwd)
-name=CSGOptiXTest
+pkgname=CSGOptiX
+binary=${pkgname}Test
 
-export NAME=$name
-export PREFIX=/tmp/$USER/opticks/$name
+export PKGNAME=$pkgname
+export PREFIX=/tmp/$USER/opticks/$pkgname
 export GLM_PREFIX=$PREFIX/externals/glm/glm-0.9.9.8/glm   # MUST match whats done in build.sh 
-
 
 if [ ! -d "$PREFIX" ]; then 
     mkdir -p $PREFIX
@@ -45,9 +45,9 @@ esac
 
 export PATH=$PREFIX/lib:$PATH
 export $var=$PREFIX/lib:${CSG_PREFIX}/$lib:${OPTIX_PREFIX}/lib64
-export BIN=$(which $name 2>/dev/null)
+export BINARY=$(which $binary 2>/dev/null)
 
-[ -z "$BIN" ] && echo $BASH_SOURCE : failed to find executable $name 
+[ -z "$BINARY" ] && echo $BASH_SOURCE : failed to find executable $name 
 
 printf "$var\n${!var}" | tr ":" "\n" 
 
@@ -155,13 +155,14 @@ export GRIDSCALE=${GRIDSCALE:-$gridscale}
 
 export EYE=${EYE:-$eye} 
 export LAYERS=${LAYERS:-$layers}
-export OUTDIR=$PREFIX/$GEOMETRY/TMIN_${TMIN}
+export OUTDIR=$PREFIX/$GEOMETRY/$OPTIX_VERSION
 
 fmt="%-20s : %s \n"
 printf "$fmt" name $name
+printf "$fmt" PKGNAME $PKGNAME
 printf "$fmt" PREFIX $PREFIX
 printf "$fmt" OPTIX_VERSION $OPTIX_VERSION
-printf "$fmt" BIN $BIN
+printf "$fmt" BINARY $BINARY
 
 printf "$fmt" GEOMETRY $GEOMETRY
 printf "$fmt" TMIN $TMIN

@@ -4,7 +4,7 @@
 #include <array>
 #include <glm/glm.hpp>
 
-struct DemoUtil
+struct Util
 {
     static const char* PTXPath( const char* install_prefix, const char* cmake_target, const char* cu_stem, const char* cu_ext=".cu" );
 
