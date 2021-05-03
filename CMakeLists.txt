@@ -70,11 +70,12 @@ list(APPEND SOURCES
     Frame.cc 
     Params.cc 
     CSGOptiX.cc
-    Util.cc
+    CXUtil.cc
 )
 
 list(APPEND HEADERS
     CSGOptiX.h
+    CXUtil.h
 )
 
 if(OptiX_VERSION_ GREATER_EQUAL 70000)

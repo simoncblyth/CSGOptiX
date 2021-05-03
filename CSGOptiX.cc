@@ -15,7 +15,7 @@
 #include "CSGPrim.h"
 #include "CSGFoundry.h"
 
-#include "Util.h"
+#include "CXUtil.h"
 #include "View.h"
 #include "Frame.h"
 #include "Params.h"
@@ -54,14 +54,14 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_ )
     prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),
     outdir(ENV("OUTDIR", "/tmp")),
     cmaketarget("CSGOptiX"),  
-    ptxpath(Util::PTXPath( prefix, cmaketarget, PTXNAME )),
+    ptxpath(CXUtil::PTXPath( prefix, cmaketarget, PTXNAME )),
 #if OPTIX_VERSION < 70000 
-    geoptxpath(Util::PTXPath(prefix, cmaketarget, GEO_PTXNAME )),
+    geoptxpath(CXUtil::PTXPath(prefix, cmaketarget, GEO_PTXNAME )),
 #else
     geoptxpath(nullptr),
 #endif
-    cameratype(Util::GetEValue<unsigned>("CAMERATYPE", 0u )),
-    jpg_quality(Util::GetEValue<int>("QUALITY", 50)),
+    cameratype(CXUtil::GetEValue<unsigned>("CAMERATYPE", 0u )),
+    jpg_quality(CXUtil::GetEValue<int>("QUALITY", 50)),
     eye_model(-1.f, -1.f, 1.f, 1.f ),
     view(new View),
     params(new Params)
@@ -74,7 +74,7 @@ void CSGOptiX::init()
     assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     assert( outdir && "expecting OUTDIR envvar " );
 
-    Util::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0,1.0"); 
+    CXUtil::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0,1.0"); 
     std::cout << " ptxpath " << ptxpath << std::endl ; 
     std::cout << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) << std::endl ; 
 }
