@@ -110,7 +110,7 @@ void CSGOptiX::render(const char* tspec)
     sbt.setTop(tspec);
 
     AS* top = sbt.getTop(); 
-    params.handle = top->handle ; 
+    params->handle = top->handle ; 
 
     Frame frame(params->width, params->height, params->depth); 
     params->pixels = frame.getDevicePixels(); 

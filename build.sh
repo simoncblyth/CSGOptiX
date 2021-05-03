@@ -1,5 +1,17 @@
 #!/bin/bash -l 
 
+ver=${1:-6}
+[ "$(uname)" == "Darwin" ] && ver=5
+
+case $ver in
+5) export OPTICKS_OPTIX_PREFIX=${OPTICKS_OPTIX5_PREFIX} ;;
+6) export OPTICKS_OPTIX_PREFIX=${OPTICKS_OPTIX6_PREFIX} ;;
+7) export OPTICKS_OPTIX_PREFIX=${OPTICKS_OPTIX7_PREFIX} ;;
+*) export OPTICKS_OPTIX_PREFIX=${OPTICKS_OPTIX6_PREFIX} ;;
+esac
+
+echo ver $ver OPTICKS_OPTIX_PREFIX ${OPTICKS_OPTIX_PREFIX}
+
 msg="=== $BASH_SOURCE :"
 sdir=$(pwd)
 name=$(basename $sdir)
@@ -18,7 +30,7 @@ chkvar()
     return 0  
 } 
 
-chkvar OPTICKS_PREFIX OPTICKS_HOME
+chkvar OPTICKS_PREFIX OPTICKS_HOME OPTICKS_OPTIX_PREFIX
 [ $? -ne 0 ] && echo $msg checkvar FAIL && return 1
 
 buildenv=$PREFIX/build/buildenv.sh

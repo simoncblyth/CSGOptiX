@@ -78,7 +78,7 @@ list(APPEND HEADERS
     CXUtil.h
 )
 
-if(OptiX_VERSION_ GREATER_EQUAL 70000)
+if(OpticksOptiX_VERSION GREATER_EQUAL 70000)
    list(APPEND CU_SOURCES OptiX7Test.cu)
    list(APPEND SOURCES  
         Ctx.cc 
@@ -96,6 +96,9 @@ else()
         Six.cc 
    )
 endif()
+
+message(STATUS "CU_SOURCES : ${CU_SOURCES} ")
+
 
 CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${CU_SOURCES} )
 CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )

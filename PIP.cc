@@ -12,7 +12,6 @@
 #include "OPTIX_CHECK.h"
 
 #include "Ctx.h"
-#include "Geo.h"
 #include "Binding.h"
 #include "PIP.h"
 

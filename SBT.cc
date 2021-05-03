@@ -113,8 +113,9 @@ void SBT::updateMiss()
 {
     //float3 purple = make_float3(0.3f, 0.1f, 0.5f); 
     //float3 white = make_float3( 1.0f, 1.0f, 1.0f); 
-    float3 lightgrey = make_float3( 0.9f, 0.9f, 0.9f); 
-    const float3& bkg = lightgrey  ; 
+    //float3 lightgrey = make_float3( 0.9f, 0.9f, 0.9f); 
+    float3 midgrey = make_float3( 0.6f, 0.6f, 0.6f); 
+    const float3& bkg = midgrey  ; 
    
     miss->data.r = bkg.x ;
     miss->data.g = bkg.y ;

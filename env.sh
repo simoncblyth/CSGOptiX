@@ -8,6 +8,7 @@ bdir=/tmp/$USER/opticks/$name/build
 buildenv=$bdir/buildenv.sh
 [ -f $buildenv ] && source $buildenv 
 
+export CUDA_VISIBLE_DEVICES=0
 
 
 
