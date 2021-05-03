@@ -42,11 +42,17 @@ const char* CSGOptiX::GEO_PTXNAME = nullptr ;
 #endif
 
 
+const char* CSGOptiX::ENV(const char* key, const char* fallback)
+{
+    const char* value = getenv(key) ; 
+    return value ? value : fallback ; 
+}
+
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_ ) 
     :
     foundry(foundry_),
-    prefix(getenv("PREFIX")),
-    outdir(getenv("OUTDIR")),
+    prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),
+    outdir(ENV("OUTDIR", "/tmp")),
     cmaketarget("CSGOptiX"),  
     ptxpath(Util::PTXPath( prefix, cmaketarget, PTXNAME )),
 #if OPTIX_VERSION < 70000 

@@ -27,7 +27,7 @@ void DemoGeo::init()
     float tminf(0.1) ; 
     float tmaxf(10000.f) ; 
 
-    std::string geometry = Util::GetEValue<std::string>("GEOMETRY", "sphere_containing_grid_of_spheres" ); 
+    std::string geometry = Util::GetEValue<std::string>("GEOMETRY", "parade" ); 
     unsigned layers = Util::GetEValue<unsigned>("LAYERS", 1) ; 
 
     std::cout

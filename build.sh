@@ -1,21 +1,30 @@
 #!/bin/bash -l 
 
+msg="=== $BASH_SOURCE :"
 sdir=$(pwd)
+name=$(basename $sdir)
 
-source ./env.sh 
+chkvar()
+{
+    local msg="=== $FUNCNAME :"
+    local var ; 
+    for var in $* ; do 
+        if [ -z "${!var}" -o ! -d "${!var}" ]; then 
+            echo $msg missing required envvar $var ${!var} OR non-existing directory
+            return 1
+        fi
+        printf "%20s : %s \n" $var ${!var}
+    done
+    return 0  
+} 
 
-if [ -z "$PREFIX" -o ! -d "$PREFIX" ]; then 
-   echo $0 PREFIX envvar not defined or directory $PREFIX does not exist 
-   exit 1 
-fi
-if [ -z "$NAME" ]; then
-   echo $0 NAME envvar not defined
-   exit 2
-fi
+chkvar OPTICKS_PREFIX OPTICKS_HOME
+[ $? -ne 0 ] && echo $msg checkvar FAIL && return 1
 
+buildenv=$PREFIX/build/buildenv.sh
+[ -f $buildenv ] && source $buildenv 
 
-bdir=$PREFIX/build 
-echo bdir $bdir NAME $NAME PREFIX $PREFIX
+bdir=/tmp/$USER/opticks/$name/build
 
 rm -rf $bdir && mkdir -p $bdir 
 [ ! -d $bdir ] && exit 1
@@ -25,19 +34,16 @@ cmake $sdir \
      -DCMAKE_BUILD_TYPE=Debug \
      -DOPTICKS_PREFIX=${OPTICKS_PREFIX} \
      -DCMAKE_MODULE_PATH=${OPTICKS_HOME}/cmake/Modules \
-     -DCMAKE_INSTALL_PREFIX=$PREFIX 
+     -DCMAKE_INSTALL_PREFIX=${OPTICKS_PREFIX}
 
-#    -DOptiX_INSTALL_DIR=${OPTIX_PREFIX} \
-#     -DCMAKE_MODULE_PATH=${OPTIX_PREFIX}/SDK/CMake \
+[ $? -ne 0 ] && echo $msg conf FAIL && exit 1
 
-
-rm -f $PREFIX/ptx/*.ptx
-rm -f $PREFIX/bin/$NAME
 
 make
-[ $? -ne 0 ] && echo $0 : make FAIL && exit 1
+[ $? -ne 0 ] && echo $msg make FAIL && exit 2
+
 make install   
-[ $? -ne 0 ] && echo $0 : install FAIL && exit 2
+[ $? -ne 0 ] && echo $msg install FAIL && exit 3
 
 
 exit 0

@@ -10,6 +10,7 @@ struct CSGOptiX
 {
     static const char* PTXNAME ; 
     static const char* GEO_PTXNAME ; 
+    static const char* ENV(const char* key, const char* fallback);
 
     unsigned width = 1280u ; 
     unsigned height = 720u ; 

@@ -2,57 +2,13 @@
 
 msg="=== $BASH_SOURCE :"
 
-export CSG_PREFIX=${CSG_PREFIX:-/usr/local/csg}
-export CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
-
-checkprefix()
-{
-    local msg="=== $FUNCNAME :"
-    local var ; 
-    for var in $* ; do 
-        if [ -z "${!var}" -o ! -d "${!var}" ]; then 
-            echo $msg missing required envvar $var ${!var} OR non-existing directory
-            return 1
-        fi
-        printf "%20s : %s \n" $var ${!var}
-    done
-    return 0  
-} 
-
-checkprefix OPTIX_PREFIX CSG_PREFIX OPTICKS_PREFIX
-[ $? -ne 0 ] && echo $msg checkdirvars FAIL && return 1
-
-
-
 sdir=$(pwd)
-pkgname=CSGOptiX
-binary=${pkgname}Test
+name=$(basename $sdir)
+bdir=/tmp/$USER/opticks/$name/build
+buildenv=$bdir/buildenv.sh
+[ -f $buildenv ] && source $buildenv 
 
-export PKGNAME=$pkgname
-export PREFIX=/tmp/$USER/opticks/$pkgname
-export GLM_PREFIX=$PREFIX/externals/glm/glm-0.9.9.8/glm   # MUST match whats done in build.sh 
 
-if [ ! -d "$PREFIX" ]; then 
-    mkdir -p $PREFIX
-fi
-
-buildenv=$PREFIX/build/buildenv.sh
-if [ -f $buildenv ]; then 
-    source $buildenv 
-fi
-
-case $(uname) in
-  Darwin) var=DYLD_LIBRARY_PATH ; lib="lib" ;;
-  Linux)  var=LD_LIBRARY_PATH ; lib="lib64"  ;;  
-esac
-
-export PATH=$PREFIX/lib:$PATH
-export $var=$PREFIX/lib:${CSG_PREFIX}/$lib:${OPTIX_PREFIX}/lib64
-export BINARY=$(which $binary 2>/dev/null)
-
-[ -z "$BINARY" ] && echo $BASH_SOURCE : failed to find executable $name 
-
-printf "$var\n${!var}" | tr ":" "\n" 
 
 
 #tmin=2.0
@@ -143,6 +99,9 @@ layers=$layers
 EOB
 
 
+export BINARY=CSGOptiXTest 
+export OUTBASE=/tmp/$USER/opticks/$BINARY
+
 # make sensitive to calling environment
 export GEOMETRY=${GEOMETRY:-$geometry}
 export TMIN=${TMIN:-$tmin}
@@ -158,12 +117,10 @@ export GRIDSCALE=${GRIDSCALE:-$gridscale}
 
 export EYE=${EYE:-$eye} 
 export LAYERS=${LAYERS:-$layers}
-export OUTDIR=$PREFIX/$GEOMETRY/$OPTIX_VERSION
+export OUTDIR=$OUTBASE/$GEOMETRY/$OPTIX_VERSION
 
 fmt="%-20s : %s \n"
 printf "$fmt" name $name
-printf "$fmt" PKGNAME $PKGNAME
-printf "$fmt" PREFIX $PREFIX
 printf "$fmt" OPTIX_VERSION $OPTIX_VERSION
 printf "$fmt" BINARY $BINARY
 

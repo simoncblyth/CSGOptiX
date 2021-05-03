@@ -1,27 +1,17 @@
 #!/bin/bash -l 
 
+msg="=== $BASH_SOURCE :"
 spec=$1
 
 source ./env.sh 
 [ $? -ne 0 ] && echo $0 FAIL from ./env.sh && exit 1 
 
-
 echo RM OUTDIR $OUTDIR
 rm -rf $OUTDIR
 mkdir -p $OUTDIR
-
-mkdir -p $OUTDIR/shape/0
-mkdir -p $OUTDIR/shape/1
-mkdir -p $OUTDIR/shape/2
-
-mkdir -p $OUTDIR/grid/0
-mkdir -p $OUTDIR/grid/1
-mkdir -p $OUTDIR/grid/2
-
 mkdir -p $OUTDIR/foundry
 
-
-echo $0 BINARY $BINARY spec $spec
+echo $msg BINARY $BINARY spec $spec
 
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Linux" ]; then
