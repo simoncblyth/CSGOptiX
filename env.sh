@@ -1,24 +1,27 @@
 #!/bin/bash 
 
+msg="=== $BASH_SOURCE :"
+
 export CSG_PREFIX=${CSG_PREFIX:-/usr/local/csg}
 export CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
 
-if [ -z "$OPTIX_PREFIX" ]; then 
-    echo $0 : missing required envvar OPTIX_PREFIX 
-    exit 1 
-fi 
-if [ ! -d "$OPTIX_PREFIX"  ]; then 
-    echo $0 : OPTIX_PREFIX $OPTIX_PREFIX directory does not exist
-    exit 2
-fi 
-if [ -z "$CSG_PREFIX" ]; then 
-    echo $0 : missing required envvar CSG_PREFIX 
-    exit 1 
-fi 
-if [ ! -d "$CSG_PREFIX"  ]; then 
-    echo $0 : CSG_PREFIX $CSG_PREFIX directory does not exist
-    exit 2
-fi 
+checkprefix()
+{
+    local msg="=== $FUNCNAME :"
+    local var ; 
+    for var in $* ; do 
+        if [ -z "${!var}" -o ! -d "${!var}" ]; then 
+            echo $msg missing required envvar $var ${!var} OR non-existing directory
+            return 1
+        fi
+        printf "%20s : %s \n" $var ${!var}
+    done
+    return 0  
+} 
+
+checkprefix OPTIX_PREFIX CSG_PREFIX OPTICKS_PREFIX
+[ $? -ne 0 ] && echo $msg checkdirvars FAIL && return 1
+
 
 
 sdir=$(pwd)
