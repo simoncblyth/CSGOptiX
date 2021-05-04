@@ -149,7 +149,6 @@ extern "C" __global__ void __miss__ms()
 
 extern "C" __global__ void __intersection__is()
 {
-    //HitGroupData* hg  = reinterpret_cast<HitGroupData*>( optixGetSbtDataPointer() );
     HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();
     int numNode = hg->numNode ; 
     int nodeOffset = hg->nodeOffset ; 

@@ -31,7 +31,7 @@ chkvar()
 } 
 
 chkvar OPTICKS_PREFIX OPTICKS_HOME OPTICKS_OPTIX_PREFIX
-[ $? -ne 0 ] && echo $msg checkvar FAIL && return 1
+[ $? -ne 0 ] && echo $msg checkvar FAIL && exit 1
 
 buildenv=$PREFIX/build/buildenv.sh
 [ -f $buildenv ] && source $buildenv 

@@ -4,6 +4,7 @@ project(${name} VERSION 0.1.0)
 
 set(TEST_SOURCES
     CSGOptiXTest.cc
+    CSGOptiXVersion.cc
 )
 
 set(DEMO_SOURCES 
