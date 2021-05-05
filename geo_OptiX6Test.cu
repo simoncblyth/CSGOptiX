@@ -62,6 +62,8 @@ RT_PROGRAM void intersect(int primIdx)
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
     const CSGPrim* prim = &prim_buffer[primIdx] ; 
+    int nodeOffset = prim->nodeOffset() ;  
+    int numNode = prim->numNode() ; 
     const float* aabb = prim->AABB();  
 
     result[0] = *(aabb+0); 
@@ -71,10 +73,15 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     result[4] = *(aabb+4); 
     result[5] = *(aabb+5); 
 
-    rtPrintf("// bounds primIdx %d aabb %10.3f %10.3f %10.3f   %10.3f %10.3f %10.3f  \n", primIdx, 
+#ifdef DEBUG
+    rtPrintf("// bounds identity %d primIdx %d nodeOffset %d numNode %d aabb %10.3f %10.3f %10.3f   %10.3f %10.3f %10.3f  \n", 
+         identity, primIdx, nodeOffset, numNode,
          result[0], result[1], result[2],  
          result[3], result[4], result[5] 
         ); 
+#endif
+
+
 }
 
 

@@ -71,12 +71,14 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_ )
 
 void CSGOptiX::init()
 {
+    std::cout << "[ CSGOptiX::init " << std::endl ; 
     assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     assert( outdir && "expecting OUTDIR envvar " );
 
     CXUtil::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0,1.0"); 
     std::cout << " ptxpath " << ptxpath << std::endl ; 
     std::cout << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) << std::endl ; 
+    std::cout << "] CSGOptiX::init " << std::endl ; 
 }
 
 void CSGOptiX::setCE(const glm::vec4& ce, float tmin, float tmax  )
@@ -91,6 +93,7 @@ void CSGOptiX::setCE(const glm::vec4& ce, float tmin, float tmax  )
 
 void CSGOptiX::render(const char* tspec)
 {
+    std::cout << "[ CSGOptiX::render " << std::endl ; 
     params->node = foundry->d_node ; 
     params->plan = foundry->d_plan ; 
     params->tran = foundry->d_tran ; 
@@ -125,6 +128,7 @@ void CSGOptiX::render(const char* tspec)
     frame.download(); 
     frame.write(outdir, jpg_quality);  
 #endif
+    std::cout << "] CSGOptiX::render " << std::endl ; 
 }
 
 
