@@ -30,9 +30,8 @@ struct CSGOptiX
     Params*           params  ; 
 
     CSGOptiX(const CSGFoundry* foundry); 
-
     void init(); 
-    void setCE(const glm::vec4& ce, float tmin, float tmax );
+    void setCE(const glm::vec4& ce, float tmin_model, float tmax_model );
     void render(const char* tspec); 
 };
 

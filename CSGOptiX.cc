@@ -81,8 +81,12 @@ void CSGOptiX::init()
     std::cout << "] CSGOptiX::init " << std::endl ; 
 }
 
-void CSGOptiX::setCE(const glm::vec4& ce, float tmin, float tmax  )
+void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model  )
 {
+    float extent = ce.w ; 
+    float tmin = extent*tmin_model ; 
+    float tmax = extent*tmax_model ; 
+
     view->update(eye_model, ce, width, height) ; 
     view->dump(); 
     view->save(outdir); 
