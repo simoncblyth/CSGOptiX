@@ -33,11 +33,19 @@ chkvar()
 chkvar OPTICKS_PREFIX OPTICKS_HOME OPTICKS_OPTIX_PREFIX
 [ $? -ne 0 ] && echo $msg checkvar FAIL && exit 1
 
-buildenv=$PREFIX/build/buildenv.sh
-[ -f $buildenv ] && source $buildenv 
+
+# Attempting to discern the OPTIX_VERSION by sourcing a 
+# buildenv.sh script generated at config time is an 
+# inherently flawed approach.
+#
+# buildenv=$PREFIX/build/buildenv.sh
+# [ -f $buildenv ] && source $buildenv 
+#
+# Are now using the CSGOptiXVersion executable that is built and 
+# installed together with the library, so can get the version in 
+# scripts by capturing the output from that executable.
 
 bdir=/tmp/$USER/opticks/$name/build
-
 rm -rf $bdir && mkdir -p $bdir 
 [ ! -d $bdir ] && exit 1
 cd $bdir && pwd 

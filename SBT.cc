@@ -81,18 +81,23 @@ SBT::setFoundry
 
 void SBT::setFoundry(const CSGFoundry* foundry_)
 {
+    std::cout << "[ SBT::setFoundry " << std::endl ; 
     foundry = foundry_ ; 
 
     createGAS();  
+    std::cout << "after createGAS: " << descGAS() << std::endl ; 
+
     createIAS(); 
 
     createHitgroup(); 
     checkHitgroup(); 
+
+    std::cout << "] SBT::setFoundry " << std::endl ; 
 }
 
 
 /**
-SBT::createMissSBT
+SBT::createMiss
 --------------------
 
 NB the records have opaque header and user data
@@ -100,6 +105,7 @@ NB the records have opaque header and user data
 
 void SBT::createMiss()
 {
+    std::cout << "[ SBT::createMiss " << std::endl ; 
     miss = new Miss ; 
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_miss ), sizeof(Miss) ) );
     sbt.missRecordBase = d_miss;
@@ -107,6 +113,7 @@ void SBT::createMiss()
 
     sbt.missRecordStrideInBytes     = sizeof( Miss );
     sbt.missRecordCount             = 1;
+    std::cout << "] SBT::createMiss " << std::endl ; 
 }
 
 void SBT::updateMiss()
@@ -169,15 +176,26 @@ prim extent is used.
 void SBT::createGAS()  
 {
     unsigned num_solid = foundry->getNumSolid(); 
-    std::cout << "SBT::createGAS num_solid " << num_solid << std::endl ;  
+    std::cout << "[ SBT::createGAS num_solid " << num_solid << std::endl ;  
 
     for(unsigned i=0 ; i < num_solid ; i++)
     {
-        CSGPrimSpec ps = foundry->getPrimSpec(i); 
-        GAS gas = {} ;  
-        GAS_Builder::Build(gas, ps);
-        vgas.push_back(gas);  
+        unsigned gas_idx = i ; 
+        createGAS(gas_idx); 
     }
+    std::cout << "] SBT::createGAS num_solid " << num_solid << std::endl ;  
+}
+
+void SBT::createGAS(unsigned gas_idx)
+{
+    std::cout << "[ SBT::createGAS gas_idx " << gas_idx << std::endl ;  
+
+    CSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
+    GAS gas = {} ;  
+    GAS_Builder::Build(gas, ps);
+    vgas.push_back(gas);  
+
+    std::cout << "] SBT::createGAS gas_idx " << gas_idx << std::endl ;  
 }
 
 const GAS& SBT::getGAS(unsigned gas_idx) const 
@@ -187,20 +205,24 @@ const GAS& SBT::getGAS(unsigned gas_idx) const
 }
 
 
+
 void SBT::createIAS()
 {
     unsigned num_ias = foundry->getNumUniqueIAS() ; 
+    std::cout << "[ SBT::createIAS num_ias " << num_ias << std::endl ;  
     for(unsigned i=0 ; i < num_ias ; i++)
     {
         unsigned ias_idx = foundry->ias[i]; 
         createIAS(ias_idx); 
     }
+    std::cout << "] SBT::createIAS num_ias " << num_ias << std::endl ;  
 }
 
 void SBT::createIAS(unsigned ias_idx)
 {
     unsigned num_inst = foundry->getNumInst(); 
     unsigned num_ias_inst = foundry->getNumInstancesIAS(ias_idx); 
+    std::cout << "[ SBT::createIAS ias_idx " << ias_idx << " num_inst " << num_inst << std::endl ;  
 
     std::vector<qat4> ias_inst ; 
     foundry->getInstanceTransformsIAS(ias_inst, ias_idx );
@@ -209,6 +231,7 @@ void SBT::createIAS(unsigned ias_idx)
     IAS ias = {} ;  
     IAS_Builder::Build(ias, ias_inst, this );
     vias.push_back(ias);  
+    std::cout << "] SBT::createIAS ias_idx " << ias_idx << " num_inst " << num_inst << std::endl ;  
 }
 
 const IAS& SBT::getIAS(unsigned ias_idx) const 
@@ -345,14 +368,62 @@ unsigned SBT::getTotalRec() const
             const BI& bi = gas.bis[j] ; 
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;
             unsigned num_rec = buildInputCPA.numSbtRecords ; 
-            if(is_1NN) assert( num_rec == 1 );  
+            if(is_1NN) assert( num_rec == 1 );    // 1NN NO LONGER USED
             tot_rec += num_rec ; 
         }         
     }
     assert( tot_bi > 0 && tot_rec > 0 );  
-    if(is_1NN) assert( tot_bi == tot_rec );  
+    if(is_1NN) assert( tot_bi == tot_rec );   // 1NN NO LONGER USED
     return tot_rec ;  
 }
+
+
+/**
+SBT::descGAS
+--------------
+
+Description of the sbt record counts per GAS, which corresponds 
+to the number of prim per solid for all solids.
+This is meaningful after createGAS.
+
+**/
+
+std::string SBT::descGAS() const 
+{
+    unsigned tot_rec = 0 ; 
+    unsigned tot_bi = 0 ; 
+    std::stringstream ss ; 
+    ss 
+        << "SBT::descGAS"
+        << " num_gas " << vgas.size() ; 
+        << " bi.numRec ( " 
+        ;
+
+    for(unsigned i=0 ; i < vgas.size() ; i++)
+    {
+        const GAS& gas = vgas[i] ;    
+        unsigned num_bi = gas.bis.size(); 
+        tot_bi += num_bi ; 
+        for(unsigned j=0 ; j < num_bi ; j++)
+        { 
+            const BI& bi = gas.bis[j] ; 
+            const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;
+            unsigned num_rec = buildInputCPA.numSbtRecords ; 
+            ss << num_rec << " " ;  
+            tot_rec += num_rec ; 
+        }         
+    }
+
+    ss << " ) "
+       << " tot_rec " << tot_rec 
+       << " tot_bi " << tot_bi 
+       ;
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 /**
 SBT::createHitgroup
@@ -416,7 +487,7 @@ void SBT::createHitgroup()
                 unsigned globalPrimIdx = primOffset + localPrimIdx ;   
                 const CSGPrim* prim = foundry->getPrim( globalPrimIdx ); 
                 setPrimData( hg->data, prim ); 
-                dumpPrimData( hg->data ); 
+                //dumpPrimData( hg->data ); 
 
                 unsigned check_sbt_offset = getOffset(solidIdx, localPrimIdx ); 
                 std::cout 
@@ -468,8 +539,6 @@ void SBT::dumpPrimData( const HitGroupData& data ) const
         << "SBT::dumpPrimData"
         << " data.numNode " << data.numNode
         << " data.nodeOffset " << data.nodeOffset
-      //  << " data.tranOffset " << data.tranOffset
-      //  << " data.planOffset " << data.planOffset
         << std::endl 
         ; 
 }
@@ -497,7 +566,7 @@ void SBT::checkHitgroup()
         unsigned globalPrimIdx = i ; 
         const CSGPrim* prim = foundry->getPrim(globalPrimIdx);         
 
-        dumpPrimData( hg->data ); 
+        //dumpPrimData( hg->data ); 
         checkPrimData( hg->data, prim ); 
 
         hg++ ; 

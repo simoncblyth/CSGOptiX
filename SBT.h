@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 #include <optix.h>
 
@@ -45,11 +46,12 @@ struct SBT
 
     SBT( const PIP* pip_ ); 
 
+
+
     AS* getAS(const char* spec) const ;
     void setTop(const char* spec) ;
     void setTop(AS* top_) ;
     AS* getTop() const ;
-
 
     void init();  
     void createRaygen();  
@@ -65,21 +67,20 @@ struct SBT
 
     void createIAS();
     void createIAS(unsigned ias_idx);
+    const IAS& getIAS(unsigned ias_idx) const ;
 
     void createGAS();
+    void createGAS(unsigned gas_idx);
+    const GAS& getGAS(unsigned gas_idx) const ;
+    std::string descGAS() const ; 
 
     void setPrimData( HitGroupData& data, const CSGPrim* prim);
     void dumpPrimData( const HitGroupData& data ) const ;
     void checkPrimData( HitGroupData& data, const CSGPrim* prim);
 
-    const GAS& getGAS(unsigned gas_idx) const ;
-    const IAS& getIAS(unsigned ias_idx) const ;
-
     unsigned getOffset(unsigned shape_idx_ , unsigned layer_idx_ ) const ; 
     unsigned _getOffset(unsigned shape_idx_ , unsigned layer_idx_ ) const ;
-
     unsigned getTotalRec() const ;
-
 
 
 };
