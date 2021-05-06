@@ -45,7 +45,7 @@ chkvar OPTICKS_PREFIX OPTICKS_HOME OPTICKS_OPTIX_PREFIX
 # installed together with the library, so can get the version in 
 # scripts by capturing the output from that executable.
 
-bdir=/tmp/$USER/opticks/$name/build
+bdir=/tmp/$USER/opticks/${name}.build
 rm -rf $bdir && mkdir -p $bdir 
 [ ! -d $bdir ] && exit 1
 cd $bdir && pwd 

@@ -13,14 +13,14 @@ EOU
 }
 
 ridx=$1
-export OUTDIR=/tmp/$USER/opticks/CSGOptiXRender/$(CSGOptiXVersion)/$ridx    # see CSGOptiX/tests/CSGOptiXVersion.cc
+pkg=CSGOptiX
+bin=CSGOptiXRender
+export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/$ridx    # see CSGOptiX/tests/CSGOptiXVersion.cc
 mkdir -p $OUTDIR
 export CUDA_VISIBLE_DEVICES=0
 
 export CFBASE=/tmp/$USER/opticks/CSG_GGeo 
 [ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
-
-bin=CSGOptiXRender
 
 case $ridx in 
   0) TMIN=0.4 EYE=-0.4,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;

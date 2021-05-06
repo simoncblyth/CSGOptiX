@@ -1,8 +1,8 @@
 #!/bin/bash -l 
 
-
-from=P:/tmp/$USER/opticks/CSGOptiXRender/
-to=/tmp/$USER/opticks/CSGOptiXRender/
+pkg=CSGOptiX
+from=P:/tmp/$USER/opticks/$pkg/
+to=/tmp/$USER/opticks/$pkg/
 
 echo from $from
 echo to $to

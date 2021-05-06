@@ -4,9 +4,6 @@ msg="=== $BASH_SOURCE :"
 
 sdir=$(pwd)
 name=$(basename $sdir)
-bdir=/tmp/$USER/opticks/$name/build
-buildenv=$bdir/buildenv.sh
-[ -f $buildenv ] && source $buildenv 
 
 export CUDA_VISIBLE_DEVICES=0
 
@@ -83,9 +80,9 @@ layers=1
 #layers=20
 
 
-
+export CSG_OPTIX_VERSION=$(CSGOptiXVersion)
 export BINARY=CSGOptiXTest 
-export OUTBASE=/tmp/$USER/opticks/$BINARY
+export OUTBASE=/tmp/$USER/opticks/CSGOptiX/$BINARY
 
 # make sensitive to calling environment
 export GEOMETRY=${GEOMETRY:-$geometry}
@@ -103,11 +100,11 @@ export GRIDSCALE=${GRIDSCALE:-$gridscale}
 
 export EYE=${EYE:-$eye} 
 export LAYERS=${LAYERS:-$layers}
-export OUTDIR=$OUTBASE/$GEOMETRY/$OPTIX_VERSION
+export OUTDIR=$OUTBASE/$GEOMETRY/${CSG_OPTIX_VERSION}
 
 fmt="%-20s : %s \n"
 printf "$fmt" name $name
-printf "$fmt" OPTIX_VERSION $OPTIX_VERSION
+printf "$fmt" CSG_OPTIX_VERSION ${CSG_OPTIX_VERSION}
 printf "$fmt" BINARY $BINARY
 
 printf "$fmt" GEOMETRY $GEOMETRY
@@ -122,7 +119,7 @@ printf "$fmt" GRIDSCALE $GRIDSCALE
 
 printf "$fmt" EYE $EYE
 printf "$fmt" LAYERS $LAYERS
+printf "$fmt" OUTBASE $OUTBASE
 printf "$fmt" OUTDIR $OUTDIR
-
 
 return 0 
