@@ -187,14 +187,14 @@ void SBT::createGAS()
 
 void SBT::createGAS(unsigned gas_idx)
 {
-    std::cout << "[ SBT::createGAS gas_idx " << gas_idx << std::endl ;  
+    //std::cout << "[ SBT::createGAS gas_idx " << gas_idx << std::endl ;  
 
     CSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
     GAS gas = {} ;  
     GAS_Builder::Build(gas, ps);
     vgas.push_back(gas);  
 
-    std::cout << "] SBT::createGAS gas_idx " << gas_idx << std::endl ;  
+    //std::cout << "] SBT::createGAS gas_idx " << gas_idx << std::endl ;  
 }
 
 const GAS& SBT::getGAS(unsigned gas_idx) const 

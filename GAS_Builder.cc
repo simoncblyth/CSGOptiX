@@ -23,16 +23,21 @@ GAS_Builder::Build
 
 **/
 
-void GAS_Builder::Build( GAS& gas, const  CSGPrimSpec& psd )  // static
+void GAS_Builder::Build( GAS& gas, const  CSGPrimSpec& ps )  // static
 {
+    assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
+    unsigned stride_in_floats = ps.stride_in_bytes / sizeof(float) ;
+
     std::cout 
         << "GAS_Builder::Build"
-        << " psd.num_prim " << psd.num_prim
-        << " psd.stride_in_bytes " << psd.stride_in_bytes
+        << " ps.num_prim " << ps.num_prim
+        << " ps.stride_in_bytes " << ps.stride_in_bytes 
+        << " ps.device " << ps.device
+        << " stride_in_floats " << stride_in_floats 
         << std::endl
-        ;  
+        ; 
 
-    Build_11N(gas, psd);  
+    Build_11N(gas, ps);  
 }
 
 /**
@@ -42,10 +47,8 @@ GAS_Builder::Build_11N GAS:BI:AABB  1:1:N  one BI with multiple AABB
 
 void GAS_Builder::Build_11N( GAS& gas, const CSGPrimSpec& psd )
 {
-    //std::cout << "[ GAS_Builder::Build_11N" << std::endl ;  
     BI bi = MakeCustomPrimitivesBI_11N(psd);
     gas.bis.push_back(bi); 
-    //std::cout << "] GAS_Builder::Build_11N bis.size " << gas.bis.size() << std::endl ;  
     BoilerPlate(gas); 
 }
 
@@ -65,22 +68,12 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
 {
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
     unsigned stride_in_floats = ps.stride_in_bytes / sizeof(float) ;
-    std::cout 
-        << "GAS_Builder::MakeCustomPrimitivesBI_11N"
-        << " ps.num_prim " << ps.num_prim
-        << " ps.stride_in_bytes " << ps.stride_in_bytes 
-        << " ps.device " << ps.device
-        << " stride_in_floats " << stride_in_floats 
-        << std::endl
-        ; 
-
     unsigned primitiveIndexOffset = 0 ; // offsets the normal 0,1,2,... result of optixGetPrimitiveIndex()  
     
     BI bi = {} ; 
     bi.mode = 1 ; 
     bi.flags = new unsigned[ps.num_prim];
     for(unsigned i=0 ; i < ps.num_prim ; i++) bi.flags[i] = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ; 
-
 
     if( ps.device == false )
     {
@@ -97,7 +90,6 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
 
         CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &bi.d_sbt_index ), sizeof(unsigned)*ps.num_prim ) ); 
         CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>(bi.d_sbt_index), bi.sbt_index, sizeof(unsigned)*ps.num_prim, cudaMemcpyHostToDevice ) ); 
-
     }
     else
     {
