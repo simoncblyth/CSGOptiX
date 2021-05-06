@@ -83,6 +83,7 @@ void CSGOptiX::init()
 
 void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model  )
 {
+    std::cout << "[ CSGOptiX::setCE " << std::endl ; 
     float extent = ce.w ; 
     float tmin = extent*tmin_model ; 
     float tmax = extent*tmax_model ; 
@@ -93,6 +94,7 @@ void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model  )
 
     params->setView(view->eye, view->U, view->V, view->W, tmin, tmax, cameratype ); 
     params->setSize(width, height, depth); 
+    std::cout << "] CSGOptiX::setCE " << std::endl ; 
 }
 
 void CSGOptiX::render(const char* tspec)
@@ -113,7 +115,11 @@ void CSGOptiX::render(const char* tspec)
     Ctx ctx(params) ;
     PIP pip(ptxpath); 
     SBT sbt(&pip);
+
+    std::cout << "[ CSGOptiX::render.setFoundry " << std::endl ; 
     sbt.setFoundry(foundry); 
+    std::cout << "] CSGOptiX::render.setFoundry " << std::endl ; 
+
     sbt.setTop(tspec);
 
     AS* top = sbt.getTop(); 

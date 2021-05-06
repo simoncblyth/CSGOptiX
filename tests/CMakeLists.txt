@@ -4,7 +4,6 @@ project(${name} VERSION 0.1.0)
 
 set(TEST_SOURCES
     CSGOptiXTest.cc
-    CSGOptiXVersion.cc
 )
 
 set(DEMO_SOURCES 
@@ -18,6 +17,20 @@ foreach(SRC ${TEST_SOURCES})
 
     add_test(${name}.${TGT} ${TGT})
 
+    target_link_libraries(${TGT} CSGOptiX)
+    install(TARGETS ${TGT} DESTINATION lib)
+endforeach()
+
+
+
+set(SINGLE_SOURCES
+    CSGOptiXVersion.cc
+    CSGOptiXRender.cc
+)
+
+foreach(SRC ${SINGLE_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
     target_link_libraries(${TGT} CSGOptiX)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
