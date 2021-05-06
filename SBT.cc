@@ -52,8 +52,7 @@ SBT::SBT(const PIP* pip_)
     hitgroup(nullptr),
     check(nullptr),
     foundry(nullptr),
-    is_1NN(false),
-    is_11N(true)  
+    top(nullptr)
 {
     init(); 
 }
@@ -326,7 +325,6 @@ to break out of multiple for loops.
 unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const 
 {
     unsigned offset_sbt = 0 ; 
-    bool is_1NN = false ; 
 
     for(unsigned i=0 ; i < vgas.size() ; i++)
     {
@@ -338,11 +336,11 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
             const BI& bi = gas.bis[j] ; 
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;
             unsigned num_sbt = buildInputCPA.numSbtRecords ; 
-            if(is_1NN) assert( num_sbt == 1 );  
 
             for( unsigned k=0 ; k < num_sbt ; k++)
             { 
-                unsigned layer_idx = is_1NN ? j : k ;  
+                //unsigned layer_idx = is_1NN ? j : k ;  
+                unsigned layer_idx = k ;  
                 if( solid_idx_ == i && layer_idx_ == layer_idx ) return offset_sbt ;
                 offset_sbt += 1 ; 
             }
@@ -368,12 +366,10 @@ unsigned SBT::getTotalRec() const
             const BI& bi = gas.bis[j] ; 
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;
             unsigned num_rec = buildInputCPA.numSbtRecords ; 
-            if(is_1NN) assert( num_rec == 1 );    // 1NN NO LONGER USED
             tot_rec += num_rec ; 
         }         
     }
     assert( tot_bi > 0 && tot_rec > 0 );  
-    if(is_1NN) assert( tot_bi == tot_rec );   // 1NN NO LONGER USED
     return tot_rec ;  
 }
 
@@ -479,17 +475,20 @@ void SBT::createHitgroup()
             unsigned num_rec = buildInputCPA.numSbtRecords ; 
             assert( num_rec == numPrim ) ; 
 
-            if(is_1NN) assert( num_rec == 1 );  // 1NN mode : every BI has one aabb : THIS WAY CHOPS TO SMALLEST BBOX AND IS NO LONGER USED 
+            //if(is_1NN) assert( num_rec == 1 );  // 1NN mode : every BI has one aabb : THIS WAY CHOPS TO SMALLEST BBOX AND IS NO LONGER USED 
 
             for( unsigned k=0 ; k < num_rec ; k++)
             { 
-                unsigned localPrimIdx = is_1NN ? j : k ;   
+                //unsigned localPrimIdx = is_1NN ? j : k ;   
+                unsigned localPrimIdx = k ;   
                 unsigned globalPrimIdx = primOffset + localPrimIdx ;   
                 const CSGPrim* prim = foundry->getPrim( globalPrimIdx ); 
                 setPrimData( hg->data, prim ); 
                 //dumpPrimData( hg->data ); 
 
                 unsigned check_sbt_offset = getOffset(solidIdx, localPrimIdx ); 
+
+                /*
                 std::cout 
                     << "SBT::createHitgroup "
                     << " gas(i) " << i 
@@ -502,6 +501,8 @@ void SBT::createHitgroup()
                     << " sbt_offset " << sbt_offset
                     << std::endl 
                     ; 
+
+                */
                 assert( check_sbt_offset == sbt_offset  ); 
 
                 hg++ ; 

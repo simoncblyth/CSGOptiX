@@ -29,9 +29,10 @@ struct SBT
     HitGroup*     check ;
 
     const CSGFoundry*  foundry ; 
+    AS*              top ; 
 
-    bool          is_1NN ;  // 1NN:true is smallest bbox chopped 
-    bool          is_11N ; 
+    //bool          is_1NN ;  // 1NN:true is smallest bbox chopped 
+    //bool          is_11N ; 
  
     CUdeviceptr   d_raygen ;
     CUdeviceptr   d_miss ;
@@ -41,7 +42,6 @@ struct SBT
 
     std::vector<GAS> vgas ; 
     std::vector<IAS> vias ; 
-    AS*              top ; 
 
 
     SBT( const PIP* pip_ ); 

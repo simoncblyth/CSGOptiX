@@ -83,10 +83,20 @@ void CSGOptiX::init()
 
 void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model  )
 {
-    std::cout << "[ CSGOptiX::setCE " << std::endl ; 
     float extent = ce.w ; 
     float tmin = extent*tmin_model ; 
     float tmax = extent*tmax_model ; 
+
+    std::cout 
+        << "[ CSGOptiX::setCE " 
+        << " extent " << extent
+        << " tmin_model " << tmin_model 
+        << " tmax_model " << tmax_model 
+        << " tmin " << tmin 
+        << " tmax " << tmax 
+        << std::endl 
+        ; 
+
 
     view->update(eye_model, ce, width, height) ; 
     view->dump(); 

@@ -24,8 +24,6 @@ DemoGeo::DemoGeo(CSGFoundry* foundry_)
 void DemoGeo::init()
 {
     std::cout << "[ DemoGeo::init " << std::endl ; 
-    float tminf(0.1) ; 
-    float tmaxf(10000.f) ; 
 
     std::string geometry = CXUtil::GetEValue<std::string>("GEOMETRY", "parade" ); 
     unsigned layers = CXUtil::GetEValue<unsigned>("LAYERS", 1) ; 
@@ -39,55 +37,37 @@ void DemoGeo::init()
 
     if(strcmp(geometry.c_str(), "sphere_containing_grid_of_spheres") == 0)
     {
-        init_sphere_containing_grid_of_spheres(tminf, tmaxf, layers );
+        init_sphere_containing_grid_of_spheres(layers );
     }
     else if(strcmp(geometry.c_str(), "parade") == 0)
     {
-        init_parade(tminf, tmaxf);
+        init_parade();
     }
     else if(CXUtil::StartsWith(geometry.c_str(), "clustered_"))
     {
-        init_clustered( geometry.c_str() + strlen("clustered_"), tminf, tmaxf ); 
+        init_clustered( geometry.c_str() + strlen("clustered_")); 
     }
     else if(strcmp(geometry.c_str(), "layered_sphere") == 0 )
     {
-        init_layered("sphere", tminf, tmaxf, layers);
+        init_layered("sphere", layers);
     }
     else if(strcmp(geometry.c_str(), "layered_zsphere") == 0 )
     {
-        init_layered("zsphere", tminf, tmaxf, layers);
+        init_layered("zsphere", layers);
     }
     else
     {
-        init(geometry.c_str(), tminf, tmaxf); 
+        init(geometry.c_str()); 
     }
 
     const float4 ce  = getCenterExtent(); 
-    tmin = ce.w*tminf ; 
-    tmax = ce.w*tmaxf ; 
     std::cout 
         << "DemoGeo::init" 
         << " top_extent " << ce.w  
-        << " tminf " << tminf 
-        << " tmin " << tmin 
-        << " tmaxf " << tmaxf 
-        << " tmax " << tmax 
         << std::endl 
         ; 
 
-    float e_tminf = CXUtil::GetEValue<float>("TMIN", -1.0) ; 
-    if(e_tminf > 0.f )
-    {
-        tmin = ce.w*e_tminf ; 
-        std::cout << "DemoGeo::init e_tminf TMIN " << e_tminf << " override tmin " << tmin << std::endl ; 
-    }
-    
-    float e_tmaxf = CXUtil::GetEValue<float>("TMAX", -1.0) ; 
-    if(e_tmaxf > 0.f )
-    {
-        tmax = ce.w*e_tmaxf ; 
-        std::cout << "DemoGeo::init e_tmaxf TMAX " << e_tmaxf << " override tmax " << tmax << std::endl ; 
-    }
+
     std::cout << "] DemoGeo::init " << std::endl ; 
 }
 
@@ -101,7 +81,7 @@ Container sphere "extent" needs to be sqrt(3) larger than the grid extent.
 
 **/
 
-void DemoGeo::init_sphere_containing_grid_of_spheres(float& tminf, float& tmaxf, unsigned layers )
+void DemoGeo::init_sphere_containing_grid_of_spheres(unsigned layers )
 {
     std::cout << "DemoGeo::init_sphere_containing_grid_of_spheres : layers " << layers << std::endl ; 
     foundry->makeDemoSolids();  
@@ -121,11 +101,9 @@ void DemoGeo::init_sphere_containing_grid_of_spheres(float& tminf, float& tmaxf,
 
     setCenterExtent(so->center_extent); 
 
-    tminf = 0.75f ; 
-    tmaxf = 10000.f ; 
 }
 
-void DemoGeo::init_parade(float& tminf, float& tmaxf )
+void DemoGeo::init_parade()
 {
     std::cout << "[ DemoGeo::init_parade " << std::endl ; 
     foundry->makeDemoSolids();  
@@ -137,8 +115,6 @@ void DemoGeo::init_parade(float& tminf, float& tmaxf )
     top = strdup("i0") ; 
     setCenterExtent(ce); 
 
-    tminf = 0.75f ;   
-    tmaxf = 10000.f ; 
     std::cout << "] DemoGeo::init_parade " << std::endl ; 
 }
 
@@ -152,7 +128,7 @@ Will need to assign appropriate node transforms and get those applied
 to the bbox at Prim+Node(?) level.
 
 **/
-void DemoGeo::init_clustered(const char* name, float& tminf, float& tmaxf )
+void DemoGeo::init_clustered(const char* name)
 {
     float unit = CXUtil::GetEValue<float>("CLUSTERUNIT", 200.f ); 
     std::string clusterspec = CXUtil::GetEValue<std::string>("CLUSTERSPEC","-1:2:1,-1:2:1,-1:2:1") ; 
@@ -172,31 +148,22 @@ void DemoGeo::init_clustered(const char* name, float& tminf, float& tmaxf )
 
     setCenterExtent(so->center_extent); 
     top = strdup("g0") ; 
-
-    tminf = 1.60f ;  
-    tmaxf = 10000.f ; 
 }
 
-void DemoGeo::init_layered(const char* name, float& tminf, float& tmaxf, unsigned layers)
+void DemoGeo::init_layered(const char* name, unsigned layers)
 {
     CSGSolid* so = foundry->makeLayered(name, 100.f, layers ); 
     std::cout << "DemoGeo::init_layered" << name << " so.center_extent " << so->center_extent << std::endl ; 
     setCenterExtent(so->center_extent); 
     top = strdup("g0") ; 
-
-    tminf = 1.60f ; 
-    tmaxf = 10000.f ; 
 }
 
-void DemoGeo::init(const char* name, float& tminf, float& tmaxf )
+void DemoGeo::init(const char* name)
 {
     CSGSolid* so = foundry->make(name) ; 
     std::cout << "DemoGeo::init" << name << " so.center_extent " << so->center_extent << std::endl ; 
     setCenterExtent(so->center_extent); 
     top = strdup("g0") ; 
-
-    tminf = 1.60f ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
-    tmaxf = 10000.f ; 
 }
 
 
@@ -212,13 +179,6 @@ void DemoGeo::setCenterExtent(const float4&  center_extent_){ center_extent = ce
 float4 DemoGeo::getCenterExtent() const  { return center_extent ;  }
 
 
-unsigned        DemoGeo::getNumSolid() const {                           return foundry->getNumSolid() ;      }
-unsigned        DemoGeo::getNumPrim() const {                            return foundry->getNumPrim() ;      }
-const CSGSolid*    DemoGeo::getSolid(         unsigned solidIdx) const { return foundry->getSolid(solidIdx);  }
-CSGPrimSpec        DemoGeo::getPrimSpec(      unsigned solidIdx) const { return foundry->getPrimSpec(solidIdx);  }
-const CSGPrim*     DemoGeo::getPrim(          unsigned primIdx) const  { return foundry->getPrim(primIdx);  }
-
-
 
 void DemoGeo::write(const char* dir) const 
 {
@@ -226,7 +186,7 @@ void DemoGeo::write(const char* dir) const
 
     NP uspec("<u4", 5); 
     unsigned* u = uspec.values<unsigned>() ; 
-    *(u+0) = getNumSolid(); 
+    *(u+0) = foundry->getNumSolid(); 
     *(u+1) = 0 ; //getNumGrid(); 
     *(u+2) = 0 ; //InstanceId::ins_bits ; 
     *(u+3) = 0 ; //InstanceId::gas_bits ; 

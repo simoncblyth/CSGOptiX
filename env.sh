@@ -10,13 +10,13 @@ buildenv=$bdir/buildenv.sh
 
 export CUDA_VISIBLE_DEVICES=0
 
-
-
 #tmin=2.0
 #tmin=1.5
 #tmin=1.0
 #tmin=0.5
 tmin=0.1
+
+tmax=100.
 
 geometry=parade
 #geometry=sphere_containing_grid_of_spheres
@@ -73,7 +73,6 @@ eye=-0.7,-0.7,-0.1,1.0
 #eye=-0.8,-0.8,0.8,1.0
 
 
-
 cameratype=0
 #cameratype=1
 
@@ -84,21 +83,6 @@ layers=1
 #layers=20
 
 
-snap=/tmp/${geometry}_zsphere_grid.sh 
-echo writing snap $snap
-cat << EOB > $snap
-# $snap
-tmin=$tmin
-geometry=$geometry
-gridmodulo=$gridmodulo
-gridsingle=$gridsingle
-gridspec=$gridspec
-gridscale=$gridscale
-eye=$eye
-cameratype=$cameratype
-layers=$layers
-EOB
-
 
 export BINARY=CSGOptiXTest 
 export OUTBASE=/tmp/$USER/opticks/$BINARY
@@ -106,6 +90,7 @@ export OUTBASE=/tmp/$USER/opticks/$BINARY
 # make sensitive to calling environment
 export GEOMETRY=${GEOMETRY:-$geometry}
 export TMIN=${TMIN:-$tmin}
+export TMAX=${TMAX:-$tmax}
 export CAMERATYPE=${CAMERATYPE:-$cameratype}
 
 export CLUSTERSPEC=${CLUSTERSPEC:-$clusterspec}
@@ -127,6 +112,7 @@ printf "$fmt" BINARY $BINARY
 
 printf "$fmt" GEOMETRY $GEOMETRY
 printf "$fmt" TMIN $TMIN
+printf "$fmt" TMAX $TMAX
 printf "$fmt" CAMERATYPE $CAMERATYPE
 
 printf "$fmt" GRIDSPEC $GRIDSPEC
