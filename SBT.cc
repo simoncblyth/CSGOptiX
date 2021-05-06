@@ -395,7 +395,7 @@ std::string SBT::descGAS() const
     std::stringstream ss ; 
     ss 
         << "SBT::descGAS"
-        << " num_gas " << vgas.size() ; 
+        << " num_gas " << vgas.size() 
         << " bi.numRec ( " 
         ;
 
