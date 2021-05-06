@@ -14,10 +14,11 @@ int main(int argc, char** argv)
     std::string s = ss.str(); 
     std::string top = CXUtil::GetEValue<std::string>("TOP", s.c_str() ); 
 
+    std::string cfbase = CXUtil::GetEValue<std::string>("CFBASE", "/tmp" );  
+    const char* rel = "CSGFoundry" ; 
 
-    const char* dir = "/tmp" ; 
-    const char* rel = "CSGOptiXGGeo" ; 
-    CSGFoundry* fd = CSGFoundry::Load(dir, rel); 
+    std::cout << " CSGFoundry::Load from " << cfbase << "/" << rel << std::endl ; 
+    CSGFoundry* fd = CSGFoundry::Load(cfbase.c_str(), rel); // $CFBASE/CSGFoundry 
     fd->upload(); 
 
     std::cout 

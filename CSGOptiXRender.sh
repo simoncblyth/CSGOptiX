@@ -17,6 +17,9 @@ export OUTDIR=/tmp/$USER/opticks/CSGOptiXRender/$(CSGOptiXVersion)/$ridx    # se
 mkdir -p $OUTDIR
 export CUDA_VISIBLE_DEVICES=0
 
+export CFBASE=/tmp/$USER/opticks/CSG_GGeo 
+[ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
+
 bin=CSGOptiXRender
 
 case $ridx in 
