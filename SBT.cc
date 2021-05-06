@@ -460,7 +460,7 @@ void SBT::createHitgroup()
         unsigned solidIdx = i ;    
         const GAS& gas = vgas[i] ;    
         unsigned num_bi = gas.bis.size(); 
-        if(is_11N) assert( num_bi == 1 ); // 11N mode every GAS has only one BI with aabb for each CSGPrim 
+        //if(is_11N) assert( num_bi == 1 ); // 11N mode every GAS has only one BI with aabb for each CSGPrim 
 
         const CSGSolid* so = foundry->getSolid(solidIdx) ;
         int numPrim = so->numPrim ; 
