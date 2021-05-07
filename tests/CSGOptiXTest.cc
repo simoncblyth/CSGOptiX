@@ -1,3 +1,6 @@
+#include <string>
+#include <sstream>
+
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
@@ -20,6 +23,10 @@ int main(int argc, char** argv)
 
     const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" );  
 
+    std::stringstream tt ; 
+    tt << outdir << "/" << "pixels.jpg" ; 
+    std::string path = tt.str(); 
+
     CSGFoundry foundry ; 
     DemoGeo dg(&foundry) ;  
     dg.write(outdir);  
@@ -36,10 +43,15 @@ int main(int argc, char** argv)
     float tmax_model = CXUtil::GetEValue<float>("TMAX", 100.0) ;
 
     cx.setCE(ce, tmin_model, tmax_model ); 
-    cx.render(); 
+    double dt = cx.render(); 
 
-    
+    std::string top_line = "CSGOptiXTest" ; 
 
+    std::stringstream ss ; 
+    ss << std::fixed << std::setw(10) << std::setprecision(4) << dt ;  
+    std::string bottom_line = ss.str(); 
+
+    cx.snap(path.c_str(), bottom_line.c_str(), top_line.c_str() );   
 
     return 0 ; 
 }

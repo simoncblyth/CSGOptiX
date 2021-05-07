@@ -62,9 +62,9 @@ struct CSGOptiX : public SRenderer
 
     int  render_flightpath(); 
 
-    // fulfils SRenderer protocol
+    // fulfil SRenderer protocol
     double render();    
-    void snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height); 
+    void snap(const char* path, const char* bottom_line, const char* top_line=nullptr, unsigned line_height=24); 
 
 
 
