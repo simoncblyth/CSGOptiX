@@ -165,6 +165,11 @@ Setting center_extent establishes the coordinate system.
 
 **/
 
+void CSGOptiX::setCE(const float4& v )
+{
+    glm::vec4 ce(v.x, v.y, v.z, v.w); 
+    setCE(ce); 
+}
 void CSGOptiX::setCE(const glm::vec4& ce )
 {
     LOG(LEVEL) << " extent " << ce.w ; 
@@ -177,14 +182,6 @@ void CSGOptiX::updateView()
 {
     float extent = composition->getExtent(); 
 
-    //float tmin = extent*tmin_model ; 
-    //float tmax = extent*tmax_model ; 
-/*
-    view->update(eye_model, ce, width, height) ; 
-    view->dump(); 
-    view->save(outdir); 
-*/
-
     glm::vec3 eye ;
     glm::vec3 U ; 
     glm::vec3 V ; 
@@ -192,6 +189,9 @@ void CSGOptiX::updateView()
     glm::vec4 ZProj ;
 
     composition->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
+
+    //float tmin_model = CXUtil::GetEValue<float>("TMIN", 0.1) ;
+    //float tmax_model = CXUtil::GetEValue<float>("TMAX", 100.0) ;
 
     float tmin = composition->getNear(); 
     float tmax = composition->getFar(); 
@@ -207,27 +207,8 @@ void CSGOptiX::updateView()
         << " W (" << W.x << " " << W.y << " " << W.z << " ) "
         ;
 
-    params->eye.x = eye.x ;  
-    params->eye.y = eye.y ;  
-    params->eye.z = eye.z ;  
-
-    params->U.x = U.x ;  
-    params->U.y = U.y ;  
-    params->U.z = U.z ;  
-
-    params->V.x = V.x ;  
-    params->V.y = V.y ;  
-    params->V.z = V.z ;  
-
-    params->W.x = W.x ;  
-    params->W.y = W.y ;  
-    params->W.z = W.z ;  
-
-    params->tmin = tmin ; 
-    params->tmax = tmax ; 
-    params->cameratype = cameratype ; 
-
-    //params->setView(view->eye, view->U, view->V, view->W, tmin, tmax, cameratype ); 
+    params->setView(view->eye, view->U, view->V, view->W);
+    params->setCamera(tmin, tmax, cameratype ); 
     params->setSize(frame->width, frame->height, frame->depth); 
 
 #if OPTIX_VERSION < 70000
@@ -235,12 +216,12 @@ void CSGOptiX::updateView()
 #else
     ctx->uploadParams();  
 #endif
-
 }
-
 
 double CSGOptiX::render()
 {
+    updateView(); 
+
     LOG(LEVEL) << "[" ; 
     double t0, t1 ; 
 #if OPTIX_VERSION < 70000
@@ -262,6 +243,23 @@ double CSGOptiX::render()
     double dt = t1 - t0 ; 
     LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
     return dt ; 
+}
+
+
+std::string CSGOptiX::Annotation( double dt )  // static 
+{
+    std::stringstream ss ; 
+    ss << std::fixed << std::setw(10) << std::setprecision(4) << dt ;  
+    std::string anno = ss.str(); 
+    return anno ; 
+}
+
+std::string CSGOptiX::Path( const char* outdir, const char* name)
+{
+    std::stringstream tt ; 
+    tt << outdir << "/" << name  ; 
+    std::string path = tt.str(); 
+    return path ;
 }
 
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optix.h>
+#include <string>
 #include <glm/fwd.hpp>
 #include "plog/Severity.h"
 
@@ -65,6 +66,7 @@ struct CSGOptiX : public SRenderer
     void initFrame();
  
     void setTop(const char* tspec); 
+    void setCE(const float4& ce); 
     void setCE(const glm::vec4& ce); 
 
     void updateView(); 
@@ -76,7 +78,8 @@ struct CSGOptiX : public SRenderer
     double render();    
     void snap(const char* path, const char* bottom_line, const char* top_line=nullptr, unsigned line_height=24); 
 
-
+    static std::string Annotation( double dt ); 
+    static std::string Path( const char* outdir, const char* name);
 
 };
 

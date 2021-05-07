@@ -45,10 +45,11 @@ struct Params
 #endif
 
 #ifndef __CUDACC__
-    void setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4& V_, const glm::vec4& W_, float tmin_, float tmax_, unsigned cameratype );
+    void setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4& V_, const glm::vec4& W_ );
+    void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ );
+    void setCamera(float tmin_, float tmax_, unsigned cameratype_ ) ;
     void setSize(unsigned width_, unsigned height_, unsigned depth_ );
 #endif
-
 
 };
 
