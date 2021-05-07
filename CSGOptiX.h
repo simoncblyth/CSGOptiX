@@ -64,8 +64,11 @@ struct CSGOptiX : public SRenderer
     void initGeometry();
     void initFrame();
  
-    void setCE(const glm::vec4& ce, float tmin_model, float tmax_model );
     void setTop(const char* tspec); 
+    void setCE(const glm::vec4& ce); 
+
+    void updateView(); 
+
 
     int  render_flightpath(); 
 

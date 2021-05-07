@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     CSGOptiX cx(&ok, fd, outdir); 
     cx.setTop(top.c_str());
 
-    cx.setCE(ce, tmin_model, tmax_model); 
+    cx.setCE(ce); 
     cx.render();  
 
     return 0 ; 

@@ -50,13 +50,16 @@ int main(int argc, char** argv)
     const float4 gce = so->center_extent ; 
     glm::vec4 ce(gce.x,gce.y,gce.z, gce.w );  // defines the center-extent of the region to view
 
-    float tmin_model = CXUtil::GetEValue<float>("TMIN", 0.1) ;
-    float tmax_model = CXUtil::GetEValue<float>("TMAX", 100.0) ;
+    //float tmin_model = CXUtil::GetEValue<float>("TMIN", 0.1) ;
+    //float tmax_model = CXUtil::GetEValue<float>("TMAX", 100.0) ;
 
     CSGOptiX cx(&ok, fd, outdir); 
     cx.setTop( top.c_str() ); 
 
-    cx.setCE(ce, tmin_model, tmax_model); 
+    cx.setCE(ce);    // establish the coordinate system 
+    cx.updateView(); 
+
+
     double dt = cx.render();  
 
 

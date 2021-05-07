@@ -117,7 +117,7 @@ void CSGOptiX::initGeometry()
     params->itra = foundry->d_itra ; 
 
     bool is_uploaded =  params->node != nullptr ;
-    if(!is_uploaded) LOG(fatal) << "foundry must be uploaded prior to CSGOptiX::init " ;  
+    if(!is_uploaded) LOG(fatal) << "foundry must be uploaded prior to CSGOptiX::initGeometry " ;  
     assert( is_uploaded ); 
 
 #if OPTIX_VERSION < 70000
@@ -157,37 +157,34 @@ void CSGOptiX::setTop(const char* tspec)
     LOG(LEVEL) << "]" << " tspec " << tspec ; 
 }
 
-void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model )
+/**
+CSGOptiX::setCE
+------------------
+
+Setting center_extent establishes the coordinate system. 
+
+**/
+
+void CSGOptiX::setCE(const glm::vec4& ce )
 {
-    float extent = ce.w ; 
-    float tmin = extent*tmin_model ; 
-    float tmax = extent*tmax_model ; 
+    LOG(LEVEL) << " extent " << ce.w ; 
+    bool aim = true ; 
+    composition->setCenterExtent(ce, aim);  // model2world view setup 
+ }
 
-    LOG(LEVEL)
-        << "[" 
-        << " extent " << extent
-        << " tmin_model " << tmin_model 
-        << " tmax_model " << tmax_model 
-        << " tmin " << tmin 
-        << " tmax " << tmax 
-        ; 
 
+void CSGOptiX::updateView()
+{
+    float extent = composition->getExtent(); 
+
+    //float tmin = extent*tmin_model ; 
+    //float tmax = extent*tmax_model ; 
+/*
     view->update(eye_model, ce, width, height) ; 
     view->dump(); 
     view->save(outdir); 
+*/
 
-    params->setView(view->eye, view->U, view->V, view->W, tmin, tmax, cameratype ); 
-    params->setSize(frame->width, frame->height, frame->depth); 
-#if OPTIX_VERSION < 70000
-#else
-    ctx->uploadParams();  
-#endif
-
-    LOG(LEVEL) << "[" ; 
- }
-
-double CSGOptiX::render()
-{
     glm::vec3 eye ;
     glm::vec3 U ; 
     glm::vec3 V ; 
@@ -196,30 +193,54 @@ double CSGOptiX::render()
 
     composition->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
 
-/*
-    unsigned cameratype = composition->getCameraType();  // 0:PERSP, 1:ORTHO, 2:EQUIRECT
-    unsigned pixeltime_style = composition->getPixelTimeStyle() ; 
-    float    pixeltime_scale = composition->getPixelTimeScale() ; 
-    float      scene_epsilon = composition->getNear();
+    float tmin = composition->getNear(); 
+    float tmax = composition->getFar(); 
+    unsigned cameratype = composition->getCameraType(); 
 
-    const glm::vec3 front = glm::normalize(W); 
+    LOG(info)
+        << " extent " << extent
+        << " tmin " << tmin 
+        << " tmax " << tmax 
+        << " eye (" << eye.x << " " << eye.y << " " << eye.z << " ) "
+        << " U (" << U.x << " " << U.y << " " << U.z << " ) "
+        << " V (" << V.x << " " << V.y << " " << V.z << " ) "
+        << " W (" << W.x << " " << W.y << " " << W.z << " ) "
+        ;
+
+    params->eye.x = eye.x ;  
+    params->eye.y = eye.y ;  
+    params->eye.z = eye.z ;  
+
+    params->U.x = U.x ;  
+    params->U.y = U.y ;  
+    params->U.z = U.z ;  
+
+    params->V.x = V.x ;  
+    params->V.y = V.y ;  
+    params->V.z = V.z ;  
+
+    params->W.x = W.x ;  
+    params->W.y = W.y ;  
+    params->W.z = W.z ;  
+
+    params->tmin = tmin ; 
+    params->tmax = tmax ; 
+    params->cameratype = cameratype ; 
+
+    //params->setView(view->eye, view->U, view->V, view->W, tmin, tmax, cameratype ); 
+    params->setSize(frame->width, frame->height, frame->depth); 
+
+#if OPTIX_VERSION < 70000
+    six->updateContext(); 
+#else
+    ctx->uploadParams();  
+#endif
+
+}
 
 
-    m_context[ "cameratype"]->setUint( cameratype );  
-    m_context[ "pixeltime_style"]->setUint( pixeltime_style );  
-    m_context[ "pixeltime_scale"]->setFloat( pixeltime_scale );  
-    m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
-    m_context[ "eye"]->setFloat( make_float3( eye.x, eye.y, eye.z ) );
-    m_context[ "U"  ]->setFloat( make_float3( U.x, U.y, U.z ) );
-    m_context[ "V"  ]->setFloat( make_float3( V.x, V.y, V.z ) );
-    m_context[ "W"  ]->setFloat( make_float3( W.x, W.y, W.z ) );
-    m_context[ "front"  ]->setFloat( make_float3( front.x, front.y, front.z ) );
-    m_context[ "ZProj"  ]->setFloat( make_float4( ZProj.x, ZProj.y, ZProj.z, ZProj.w ) );
-
-*/
-
-
-
+double CSGOptiX::render()
+{
     LOG(LEVEL) << "[" ; 
     double t0, t1 ; 
 #if OPTIX_VERSION < 70000
