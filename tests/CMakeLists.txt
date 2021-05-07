@@ -26,6 +26,7 @@ endforeach()
 set(SINGLE_SOURCES
     CSGOptiXVersion.cc
     CSGOptiXRender.cc
+    CSGOptiXFlight.cc
 )
 
 foreach(SRC ${SINGLE_SOURCES})

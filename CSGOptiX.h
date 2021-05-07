@@ -1,10 +1,20 @@
 #pragma once
 
+#include <optix.h>
+#include <glm/fwd.hpp>
+
 struct CSGFoundry ; 
 struct View ; 
 struct Params ; 
 
-#include <glm/fwd.hpp>
+#if OPTIX_VERSION < 70000
+struct Six ; 
+#else
+struct Ctx ; 
+struct PIP ; 
+struct SBT ; 
+#endif
+struct Frame ; 
 
 struct CSGOptiX
 {
@@ -28,11 +38,23 @@ struct CSGOptiX
     glm::vec4         eye_model ; 
     View*             view ; 
     Params*           params  ; 
+#if OPTIX_VERSION < 70000
+    Six* six ;  
+#else
+    Ctx* ctx ; 
+    PIP* pip ; 
+    SBT* sbt ; 
+#endif
+    Frame* frame ; 
+
 
     CSGOptiX(const CSGFoundry* foundry); 
     void init(); 
     void setCE(const glm::vec4& ce, float tmin_model, float tmax_model );
     void render(const char* tspec); 
+
+    void render_flightpath(); 
+
 };
 
 

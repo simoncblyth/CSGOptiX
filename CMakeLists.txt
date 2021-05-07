@@ -27,6 +27,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 
 find_package(CUDA REQUIRED)   
+find_package(OpticksCore REQUIRED)
 find_package(CSG REQUIRED)
 
 
@@ -113,6 +114,7 @@ target_link_libraries(${name}
          ${CUDA_LIBRARIES}
          Opticks::OptiX
          Opticks::CSG
+         Opticks::OpticksCore
 )
 install(FILES ${_generated_PTX_files} DESTINATION ptx)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

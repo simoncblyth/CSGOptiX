@@ -10,6 +10,10 @@
 #include <cuda_runtime.h>
 #include <glm/glm.hpp>
 
+
+#include "PLOG.hh"
+
+
 #include "sutil_vec_math.h"
 
 #include "CSGPrim.h"
@@ -48,6 +52,7 @@ const char* CSGOptiX::ENV(const char* key, const char* fallback)
     return value ? value : fallback ; 
 }
 
+
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_ ) 
     :
     foundry(foundry_),
@@ -64,7 +69,15 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_ )
     jpg_quality(CXUtil::GetEValue<int>("QUALITY", 50)),
     eye_model(-1.f, -1.f, 1.f, 1.f ),
     view(new View),
-    params(new Params)
+    params(new Params),
+#if OPTIX_VERSION < 70000
+    six(new Six(ptxpath, geoptxpath, params)),
+#else
+    ctx(new Ctx(params)),
+    pip(new PIP(ptxpath)), 
+    sbt(new SBT(pip)),
+#endif
+    frame(new Frame(width, height, depth))
 {
     init(); 
 }
@@ -79,6 +92,23 @@ void CSGOptiX::init()
     std::cout << " ptxpath " << ptxpath << std::endl ; 
     std::cout << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) << std::endl ; 
     std::cout << "] CSGOptiX::init " << std::endl ; 
+
+    params->node = foundry->d_node ; 
+    params->plan = foundry->d_plan ; 
+    params->tran = foundry->d_tran ; 
+    params->itra = foundry->d_itra ; 
+
+    bool is_uploaded =  params->node != nullptr ;
+    if(!is_uploaded) LOG(fatal) << "foundry must be uploaded prior to CSGOptiX::init " ;  
+    assert( is_uploaded ); 
+
+#if OPTIX_VERSION < 70000
+    six->setFoundry(foundry);
+#else
+    std::cout << "[ CSGOptiX::init.setFoundry " << std::endl ; 
+    sbt->setFoundry(foundry); 
+    std::cout << "] CSGOptiX::init.setFoundry " << std::endl ; 
+#endif
 }
 
 void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model  )
@@ -97,58 +127,51 @@ void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model  )
         << std::endl 
         ; 
 
-
     view->update(eye_model, ce, width, height) ; 
     view->dump(); 
     view->save(outdir); 
 
     params->setView(view->eye, view->U, view->V, view->W, tmin, tmax, cameratype ); 
-    params->setSize(width, height, depth); 
+    params->setSize(frame->width, frame->height, frame->depth); 
+
     std::cout << "] CSGOptiX::setCE " << std::endl ; 
 }
 
 void CSGOptiX::render(const char* tspec)
 {
     std::cout << "[ CSGOptiX::render " << std::endl ; 
-    params->node = foundry->d_node ; 
-    params->plan = foundry->d_plan ; 
-    params->tran = foundry->d_tran ; 
-    params->itra = foundry->d_itra ; 
-
 #if OPTIX_VERSION < 70000
-    Six six(ptxpath, geoptxpath, params); 
-    six.setFoundry(foundry);
-    six.setTop(tspec); 
-    six.launch(); 
-    six.save(outdir); 
+    six->setTop(tspec); 
+    six->launch(); 
+    six->save(outdir); 
 #else
-    Ctx ctx(params) ;
-    PIP pip(ptxpath); 
+    sbt->setTop(tspec);
 
-
-    SBT sbt(&pip);
-    std::cout << "[ CSGOptiX::render.setFoundry " << std::endl ; 
-    sbt.setFoundry(foundry); 
-    std::cout << "] CSGOptiX::render.setFoundry " << std::endl ; 
-
-    sbt.setTop(tspec);
-
-    AS* top = sbt.getTop(); 
+    AS* top = sbt->getTop(); 
     params->handle = top->handle ; 
 
-    Frame frame(params->width, params->height, params->depth); 
-    params->pixels = frame.getDevicePixels(); 
-    params->isect  = frame.getDeviceIsect(); 
-    ctx.uploadParams();  
+    params->pixels = frame->getDevicePixels(); 
+    params->isect  = frame->getDeviceIsect(); 
+
+    ctx->uploadParams();  
 
     CUstream stream;
     CUDA_CHECK( cudaStreamCreate( &stream ) );
-    OPTIX_CHECK( optixLaunch( pip.pipeline, stream, ctx.d_param, sizeof( Params ), &(sbt.sbt), frame.width, frame.height, frame.depth ) );
+    OPTIX_CHECK( optixLaunch( pip->pipeline, stream, ctx->d_param, sizeof( Params ), &(sbt->sbt), frame->width, frame->height, frame->depth ) );
     CUDA_SYNC_CHECK();
 
-    frame.download(); 
-    frame.write(outdir, jpg_quality);  
+    frame->download(); 
+    frame->write(outdir, jpg_quality);  
 #endif
     std::cout << "] CSGOptiX::render " << std::endl ; 
 }
+
+
+void CSGOptiX::render_flightpath()
+{
+
+}
+
+
+
 
