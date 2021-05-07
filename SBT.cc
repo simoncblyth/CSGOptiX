@@ -32,6 +32,8 @@
 
 #include "CU.h"
 
+#include "PLOG.hh"
+
 
 /**
 SBT
@@ -59,7 +61,7 @@ SBT::SBT(const PIP* pip_)
 
 void SBT::init()
 {
-    std::cout << "SBT::init" << std::endl ; 
+    LOG(info); 
     createRaygen();
     updateRaygen();
 
@@ -80,18 +82,17 @@ SBT::setFoundry
 
 void SBT::setFoundry(const CSGFoundry* foundry_)
 {
-    std::cout << "[ SBT::setFoundry " << std::endl ; 
+    LOG(info) << "[" ; 
     foundry = foundry_ ; 
 
     createGAS();  
-    std::cout << "after createGAS: " << descGAS() << std::endl ; 
 
     createIAS(); 
 
     createHitgroup(); 
     checkHitgroup(); 
 
-    std::cout << "] SBT::setFoundry " << std::endl ; 
+    LOG(info) << "]" ; 
 }
 
 
@@ -145,8 +146,7 @@ void SBT::createRaygen()
 
 void SBT::updateRaygen()
 {
-    std::cout <<  "SBT::updateRaygen " << std::endl ; 
-
+    LOG(info); 
     raygen->data = {};
     raygen->data.placeholder = 42.0f ;
 
@@ -175,32 +175,26 @@ prim extent is used.
 void SBT::createGAS()  
 {
     unsigned num_solid = foundry->getNumSolid(); 
-    std::cout << "[ SBT::createGAS num_solid " << num_solid << std::endl ;  
-
     for(unsigned i=0 ; i < num_solid ; i++)
     {
         unsigned gas_idx = i ; 
         createGAS(gas_idx); 
     }
-    std::cout << "] SBT::createGAS num_solid " << num_solid << std::endl ;  
+    LOG(info) << descGAS() ; 
 }
 
 void SBT::createGAS(unsigned gas_idx)
 {
-    //std::cout << "[ SBT::createGAS gas_idx " << gas_idx << std::endl ;  
-
     CSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
     GAS gas = {} ;  
     GAS_Builder::Build(gas, ps);
     vgas.push_back(gas);  
-
-    //std::cout << "] SBT::createGAS gas_idx " << gas_idx << std::endl ;  
 }
 
 const GAS& SBT::getGAS(unsigned gas_idx) const 
 {
     bool in_range =  gas_idx < vgas.size() ; 
-    if(!in_range) std::cout << "SBT::getGAS FATAL :  OUT OF RANGE gas_idx " << gas_idx << " vgas.size " << vgas.size() << std::endl ; 
+    if(!in_range) LOG(fatal) << "OUT OF RANGE gas_idx " << gas_idx << " vgas.size " << vgas.size() ; 
     assert(in_range); 
     return vgas[gas_idx]; 
 }
@@ -210,20 +204,18 @@ const GAS& SBT::getGAS(unsigned gas_idx) const
 void SBT::createIAS()
 {
     unsigned num_ias = foundry->getNumUniqueIAS() ; 
-    std::cout << "[ SBT::createIAS num_ias " << num_ias << std::endl ;  
     for(unsigned i=0 ; i < num_ias ; i++)
     {
         unsigned ias_idx = foundry->ias[i]; 
         createIAS(ias_idx); 
     }
-    std::cout << "] SBT::createIAS num_ias " << num_ias << std::endl ;  
 }
 
 void SBT::createIAS(unsigned ias_idx)
 {
     unsigned num_inst = foundry->getNumInst(); 
     unsigned num_ias_inst = foundry->getNumInstancesIAS(ias_idx); 
-    std::cout << "[ SBT::createIAS ias_idx " << ias_idx << " num_inst " << num_inst << std::endl ;  
+    LOG(info) << " ias_idx " << ias_idx << " num_inst " << num_inst ;  
 
     std::vector<qat4> ias_inst ; 
     foundry->getInstanceTransformsIAS(ias_inst, ias_idx );
@@ -232,13 +224,12 @@ void SBT::createIAS(unsigned ias_idx)
     IAS ias = {} ;  
     IAS_Builder::Build(ias, ias_inst, this );
     vias.push_back(ias);  
-    std::cout << "] SBT::createIAS ias_idx " << ias_idx << " num_inst " << num_inst << std::endl ;  
 }
 
 const IAS& SBT::getIAS(unsigned ias_idx) const 
 {
     bool in_range =  ias_idx < vias.size() ; 
-    if(!in_range) std::cout << "SBT::getIAS FATAL :  OUT OF RANGE ias_idx " << ias_idx << " vias.size " << vias.size() << std::endl ; 
+    if(!in_range) LOG(fatal) << "OUT OF RANGE ias_idx " << ias_idx << " vias.size " << vias.size() ; 
     assert(in_range); 
     return vias[ias_idx]; 
 }
@@ -267,7 +258,7 @@ AS* SBT::getAS(const char* spec) const
    assert( c == 'i' || c == 'g' );  
    int idx = atoi( spec + 1 );  
 
-   std::cout << "SBT::getAS " << spec << " c " << c << " idx " << idx << std::endl ; 
+   LOG(info) << " spec " << spec << " c " << c << " idx " << idx  ; 
 
    AS* a = nullptr ; 
    if( c == 'i' )
@@ -279,11 +270,6 @@ AS* SBT::getAS(const char* spec) const
    {   
        const GAS& gas = vgas[idx]; 
        a = (AS*)&gas ; 
-   }   
-
-   if(a)
-   {   
-       std::cout << "SBT::getAS " << spec << std::endl ; 
    }   
    return a ; 
 }
@@ -350,7 +336,7 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
             }
         }         
     }
-    std::cout << "SBT::_getOffsetSBT WARNING : did not find targetted shape " << std::endl ; 
+    LOG(error) << "did not find targetted shape " ; 
     assert(0); 
     return offset_sbt ;  
 }
@@ -444,12 +430,10 @@ void SBT::createHitgroup()
     assert( num_gas == num_solid ); 
     unsigned tot_rec = getTotalRec(); 
 
-    std::cout 
-        << "SBT::createHitgroup"
+    LOG(info)
         << " num_solid " << num_solid 
         << " num_gas " << num_gas 
         << " tot_rec " << tot_rec 
-        << std::endl 
         ; 
 
     hitgroup = new HitGroup[tot_rec] ; 
@@ -470,7 +454,7 @@ void SBT::createHitgroup()
         int numPrim = so->numPrim ; 
         int primOffset = so->primOffset ; 
 
-        std::cout << "SBT::createHitgroup solidIdx " << solidIdx << " so.numPrim " << numPrim << " so.primOffset " << primOffset << std::endl ; 
+        LOG(info) << "solidIdx " << solidIdx << " so.numPrim " << numPrim << " so.primOffset " << primOffset  ; 
 
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
@@ -527,16 +511,12 @@ void SBT::setPrimData( HitGroupData& data, const CSGPrim* prim)
 {
     data.numNode = prim->numNode(); 
     data.nodeOffset = prim->nodeOffset();  
-    //data.tranOffset = prim->tranOffset();  
-    //data.planOffset = prim->planOffset();  
 }
 
 void SBT::checkPrimData( HitGroupData& data, const CSGPrim* prim)
 {
     assert( data.numNode == prim->numNode() ); 
     assert( data.nodeOffset == prim->nodeOffset() );  
-    //assert( data.tranOffset == prim->tranOffset() );  
-    //assert( data.planOffset == prim->planOffset() );  
 }
 void SBT::dumpPrimData( const HitGroupData& data ) const 
 {
@@ -553,12 +533,11 @@ void SBT::checkHitgroup()
     unsigned num_solid = foundry->getNumSolid(); 
     unsigned num_prim = foundry->getNumPrim(); 
     unsigned num_sbt = sbt.hitgroupRecordCount ;
-    std::cout 
-        << "SBT::checkHitgroup" 
+
+    LOG(info)
         << " num_sbt " << num_sbt
         << " num_solid " << num_solid
         << " num_prim " << num_prim
-        << std::endl 
         ; 
 
     assert( num_prim == num_sbt ); 
@@ -570,13 +549,9 @@ void SBT::checkHitgroup()
     {
         unsigned globalPrimIdx = i ; 
         const CSGPrim* prim = foundry->getPrim(globalPrimIdx);         
-
-        //dumpPrimData( hg->data ); 
         checkPrimData( hg->data, prim ); 
-
         hg++ ; 
     }
-
     delete [] check ; 
 }
 
