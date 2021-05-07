@@ -22,7 +22,6 @@ int main(int argc, char** argv)
     ok.configure(); 
 
     const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" );  
-
     std::stringstream tt ; 
     tt << outdir << "/" << "pixels.jpg" ; 
     std::string path = tt.str(); 

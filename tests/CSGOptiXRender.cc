@@ -17,6 +17,9 @@ int main(int argc, char** argv)
     ok.configure(); 
 
     const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" ); 
+    std::stringstream tt ; 
+    tt << outdir << "/" << "pixels.jpg" ; 
+    std::string path = tt.str(); 
 
     int repeatIdx = argc > 1 ? atoi(argv[1]) : 0 ; 
 
@@ -54,7 +57,15 @@ int main(int argc, char** argv)
     cx.setTop( top.c_str() ); 
 
     cx.setCE(ce, tmin_model, tmax_model); 
-    cx.render();  
+    double dt = cx.render();  
+
+
+    std::string top_line = "CSGOptiXRender" ; 
+    std::stringstream ss ; 
+    ss << std::fixed << std::setw(10) << std::setprecision(4) << dt ;  
+    std::string bottom_line = ss.str(); 
+
+    cx.snap(path.c_str(), bottom_line.c_str(), top_line.c_str() );   
 
     return 0 ; 
 }
