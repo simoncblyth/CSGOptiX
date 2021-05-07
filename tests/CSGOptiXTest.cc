@@ -20,7 +20,8 @@ int main(int argc, char** argv)
     CSGFoundry foundry ; 
     DemoGeo dg(&foundry) ;  
     dg.write(outdir);  
-    const float4 ce = dg.getCenterExtent() ;   // defines the center-extent of the region to view
+    float4 ce = dg.getCenterExtent() ;   // defines the center-extent of the region to view
+    ce.w = ce.w*1.4 ; 
 
     foundry.dump(); 
     foundry.upload();   // uploads nodes, planes, transforms

@@ -1,6 +1,7 @@
 
 #include <iostream>
 
+#include "PLOG.hh"
 #include "Params.h"
 
 #include "sutil_vec_math.h"
@@ -9,12 +10,6 @@
 #include "CSGSolid.h"
 #include "CSGPrim.h"
 #include "CSGNode.h"
-
-/*
-#include "SIMG.hh" 
-#include "NP.hh"
-*/
-
 
 #include "Six.h"
 
@@ -32,11 +27,13 @@ Six::Six(const char* ptx_path_, const char* geo_ptx_path_, Params* params_)
 {
     initContext();
     initPipeline(); 
+    initFrame(); 
     updateContext(); 
 }
 
 void Six::initContext()
 {
+    LOG(info); 
     context->setRayTypeCount(1);
     context->setPrintEnabled(true);
     context->setPrintBufferSize(40960);
@@ -44,8 +41,18 @@ void Six::initContext()
     context->setEntryPointCount(1);
 }
 
+void Six::initPipeline()
+{
+    LOG(info); 
+    context->setRayGenerationProgram( entry_point_index, context->createProgramFromPTXFile( ptx_path , "raygen" ));
+    context->setMissProgram(   entry_point_index, context->createProgramFromPTXFile( ptx_path , "miss" ));
+
+    material->setClosestHitProgram( entry_point_index, context->createProgramFromPTXFile( ptx_path, "closest_hit" ));
+}
+
 void Six::initFrame()
 {
+    LOG(info); 
     pixels_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, params->width, params->height);
     context["pixels_buffer"]->set( pixels_buffer );
     params->pixels = (uchar4*)pixels_buffer->getDevicePointer(optix_device_ordinal); 
@@ -55,9 +62,9 @@ void Six::initFrame()
     params->isect = (float4*)posi_buffer->getDevicePointer(optix_device_ordinal); 
 }
 
-
 void Six::updateContext()
 {
+    LOG(info); 
     context[ "tmin"]->setFloat( params->tmin );  
     context[ "eye"]->setFloat( params->eye.x, params->eye.y, params->eye.z  );  
     context[ "U"  ]->setFloat( params->U.x, params->U.y, params->U.z  );  
@@ -67,31 +74,17 @@ void Six::updateContext()
     context[ "cameratype"   ]->setUint( params->cameratype );  
 }
 
-
-void Six::initPipeline()
-{
-    context->setRayGenerationProgram( entry_point_index, context->createProgramFromPTXFile( ptx_path , "raygen" ));
-    context->setMissProgram(   entry_point_index, context->createProgramFromPTXFile( ptx_path , "miss" ));
-
-    material->setClosestHitProgram( entry_point_index, context->createProgramFromPTXFile( ptx_path, "closest_hit" ));
-}
-
 template<typename T>
 void Six::createContextBuffer( T* d_ptr, unsigned num_item, const char* name )
 {
-    std::cout << "[ Six::createContextBuffer " << name << " " << d_ptr << std::endl ; 
+    LOG(info) << name << " " << d_ptr << ( d_ptr == nullptr ? " EMPTY " : "" ); 
     optix::Buffer buffer = context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_USER, num_item );
     buffer->setElementSize( sizeof(T) ); 
     if(d_ptr)
     {
         buffer->setDevicePointer(optix_device_ordinal, d_ptr ); 
     }
-    else
-    {
-        std::cout << "SKIP EMPTY " << std::endl ; 
-    } 
     context[name]->set( buffer );
-    std::cout << "] Six::createContextBuffer " << name << std::endl ; 
 }
 
 template void Six::createContextBuffer( CSGNode*,  unsigned, const char* ) ; 
@@ -107,9 +100,11 @@ void Six::setFoundry(const CSGFoundry* foundry_)  // HMM: maybe makes more sense
     
 void Six::create()
 {
+    LOG(info) << "[" ; 
     createContextBuffers(); 
     createGAS(); 
     createIAS(); 
+    LOG(info) << "]" ; 
 }
 
 
@@ -145,13 +140,11 @@ optix::Geometry Six::createGeometry(unsigned solid_idx)
     unsigned numPrim = so->numPrim ; 
     CSGPrim* d_pr = foundry->d_prim + primOffset ; 
 
-    std::cout 
-        << "Six::createSolidGeometry"
+    LOG(info) 
         << " solid_idx " << std::setw(3) << solid_idx
         << " numPrim " << std::setw(3) << numPrim 
         << " primOffset " << std::setw(3) << primOffset
         << " d_pr " << d_pr
-        << std::endl 
         ;
 
     optix::Geometry solid = context->createGeometry();
@@ -170,7 +163,7 @@ optix::Geometry Six::createGeometry(unsigned solid_idx)
 void Six::createGAS()
 {
     unsigned num_solid = foundry->getNumSolid();   
-    std::cout << "Six::createGAS num_solid " << num_solid << std::endl ;  
+    LOG(info) << "num_solid " << num_solid ;  
 
     for(unsigned i=0 ; i < num_solid ; i++)
     {
@@ -194,12 +187,10 @@ optix::Group Six::createIAS(unsigned ias_idx)
 {
     unsigned num_inst = foundry->getNumInst(); 
     unsigned ias_inst = foundry->getNumInstancesIAS(ias_idx); 
-    std::cout 
-        << "Six::createIAS"
+    LOG(info) 
         << " ias_idx " << ias_idx
         << " num_inst " << num_inst 
         << " ias_inst " << ias_inst 
-        << std::endl
         ; 
     assert( ias_inst > 0); 
 
@@ -264,7 +255,7 @@ void Six::setTop(const char* spec)
     assert( c == 'i' || c == 'g' );  
     int idx = atoi( spec + 1 );  
 
-    std::cout << "Six::setTop spec " << spec << std::endl ; 
+    LOG(info) << "spec " << spec ; 
     if( c == 'i' )
     {
         assert( idx < groups.size() ); 
@@ -292,6 +283,7 @@ void Six::setTop(const char* spec)
 
 void Six::launch()
 {
+    LOG(info) ; 
     context->launch( entry_point_index , params->width, params->height  );  
 }
 
@@ -311,3 +303,5 @@ void Six::save(const char* outdir)
     posi_buffer->unmap(); 
 }
 */
+
+

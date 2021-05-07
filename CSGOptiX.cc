@@ -172,7 +172,9 @@ void CSGOptiX::setCE(const float4& v )
 }
 void CSGOptiX::setCE(const glm::vec4& ce )
 {
-    LOG(LEVEL) << " extent " << ce.w ; 
+    LOG(info) 
+         << " ce [ " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << "]" 
+         ; 
     bool aim = true ; 
     composition->setCenterExtent(ce, aim);  // model2world view setup 
  }
@@ -216,6 +218,14 @@ void CSGOptiX::updateView()
 #else
     ctx->uploadParams();  
 #endif
+
+
+    std::cout 
+        << "CSGOptiX::updateView composition.desc " << std::endl 
+        << composition->desc() 
+        << std::endl
+        ; 
+
 }
 
 double CSGOptiX::render()

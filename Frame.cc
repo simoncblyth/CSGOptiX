@@ -72,9 +72,6 @@ float4* Frame::getDeviceIsect() const
 }
 
 
-
-
-
 void Frame::download()
 {
     download_pixels();  
@@ -83,6 +80,7 @@ void Frame::download()
 
 void Frame::download_pixels()
 {
+    std::cout << "Frame::download_pixels d_pixels " << d_pixels << std::endl ; 
 
     pixels.resize(width*height);  
     CUDA_CHECK( cudaMemcpy(
@@ -95,6 +93,8 @@ void Frame::download_pixels()
 
 void Frame::download_isect()
 {
+    std::cout << "Frame::download_isect d_isect " << d_isect << std::endl ; 
+
     isect.resize(width*height);  
     CUDA_CHECK( cudaMemcpy(
                 static_cast<void*>( isect.data() ),

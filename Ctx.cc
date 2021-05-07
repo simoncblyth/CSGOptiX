@@ -24,8 +24,6 @@ void Ctx::context_log_cb( unsigned int level, const char* tag, const char* messa
         << message << "\n";
 }
 
-
-
 Ctx::Ctx(Params* params_)
     :
     params(params_),
@@ -45,6 +43,7 @@ Ctx::Ctx(Params* params_)
 
 void Ctx::uploadParams()
 {
+    // TODO: avoid allocation on every upload 
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_param ), sizeof( Params ) ) );
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( d_param ),
