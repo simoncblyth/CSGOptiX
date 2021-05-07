@@ -34,10 +34,11 @@ render()
 
     export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/$ridx    # see CSGOptiX/tests/CSGOptiXVersion.cc
     mkdir -p $OUTDIR
-    export CUDA_VISIBLE_DEVICES=0
+    export CUDA_VISIBLE_DEVICES=${CVD:-0}
 
     case $ridx in
-      i) TOP=i0 CAMERATYPE=1 $bin 0  ;;
+      j) TMIN=1.5 EYE=-1.0,-1.0,1.0,1.0  CAMERATYPE=1 TOP=i0 $GDB $bin 0  ;;   ## clear view of the unexpected box
+      i) TMIN=0.2 EYE=-0.5,0.0,0.0,1.0  CAMERATYPE=0 TOP=i0 $GDB $bin 0  ;;
       0) TMIN=0.4 EYE=-0.4,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
       1) TMIN=0.5 EYE=-0.8,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
       2) TMIN=0.5 EYE=-0.8,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;

@@ -199,7 +199,9 @@ void SBT::createGAS(unsigned gas_idx)
 
 const GAS& SBT::getGAS(unsigned gas_idx) const 
 {
-    assert( gas_idx < vgas.size()); 
+    bool in_range =  gas_idx < vgas.size() ; 
+    if(!in_range) std::cout << "SBT::getGAS FATAL :  OUT OF RANGE gas_idx " << gas_idx << " vgas.size " << vgas.size() << std::endl ; 
+    assert(in_range); 
     return vgas[gas_idx]; 
 }
 
@@ -235,7 +237,9 @@ void SBT::createIAS(unsigned ias_idx)
 
 const IAS& SBT::getIAS(unsigned ias_idx) const 
 {
-    assert( ias_idx < vias.size()); 
+    bool in_range =  ias_idx < vias.size() ; 
+    if(!in_range) std::cout << "SBT::getIAS FATAL :  OUT OF RANGE ias_idx " << ias_idx << " vias.size " << vias.size() << std::endl ; 
+    assert(in_range); 
     return vias[ias_idx]; 
 }
 
