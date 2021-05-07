@@ -43,10 +43,11 @@ struct CSGOptiX : public SRenderer
     const char*       cmaketarget ; 
     const char*       ptxpath ; 
     const char*       geoptxpath ; 
-    unsigned          cameratype ; 
+    //unsigned          cameratype ; 
+    float             tmin_model ; 
     int               jpg_quality ; 
 
-    glm::vec4         eye_model ; 
+    //glm::vec4         eye_model ; 
     //CSGView*          view ; 
     Params*           params  ; 
 #if OPTIX_VERSION < 70000

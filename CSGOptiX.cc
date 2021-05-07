@@ -10,7 +10,7 @@
 #include <cuda_runtime.h>
 #include <glm/glm.hpp>
 
-
+#include "SSys.hh"
 #include "BTimeStamp.hh"
 #include "PLOG.hh"
 #include "Opticks.hh"
@@ -74,9 +74,10 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_
 #else
     geoptxpath(nullptr),
 #endif
-    cameratype(CXUtil::GetEValue<unsigned>("CAMERATYPE", 0u )),
+    tmin_model(SSys::getenvfloat("TMIN",0.1)), 
+    //cameratype(CXUtil::GetEValue<unsigned>("CAMERATYPE", 0u )), 
     jpg_quality(CXUtil::GetEValue<int>("QUALITY", 50)),
-    eye_model(-1.f, -1.f, 1.f, 1.f ),
+    //eye_model(-1.f, -1.f, 1.f, 1.f ),
     //view(new CSGView),
     params(new Params),
 #if OPTIX_VERSION < 70000
@@ -98,7 +99,7 @@ void CSGOptiX::init()
     assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     assert( outdir && "expecting OUTDIR envvar " );
 
-    CXUtil::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0,1.0"); 
+    //CXUtil::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0,1.0"); 
     LOG(LEVEL) << " ptxpath " << ptxpath  ; 
     LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ; 
 
@@ -172,12 +173,19 @@ void CSGOptiX::setCE(const float4& v )
 }
 void CSGOptiX::setCE(const glm::vec4& ce )
 {
-    LOG(info) 
-         << " ce [ " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << "]" 
-         ; 
     bool aim = true ; 
     composition->setCenterExtent(ce, aim);  // model2world view setup 
- }
+
+    float extent = ce.w ; 
+    float tmin = extent*tmin_model ; 
+    LOG(info) 
+        << " ce [ " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << "]" 
+        << " tmin_model " << tmin_model
+        << " tmin " << tmin 
+        ; 
+
+    composition->setNear(tmin); 
+}
 
 
 void CSGOptiX::updateView()
