@@ -2,10 +2,13 @@
 
 #include <optix.h>
 #include <glm/fwd.hpp>
+#include "plog/Severity.h"
 
 struct CSGFoundry ; 
 struct View ; 
 struct Params ; 
+
+class Opticks ; 
 
 #if OPTIX_VERSION < 70000
 struct Six ; 
@@ -16,8 +19,11 @@ struct SBT ;
 #endif
 struct Frame ; 
 
-struct CSGOptiX
+#include "SRenderer.hh"
+
+struct CSGOptiX : public SRenderer 
 {
+    static const plog::Severity LEVEL ; 
     static const char* PTXNAME ; 
     static const char* GEO_PTXNAME ; 
     static const char* ENV(const char* key, const char* fallback);
@@ -26,6 +32,7 @@ struct CSGOptiX
     unsigned height = 720u ; 
     unsigned depth = 1u ; 
 
+    Opticks*          ok ;  
     const CSGFoundry* foundry ; 
     const char*       prefix ; 
     const char*       outdir ; 
@@ -48,13 +55,18 @@ struct CSGOptiX
     Frame* frame ; 
 
 
-    CSGOptiX(const CSGFoundry* foundry, const char* outdir); 
+    CSGOptiX(Opticks* ok, const CSGFoundry* foundry, const char* outdir); 
     void init(); 
     void setCE(const glm::vec4& ce, float tmin_model, float tmax_model );
     void setTop(const char* tspec); 
 
-    void render(); 
-    void render_flightpath(); 
+    int  render_flightpath(); 
+
+    // fulfils SRenderer protocol
+    double render();    
+    void snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height); 
+
+
 
 };
 

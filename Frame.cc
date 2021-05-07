@@ -4,17 +4,24 @@
 #include <cuda_runtime.h>
 #include "CUDA_CHECK.h"
 
+#include "PLOG.hh"
 #include "NP.hh"
 #include "Frame.h"
+
+
+#define STTF_IMPLEMENTATION 1 
+#include "STTF.hh"
 
 #define SIMG_IMPLEMENTATION 1 
 #include "SIMG.hh"
 
-Frame::Frame(unsigned width_, unsigned height_, unsigned depth_)
+Frame::Frame(int width_, int height_)
     :
     width(width_),
     height(height_),
-    depth(depth_)
+    depth(1),
+    channels(4),
+    ttf(PLOG::instance->ttf)
 {
     init();
 }
@@ -87,6 +94,22 @@ void Frame::download_isect()
 }
 
 
+
+void Frame::annotate( const char* bottom_line, const char* top_line, int line_height )
+{
+    if(!ttf->valid || line_height > int(height)) return ; 
+    unsigned char* ptr = (unsigned char*)pixels.data() ; 
+
+    if( top_line )
+        ttf->annotate( ptr, int(channels), int(width), int(height), line_height, top_line, false ); 
+
+    if( bottom_line )
+        ttf->annotate( ptr, int(channels), int(width), int(height), line_height, bottom_line, true ); 
+}
+
+
+
+
 void Frame::write(const char* outdir, int jpg_quality) const 
 {
     std::cout << "Frame::write " << outdir << std::endl ; 
@@ -97,18 +120,32 @@ void Frame::write(const char* outdir, int jpg_quality) const
 
 void Frame::writePNG(const char* dir, const char* name) const 
 {
-    int channels = 4 ; 
     const unsigned char* data = (const unsigned char*)pixels.data();  
-    SIMG img(int(width), int(height), channels,  data ); 
+    SIMG img(width, height, channels,  data ); 
     img.writePNG(dir, name); 
 }
+void Frame::writePNG(const char* path) const 
+{
+    const unsigned char* data = (const unsigned char*)pixels.data();  
+    SIMG img(width, height, channels,  data ); 
+    img.writePNG(path); 
+}
+
+
+
 void Frame::writeJPG(const char* dir, const char* name, int quality) const 
 {
-    int channels = 4 ; 
     const unsigned char* data = (const unsigned char*)pixels.data();  
-    SIMG img(int(width), int(height), channels,  data ); 
+    SIMG img(width, height, channels,  data ); 
     img.writeJPG(dir, name, quality); 
 }
+void Frame::writeJPG(const char* path, int quality) const 
+{
+    const unsigned char* data = (const unsigned char*)pixels.data();  
+    SIMG img(width, height, channels,  data ); 
+    img.writeJPG(path, quality); 
+}
+
 
 void Frame::writeNP( const char* dir, const char* name) const 
 {
@@ -120,6 +157,8 @@ float* Frame::getIntersectData() const
 {
     return (float*)isect.data();
 }
+
+
 
 
 

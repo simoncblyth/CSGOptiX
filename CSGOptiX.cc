@@ -11,7 +11,10 @@
 #include <glm/glm.hpp>
 
 
+#include "BTimeStamp.hh"
 #include "PLOG.hh"
+#include "Opticks.hh"
+#include "FlightPath.hh"
 
 
 #include "sutil_vec_math.h"
@@ -36,6 +39,9 @@
 
 #include "CSGOptiX.h"
 
+
+const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "DEBUG" ); 
+
 #if OPTIX_VERSION < 70000 
 const char* CSGOptiX::PTXNAME = "OptiX6Test" ; 
 const char* CSGOptiX::GEO_PTXNAME = "geo_OptiX6Test" ; 
@@ -53,8 +59,9 @@ const char* CSGOptiX::ENV(const char* key, const char* fallback)
 }
 
 
-CSGOptiX::CSGOptiX(const CSGFoundry* foundry_, const char* outdir_) 
+CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_) 
     :
+    ok(ok_),
     foundry(foundry_),
     prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),
     outdir(outdir_),
@@ -77,21 +84,20 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_, const char* outdir_)
     pip(new PIP(ptxpath)), 
     sbt(new SBT(pip)),
 #endif
-    frame(new Frame(width, height, depth))
+    frame(new Frame(width, height))
 {
     init(); 
 }
 
 void CSGOptiX::init()
 {
-    std::cout << "[ CSGOptiX::init " << std::endl ; 
+    LOG(LEVEL) << "[" ; 
     assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     assert( outdir && "expecting OUTDIR envvar " );
 
     CXUtil::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0,1.0"); 
-    std::cout << " ptxpath " << ptxpath << std::endl ; 
-    std::cout << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) << std::endl ; 
-    std::cout << "] CSGOptiX::init " << std::endl ; 
+    LOG(LEVEL) << " ptxpath " << ptxpath  ; 
+    LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ; 
 
     params->node = foundry->d_node ; 
     params->plan = foundry->d_plan ; 
@@ -102,7 +108,6 @@ void CSGOptiX::init()
     if(!is_uploaded) LOG(fatal) << "foundry must be uploaded prior to CSGOptiX::init " ;  
     assert( is_uploaded ); 
 
-    std::cout << "[ CSGOptiX::init.setFoundry " << std::endl ; 
 #if OPTIX_VERSION < 70000
     six->setFoundry(foundry);
 #else
@@ -110,16 +115,12 @@ void CSGOptiX::init()
     params->pixels = frame->getDevicePixels(); 
     params->isect  = frame->getDeviceIsect(); 
 #endif
-    std::cout << "] CSGOptiX::init.setFoundry " << std::endl ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 void CSGOptiX::setTop(const char* tspec)
 {
-    std::cout 
-        << "[ CSGOptiX::setTop " 
-        << " tspec " << tspec 
-        << std::endl 
-        ; 
+    LOG(LEVEL) << "[" << " tspec " << tspec ; 
 
 #if OPTIX_VERSION < 70000
     six->setTop(tspec); 
@@ -128,6 +129,8 @@ void CSGOptiX::setTop(const char* tspec)
     AS* top = sbt->getTop(); 
     params->handle = top->handle ; 
 #endif
+
+    LOG(LEVEL) << "]" << " tspec " << tspec ; 
 }
 
 void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model )
@@ -136,14 +139,13 @@ void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model )
     float tmin = extent*tmin_model ; 
     float tmax = extent*tmax_model ; 
 
-    std::cout 
-        << "[ CSGOptiX::setCE " 
+    LOG(LEVEL)
+        << "[" 
         << " extent " << extent
         << " tmin_model " << tmin_model 
         << " tmax_model " << tmax_model 
         << " tmin " << tmin 
         << " tmax " << tmax 
-        << std::endl 
         ; 
 
     view->update(eye_model, ce, width, height) ; 
@@ -152,34 +154,54 @@ void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model )
 
     params->setView(view->eye, view->U, view->V, view->W, tmin, tmax, cameratype ); 
     params->setSize(frame->width, frame->height, frame->depth); 
-
-    std::cout << "] CSGOptiX::setCE " << std::endl ; 
-}
-
-void CSGOptiX::render()
-{
-    std::cout << "[ CSGOptiX::render " << std::endl ; 
 #if OPTIX_VERSION < 70000
-    six->launch(); 
-    six->save(outdir); 
 #else
     ctx->uploadParams();  
+#endif
+
+    LOG(LEVEL) << "[" ; 
+ }
+
+double CSGOptiX::render()
+{
+    LOG(LEVEL) << "[" ; 
+    double t0, t1 ; 
+#if OPTIX_VERSION < 70000
+    t0 = BTimeStamp::RealTime();
+    six->launch(); 
+    t1 = BTimeStamp::RealTime();
+    six->save(outdir); 
+#else
+
+    t0 = BTimeStamp::RealTime();
 
     CUstream stream;
     CUDA_CHECK( cudaStreamCreate( &stream ) );
     OPTIX_CHECK( optixLaunch( pip->pipeline, stream, ctx->d_param, sizeof( Params ), &(sbt->sbt), frame->width, frame->height, frame->depth ) );
     CUDA_SYNC_CHECK();
 
-    frame->download(); 
-    frame->write(outdir, jpg_quality);  
+    t1 = BTimeStamp::RealTime();
+
 #endif
-    std::cout << "] CSGOptiX::render " << std::endl ; 
+    double dt = t1 - t0 ; 
+    LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
+    return dt ; 
 }
 
 
-void CSGOptiX::render_flightpath()
+void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
 {
+    frame->download(); 
+    frame->annotate( bottom_line, top_line, line_height ); 
+    frame->writeJPG(path, jpg_quality);  
+}
 
+
+int CSGOptiX::render_flightpath()
+{
+    FlightPath* fp = ok->getFlightPath();   // FlightPath lazily instanciated here (held by Opticks)
+    int rc = fp->render( (SRenderer*)this  );
+    return rc ; 
 }
 
 

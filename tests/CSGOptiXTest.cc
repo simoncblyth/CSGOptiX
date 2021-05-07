@@ -1,4 +1,6 @@
 #include "SSys.hh"
+#include "OPTICKS_LOG.hh"
+#include "Opticks.hh"
 
 #include "sutil_vec_math.h"
 #include "CSGFoundry.h"
@@ -8,12 +10,14 @@
 #include "DemoGeo.h"
 #include "glm/glm.hpp"
 
-#include "OPTICKS_LOG.hh"
-
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
     const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" );  
 
     CSGFoundry foundry ; 
@@ -22,7 +26,7 @@ int main(int argc, char** argv)
     foundry.dump(); 
     foundry.upload();   // uploads nodes, planes, transforms
 
-    CSGOptiX cx(&foundry, outdir); 
+    CSGOptiX cx(&ok, &foundry, outdir); 
     cx.setTop( dg.top ); 
 
     const float4 gce = dg.getCenterExtent() ;  
@@ -33,6 +37,9 @@ int main(int argc, char** argv)
 
     cx.setCE(ce, tmin_model, tmax_model ); 
     cx.render(); 
+
+    
+
 
     return 0 ; 
 }

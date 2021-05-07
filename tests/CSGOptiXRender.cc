@@ -2,6 +2,7 @@
 
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
+#include "Opticks.hh"
 
 #include "sutil_vec_math.h"
 #include "CSGFoundry.h"
@@ -11,6 +12,10 @@
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
     const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" ); 
 
     int repeatIdx = argc > 1 ? atoi(argv[1]) : 0 ; 
@@ -45,7 +50,7 @@ int main(int argc, char** argv)
     float tmin_model = CXUtil::GetEValue<float>("TMIN", 0.1) ;
     float tmax_model = CXUtil::GetEValue<float>("TMAX", 100.0) ;
 
-    CSGOptiX cx(fd, outdir); 
+    CSGOptiX cx(&ok, fd, outdir); 
     cx.setTop( top.c_str() ); 
 
     cx.setCE(ce, tmin_model, tmax_model); 

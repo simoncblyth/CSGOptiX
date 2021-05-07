@@ -3,18 +3,24 @@
 #include <vector>
 #include <vector_types.h>
 
+
+struct STTF ; 
+
 struct Frame
 {
-    unsigned width ; 
-    unsigned height ; 
-    unsigned depth ; 
+    int width ; 
+    int height ; 
+    int depth ; 
+    int channels ; 
+
+    STTF*    ttf ;
 
     std::vector<float4> isect ; 
     std::vector<uchar4> pixels ; 
     uchar4* d_pixels = nullptr ; 
     float4* d_isect = nullptr ; 
 
-    Frame(unsigned width_, unsigned height_, unsigned depth_);
+    Frame(int width_, int height_ );
  
     void init(); 
     void init_pixels();
@@ -24,9 +30,15 @@ struct Frame
     void download_pixels();
     void download_isect();
 
+    void annotate( const char* bottom_line, const char* top_line, int line_height=24  );
+
     void write(const char* outdir, int jpg_quality) const ;
     void writePNG(const char* dir, const char* name) const ;
     void writeJPG(const char* dir, const char* name, int quality) const ;
+
+    void writePNG(const char* path) const ;
+    void writeJPG(const char* path, int quality) const ;
+
     void writeNP( const char* dir, const char* name) const ;
 
     float* getIntersectData() const ;

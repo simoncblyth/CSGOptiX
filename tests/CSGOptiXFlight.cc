@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     float tmin_model = CXUtil::GetEValue<float>("TMIN", 0.1) ;
     float tmax_model = CXUtil::GetEValue<float>("TMAX", 100.0) ;
 
-    CSGOptiX cx(fd, outdir); 
+    CSGOptiX cx(&ok, fd, outdir); 
     cx.setTop(top.c_str());
 
     cx.setCE(ce, tmin_model, tmax_model); 
