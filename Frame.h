@@ -13,14 +13,16 @@ struct Frame
     int depth ; 
     int channels ; 
 
+    bool     alloc ; 
     STTF*    ttf ;
 
     std::vector<float4> isect ; 
     std::vector<uchar4> pixels ; 
+
     uchar4* d_pixels = nullptr ; 
     float4* d_isect = nullptr ; 
 
-    Frame(int width_, int height_ );
+    Frame(int width, int height, bool alloc=true );
  
     void init(); 
     void init_pixels();

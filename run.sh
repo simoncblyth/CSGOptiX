@@ -11,7 +11,12 @@ rm -rf $OUTDIR
 mkdir -p $OUTDIR
 mkdir -p $OUTDIR/foundry
 
-echo $msg BINARY $BINARY spec $spec
+echo RM LOGDIR $LOGDIR
+rm -rf $LOGDIR
+mkdir -p $LOGDIR
+
+echo $msg BINARY $BINARY spec $spec LOGDIR $LOGDIR
+cd $LOGDIR
 
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Linux" ]; then

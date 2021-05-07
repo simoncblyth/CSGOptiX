@@ -14,6 +14,7 @@
 #include "BTimeStamp.hh"
 #include "PLOG.hh"
 #include "Opticks.hh"
+#include "Composition.hh"
 #include "FlightPath.hh"
 
 
@@ -23,7 +24,7 @@
 #include "CSGFoundry.h"
 
 #include "CXUtil.h"
-#include "View.h"
+#include "CSGView.h"
 #include "Frame.h"
 #include "Params.h"
 
@@ -62,6 +63,7 @@ const char* CSGOptiX::ENV(const char* key, const char* fallback)
 CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_) 
     :
     ok(ok_),
+    composition(ok->getComposition()),
     foundry(foundry_),
     prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),
     outdir(outdir_),
@@ -75,16 +77,17 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_
     cameratype(CXUtil::GetEValue<unsigned>("CAMERATYPE", 0u )),
     jpg_quality(CXUtil::GetEValue<int>("QUALITY", 50)),
     eye_model(-1.f, -1.f, 1.f, 1.f ),
-    view(new View),
+    view(new CSGView),
     params(new Params),
 #if OPTIX_VERSION < 70000
     six(new Six(ptxpath, geoptxpath, params)),
+    frame(new Frame(width, height, false))    // dont allocate, optix6 buffer holds the pixels
 #else
     ctx(new Ctx(params)),
     pip(new PIP(ptxpath)), 
     sbt(new SBT(pip)),
+    frame(new Frame(width, height, true))    // allocate, CUDA holds the pixels 
 #endif
-    frame(new Frame(width, height))
 {
     init(); 
 }
@@ -99,6 +102,15 @@ void CSGOptiX::init()
     LOG(LEVEL) << " ptxpath " << ptxpath  ; 
     LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ; 
 
+    initGeometry();
+    initFrame(); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+void CSGOptiX::initGeometry()
+{
     params->node = foundry->d_node ; 
     params->plan = foundry->d_plan ; 
     params->tran = foundry->d_tran ; 
@@ -112,11 +124,23 @@ void CSGOptiX::init()
     six->setFoundry(foundry);
 #else
     sbt->setFoundry(foundry); 
+#endif
+
+}
+
+void CSGOptiX::initFrame()
+{
+#if OPTIX_VERSION < 70000
+    six->initFrame();     // sets params->pixels, isect from optix device pointers
+    frame->d_pixels = params->pixels ; 
+    frame->d_isect = params->isect ; 
+#else
     params->pixels = frame->getDevicePixels(); 
     params->isect  = frame->getDeviceIsect(); 
 #endif
-    LOG(LEVEL) << "]" ; 
 }
+
+
 
 void CSGOptiX::setTop(const char* tspec)
 {
@@ -164,13 +188,44 @@ void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model )
 
 double CSGOptiX::render()
 {
+    glm::vec3 eye ;
+    glm::vec3 U ; 
+    glm::vec3 V ; 
+    glm::vec3 W ; 
+    glm::vec4 ZProj ;
+
+    composition->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
+
+/*
+    unsigned cameratype = composition->getCameraType();  // 0:PERSP, 1:ORTHO, 2:EQUIRECT
+    unsigned pixeltime_style = composition->getPixelTimeStyle() ; 
+    float    pixeltime_scale = composition->getPixelTimeScale() ; 
+    float      scene_epsilon = composition->getNear();
+
+    const glm::vec3 front = glm::normalize(W); 
+
+
+    m_context[ "cameratype"]->setUint( cameratype );  
+    m_context[ "pixeltime_style"]->setUint( pixeltime_style );  
+    m_context[ "pixeltime_scale"]->setFloat( pixeltime_scale );  
+    m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
+    m_context[ "eye"]->setFloat( make_float3( eye.x, eye.y, eye.z ) );
+    m_context[ "U"  ]->setFloat( make_float3( U.x, U.y, U.z ) );
+    m_context[ "V"  ]->setFloat( make_float3( V.x, V.y, V.z ) );
+    m_context[ "W"  ]->setFloat( make_float3( W.x, W.y, W.z ) );
+    m_context[ "front"  ]->setFloat( make_float3( front.x, front.y, front.z ) );
+    m_context[ "ZProj"  ]->setFloat( make_float4( ZProj.x, ZProj.y, ZProj.z, ZProj.w ) );
+
+*/
+
+
+
     LOG(LEVEL) << "[" ; 
     double t0, t1 ; 
 #if OPTIX_VERSION < 70000
     t0 = BTimeStamp::RealTime();
     six->launch(); 
     t1 = BTimeStamp::RealTime();
-    six->save(outdir); 
 #else
 
     t0 = BTimeStamp::RealTime();

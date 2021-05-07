@@ -10,13 +10,16 @@
 #include "CSGPrim.h"
 #include "CSGNode.h"
 
+/*
 #include "SIMG.hh" 
 #include "NP.hh"
+*/
+
 
 #include "Six.h"
 
     
-Six::Six(const char* ptx_path_, const char* geo_ptx_path_, const Params* params_)
+Six::Six(const char* ptx_path_, const char* geo_ptx_path_, Params* params_)
     :
     context(optix::Context::create()),
     material(context->createMaterial()),
@@ -29,6 +32,7 @@ Six::Six(const char* ptx_path_, const char* geo_ptx_path_, const Params* params_
 {
     initContext();
     initPipeline(); 
+    updateContext(); 
 }
 
 void Six::initContext()
@@ -38,7 +42,22 @@ void Six::initContext()
     context->setPrintBufferSize(40960);
     context->setPrintLaunchIndex(-1,-1,-1); 
     context->setEntryPointCount(1);
+}
 
+void Six::initFrame()
+{
+    pixels_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, params->width, params->height);
+    context["pixels_buffer"]->set( pixels_buffer );
+    params->pixels = (uchar4*)pixels_buffer->getDevicePointer(optix_device_ordinal); 
+
+    posi_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, params->width, params->height);
+    context["posi_buffer"]->set( posi_buffer );
+    params->isect = (float4*)posi_buffer->getDevicePointer(optix_device_ordinal); 
+}
+
+
+void Six::updateContext()
+{
     context[ "tmin"]->setFloat( params->tmin );  
     context[ "eye"]->setFloat( params->eye.x, params->eye.y, params->eye.z  );  
     context[ "U"  ]->setFloat( params->U.x, params->U.y, params->U.z  );  
@@ -46,12 +65,8 @@ void Six::initContext()
     context[ "W"  ]->setFloat( params->W.x, params->W.y, params->W.z  );  
     context[ "radiance_ray_type"   ]->setUint( 0u );  
     context[ "cameratype"   ]->setUint( params->cameratype );  
-
-    pixels_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, params->width, params->height);
-    context["pixels_buffer"]->set( pixels_buffer );
-    posi_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, params->width, params->height);
-    context["posi_buffer"]->set( posi_buffer );
 }
+
 
 void Six::initPipeline()
 {
@@ -71,6 +86,10 @@ void Six::createContextBuffer( T* d_ptr, unsigned num_item, const char* name )
     {
         buffer->setDevicePointer(optix_device_ordinal, d_ptr ); 
     }
+    else
+    {
+        std::cout << "SKIP EMPTY " << std::endl ; 
+    } 
     context[name]->set( buffer );
     std::cout << "] Six::createContextBuffer " << name << std::endl ; 
 }
@@ -276,6 +295,8 @@ void Six::launch()
     context->launch( entry_point_index , params->width, params->height  );  
 }
 
+
+/*
 void Six::save(const char* outdir) 
 {
     int channels = 4 ; 
@@ -289,4 +310,4 @@ void Six::save(const char* outdir)
     NP::Write(outdir, "posi.npy",  (float*)posi_buffer->map(), params->height, params->width, 4 );
     posi_buffer->unmap(); 
 }
-
+*/

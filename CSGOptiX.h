@@ -5,7 +5,8 @@
 #include "plog/Severity.h"
 
 struct CSGFoundry ; 
-struct View ; 
+struct CSGView ; 
+
 struct Params ; 
 
 class Opticks ; 
@@ -33,6 +34,8 @@ struct CSGOptiX : public SRenderer
     unsigned depth = 1u ; 
 
     Opticks*          ok ;  
+    Composition*      composition ; 
+ 
     const CSGFoundry* foundry ; 
     const char*       prefix ; 
     const char*       outdir ; 
@@ -43,7 +46,7 @@ struct CSGOptiX : public SRenderer
     int               jpg_quality ; 
 
     glm::vec4         eye_model ; 
-    View*             view ; 
+    CSGView*          view ; 
     Params*           params  ; 
 #if OPTIX_VERSION < 70000
     Six* six ;  
@@ -56,7 +59,11 @@ struct CSGOptiX : public SRenderer
 
 
     CSGOptiX(Opticks* ok, const CSGFoundry* foundry, const char* outdir); 
+
     void init(); 
+    void initGeometry();
+    void initFrame();
+ 
     void setCE(const glm::vec4& ce, float tmin_model, float tmax_model );
     void setTop(const char* tspec); 
 

@@ -15,19 +15,29 @@
 #define SIMG_IMPLEMENTATION 1 
 #include "SIMG.hh"
 
-Frame::Frame(int width_, int height_)
+Frame::Frame(int width_, int height_, bool alloc_)
     :
     width(width_),
     height(height_),
     depth(1),
     channels(4),
+    alloc(alloc_),
     ttf(PLOG::instance->ttf)
 {
     init();
 }
 
+/**
+Frame::init
+-------------
+
+Allocates pixels and isect on device. 
+
+**/
+
 void Frame::init()
 {
+    if(!alloc) return ; 
     init_pixels(); 
     init_isect(); 
 }
@@ -73,6 +83,7 @@ void Frame::download()
 
 void Frame::download_pixels()
 {
+
     pixels.resize(width*height);  
     CUDA_CHECK( cudaMemcpy(
                 static_cast<void*>( pixels.data() ),

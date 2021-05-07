@@ -15,7 +15,7 @@ struct Six
     optix::Buffer      pixels_buffer ; 
     optix::Buffer      posi_buffer ; 
 
-    const Params*     params ; 
+    Params*           params ; 
     const char*       ptx_path ; 
     const char*       geo_ptx_path ; 
     unsigned          entry_point_index ; 
@@ -25,8 +25,11 @@ struct Six
     std::vector<optix::Geometry> solids ; 
     std::vector<optix::Group>    groups ; 
 
-    Six(const char* ptx_path, const char* geo_ptx_path, const Params* params_);  
+    Six(const char* ptx_path, const char* geo_ptx_path, Params* params_);  
     void initContext();
+    void initFrame();   // hookup pixels and isect buffers
+
+    void updateContext();  // for changed params such as viewpoint 
     void initPipeline();
     void setFoundry(const CSGFoundry* foundry);
 
@@ -42,6 +45,7 @@ struct Six
  
     void setTop(const char* spec);
     void launch();
-    void save(const char* outdir) ; 
+
+    //void save(const char* outdir) ; 
 
 };

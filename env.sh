@@ -82,7 +82,7 @@ layers=1
 
 export CSG_OPTIX_VERSION=$(CSGOptiXVersion)
 export BINARY=CSGOptiXTest 
-export OUTBASE=/tmp/$USER/opticks/CSGOptiX/$BINARY
+export OUTBASE=/tmp/$USER/opticks/CSGOptiX/$BINARY/${CSG_OPTIX_VERSION}
 
 # make sensitive to calling environment
 export GEOMETRY=${GEOMETRY:-$geometry}
@@ -100,7 +100,8 @@ export GRIDSCALE=${GRIDSCALE:-$gridscale}
 
 export EYE=${EYE:-$eye} 
 export LAYERS=${LAYERS:-$layers}
-export OUTDIR=$OUTBASE/$GEOMETRY/${CSG_OPTIX_VERSION}
+export OUTDIR=$OUTBASE/$GEOMETRY
+export LOGDIR=${OUTDIR}.logs
 
 fmt="%-20s : %s \n"
 printf "$fmt" name $name
@@ -121,5 +122,6 @@ printf "$fmt" EYE $EYE
 printf "$fmt" LAYERS $LAYERS
 printf "$fmt" OUTBASE $OUTBASE
 printf "$fmt" OUTDIR $OUTDIR
+printf "$fmt" LOGDIR $LOGDIR
 
 return 0 
