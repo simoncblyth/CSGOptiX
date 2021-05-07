@@ -23,9 +23,9 @@ int main(int argc, char** argv)
 
     int repeatIdx = argc > 1 ? atoi(argv[1]) : 0 ; 
 
-    std::stringstream ss ; 
-    ss << "g" << repeatIdx ; 
-    std::string s = ss.str(); 
+    std::stringstream uu ; 
+    uu << "g" << repeatIdx ; 
+    std::string s = uu.str(); 
     std::string top = CXUtil::GetEValue<std::string>("TOP", s.c_str() ); 
 
     std::string cfbase = CXUtil::GetEValue<std::string>("CFBASE", "/tmp" );  
