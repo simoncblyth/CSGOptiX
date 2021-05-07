@@ -17,6 +17,9 @@
 #include "GAS.h"
 #include "GAS_Builder.h"
 
+#include "PLOG.hh"
+
+
 /**
 GAS_Builder::Build
 -------------------
@@ -28,13 +31,11 @@ void GAS_Builder::Build( GAS& gas, const  CSGPrimSpec& ps )  // static
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
     unsigned stride_in_floats = ps.stride_in_bytes / sizeof(float) ;
 
-    std::cout 
-        << "GAS_Builder::Build"
-        << " ps.num_prim " << ps.num_prim
+    LOG(info)
+        << " ps.num_prim " << std::setw(4) << ps.num_prim
         << " ps.stride_in_bytes " << ps.stride_in_bytes 
         << " ps.device " << ps.device
         << " stride_in_floats " << stride_in_floats 
-        << std::endl
         ; 
 
     Build_11N(gas, ps);  
@@ -80,7 +81,7 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
         std::vector<float> tmp ; 
         ps.gather(tmp); 
         CSGPrimSpec::Dump(tmp); 
-        std::cout << "GAS_Builder::MakeCustomPrimitivesBI_11N : YUCK : RE-UPLOADING bbox/sbtIndexOffset " << std::endl ; 
+        LOG(error) << "YUCK : RE-UPLOADING bbox/sbtIndexOffset " ; 
 
         bi.sbt_index = new unsigned[ps.num_prim];
         for(unsigned i=0 ; i < ps.num_prim ; i++) bi.sbt_index[i] = i ; 

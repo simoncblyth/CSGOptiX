@@ -77,7 +77,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_
     cameratype(CXUtil::GetEValue<unsigned>("CAMERATYPE", 0u )),
     jpg_quality(CXUtil::GetEValue<int>("QUALITY", 50)),
     eye_model(-1.f, -1.f, 1.f, 1.f ),
-    view(new CSGView),
+    //view(new CSGView),
     params(new Params),
 #if OPTIX_VERSION < 70000
     six(new Six(ptxpath, geoptxpath, params)),
@@ -209,7 +209,7 @@ void CSGOptiX::updateView()
         << " W (" << W.x << " " << W.y << " " << W.z << " ) "
         ;
 
-    params->setView(view->eye, view->U, view->V, view->W);
+    params->setView(eye, U, V, W);
     params->setCamera(tmin, tmax, cameratype ); 
     params->setSize(frame->width, frame->height, frame->depth); 
 

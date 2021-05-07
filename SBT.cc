@@ -64,7 +64,6 @@ void SBT::init()
     LOG(info); 
     createRaygen();
     updateRaygen();
-
     createMiss();
     updateMiss(); 
 }
@@ -105,7 +104,7 @@ NB the records have opaque header and user data
 
 void SBT::createMiss()
 {
-    std::cout << "[ SBT::createMiss " << std::endl ; 
+    LOG(info); 
     miss = new Miss ; 
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_miss ), sizeof(Miss) ) );
     sbt.missRecordBase = d_miss;
@@ -113,7 +112,6 @@ void SBT::createMiss()
 
     sbt.missRecordStrideInBytes     = sizeof( Miss );
     sbt.missRecordCount             = 1;
-    std::cout << "] SBT::createMiss " << std::endl ; 
 }
 
 void SBT::updateMiss()

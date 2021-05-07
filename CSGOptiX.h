@@ -47,7 +47,7 @@ struct CSGOptiX : public SRenderer
     int               jpg_quality ; 
 
     glm::vec4         eye_model ; 
-    CSGView*          view ; 
+    //CSGView*          view ; 
     Params*           params  ; 
 #if OPTIX_VERSION < 70000
     Six* six ;  

@@ -18,6 +18,8 @@
 #include "IAS_Builder.h"
 #include "SBT.h"
 
+#include "PLOG.hh"
+
 /**
 IAS_Builder::Build
 --------------------
@@ -32,7 +34,7 @@ of the GAS.
 void IAS_Builder::Build(IAS& ias, const std::vector<qat4>& ias_inst, const SBT* sbt) // static 
 {
     unsigned num_ias_inst = ias_inst.size() ; 
-    std::cout << "IAS_Builder::Build num_ias_inst " << num_ias_inst << std::endl ; 
+    LOG(info) << "num_ias_inst " << num_ias_inst ; 
     assert( num_ias_inst > 0); 
 
     unsigned flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
@@ -72,7 +74,7 @@ Boilerplate turning the vector of OptixInstance into an IAS.
 void IAS_Builder::Build(IAS& ias, const std::vector<OptixInstance>& instances)
 {
     unsigned numInstances = instances.size() ; 
-    std::cout << "IAS_Builder::bBild numInstances " << numInstances << std::endl ; 
+    LOG(info) << "numInstances " << numInstances ; 
 
     unsigned numBytes = sizeof( OptixInstance )*numInstances ; 
 
@@ -147,11 +149,10 @@ void IAS_Builder::Build(IAS& ias, const std::vector<OptixInstance>& instances)
 
         CUDA_CHECK( cudaFree( (void*)d_buffer_temp_output_as_and_compacted_size ) );
 
-        std::cout 
-            << "IAS::build (compacted is smaller) "
+        LOG(info)
+            << "(compacted is smaller) "
             << " compacted_as_size : " << compacted_as_size
             << " as_buffer_sizes.outputSizeInBytes : " << as_buffer_sizes.outputSizeInBytes
-            << std::endl
             ; 
 
     }
@@ -159,11 +160,10 @@ void IAS_Builder::Build(IAS& ias, const std::vector<OptixInstance>& instances)
     {
         ias.d_buffer = d_buffer_temp_output_as_and_compacted_size;
 
-        std::cout 
-            << "IAS_Builder::Build (compacted not smaller) "
+        LOG(info) 
+            << "(compacted not smaller) "
             << " compacted_as_size : " << compacted_as_size
             << " as_buffer_sizes.outputSizeInBytes : " << as_buffer_sizes.outputSizeInBytes
-            << std::endl
             ; 
     }
 }
