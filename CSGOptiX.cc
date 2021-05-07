@@ -124,8 +124,9 @@ void CSGOptiX::render(const char* tspec)
 #else
     Ctx ctx(params) ;
     PIP pip(ptxpath); 
-    SBT sbt(&pip);
 
+
+    SBT sbt(&pip);
     std::cout << "[ CSGOptiX::render.setFoundry " << std::endl ; 
     sbt.setFoundry(foundry); 
     std::cout << "] CSGOptiX::render.setFoundry " << std::endl ; 
@@ -150,5 +151,4 @@ void CSGOptiX::render(const char* tspec)
 #endif
     std::cout << "] CSGOptiX::render " << std::endl ; 
 }
-
 

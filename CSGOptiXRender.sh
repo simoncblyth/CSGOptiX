@@ -36,7 +36,8 @@ render()
     mkdir -p $OUTDIR
     export CUDA_VISIBLE_DEVICES=0
 
-    case $ridx in 
+    case $ridx in
+      i) TOP=i0 CAMERATYPE=1 $bin 0  ;;
       0) TMIN=0.4 EYE=-0.4,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
       1) TMIN=0.5 EYE=-0.8,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
       2) TMIN=0.5 EYE=-0.8,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;

@@ -16,18 +16,14 @@ int main(int argc, char** argv)
 
     std::string cfbase = CXUtil::GetEValue<std::string>("CFBASE", "/tmp" );  
     const char* rel = "CSGFoundry" ; 
-
     std::cout << " CSGFoundry::Load from " << cfbase << "/" << rel << std::endl ; 
     CSGFoundry* fd = CSGFoundry::Load(cfbase.c_str(), rel); // $CFBASE/CSGFoundry 
     fd->upload(); 
-
-    std::cout 
-        << " fdd " << fd->desc() 
-        << std::endl 
-        ;
-
+    std::cout << " fdd " << fd->desc() << std::endl ; 
     fd->summary(); 
     //fd->dump(); 
+
+
 
     const CSGSolid* so = fd->getSolid(repeatIdx); 
     float extent = so->center_extent.w ; 
@@ -41,11 +37,12 @@ int main(int argc, char** argv)
     const float4 gce = so->center_extent ; 
     glm::vec4 ce(gce.x,gce.y,gce.z, gce.w );  // defines the center-extent of the region to view
 
-    CSGOptiX cx(fd); 
+
 
     float tmin_model = CXUtil::GetEValue<float>("TMIN", 0.1) ;
     float tmax_model = CXUtil::GetEValue<float>("TMAX", 100.0) ;
 
+    CSGOptiX cx(fd); 
     cx.setCE(ce, tmin_model, tmax_model); 
     cx.render( top.c_str() );  
 
