@@ -34,6 +34,12 @@ render()
 
     export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/$ridx    # see CSGOptiX/tests/CSGOptiXVersion.cc
     mkdir -p $OUTDIR
+
+    export LOGDIR=${OUTDIR}.logs
+    mkdir -p $LOGDIR 
+    cd $LOGDIR 
+
+    export CSGOptiX=INFO
     export CUDA_VISIBLE_DEVICES=${CVD:-0}
 
     case $ridx in

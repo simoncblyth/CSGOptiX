@@ -18,6 +18,9 @@ mkdir -p $LOGDIR
 echo $msg BINARY $BINARY spec $spec LOGDIR $LOGDIR
 cd $LOGDIR
 
+export CSGOptiX=INFO
+
+
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Linux" ]; then
        gdb -ex r --args $BINARY $spec
