@@ -48,11 +48,12 @@ struct CSGOptiX
     Frame* frame ; 
 
 
-    CSGOptiX(const CSGFoundry* foundry); 
+    CSGOptiX(const CSGFoundry* foundry, const char* outdir); 
     void init(); 
     void setCE(const glm::vec4& ce, float tmin_model, float tmax_model );
-    void render(const char* tspec); 
+    void setTop(const char* tspec); 
 
+    void render(); 
     void render_flightpath(); 
 
 };

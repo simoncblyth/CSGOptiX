@@ -53,11 +53,11 @@ const char* CSGOptiX::ENV(const char* key, const char* fallback)
 }
 
 
-CSGOptiX::CSGOptiX(const CSGFoundry* foundry_ ) 
+CSGOptiX::CSGOptiX(const CSGFoundry* foundry_, const char* outdir_) 
     :
     foundry(foundry_),
     prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),
-    outdir(ENV("OUTDIR", "/tmp")),
+    outdir(outdir_),
     cmaketarget("CSGOptiX"),  
     ptxpath(CXUtil::PTXPath( prefix, cmaketarget, PTXNAME )),
 #if OPTIX_VERSION < 70000 
@@ -102,16 +102,35 @@ void CSGOptiX::init()
     if(!is_uploaded) LOG(fatal) << "foundry must be uploaded prior to CSGOptiX::init " ;  
     assert( is_uploaded ); 
 
+    std::cout << "[ CSGOptiX::init.setFoundry " << std::endl ; 
 #if OPTIX_VERSION < 70000
     six->setFoundry(foundry);
 #else
-    std::cout << "[ CSGOptiX::init.setFoundry " << std::endl ; 
     sbt->setFoundry(foundry); 
+    params->pixels = frame->getDevicePixels(); 
+    params->isect  = frame->getDeviceIsect(); 
+#endif
     std::cout << "] CSGOptiX::init.setFoundry " << std::endl ; 
+}
+
+void CSGOptiX::setTop(const char* tspec)
+{
+    std::cout 
+        << "[ CSGOptiX::setTop " 
+        << " tspec " << tspec 
+        << std::endl 
+        ; 
+
+#if OPTIX_VERSION < 70000
+    six->setTop(tspec); 
+#else
+    sbt->setTop(tspec);
+    AS* top = sbt->getTop(); 
+    params->handle = top->handle ; 
 #endif
 }
 
-void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model  )
+void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model )
 {
     float extent = ce.w ; 
     float tmin = extent*tmin_model ; 
@@ -137,22 +156,13 @@ void CSGOptiX::setCE(const glm::vec4& ce, float tmin_model, float tmax_model  )
     std::cout << "] CSGOptiX::setCE " << std::endl ; 
 }
 
-void CSGOptiX::render(const char* tspec)
+void CSGOptiX::render()
 {
     std::cout << "[ CSGOptiX::render " << std::endl ; 
 #if OPTIX_VERSION < 70000
-    six->setTop(tspec); 
     six->launch(); 
     six->save(outdir); 
 #else
-    sbt->setTop(tspec);
-
-    AS* top = sbt->getTop(); 
-    params->handle = top->handle ; 
-
-    params->pixels = frame->getDevicePixels(); 
-    params->isect  = frame->getDeviceIsect(); 
-
     ctx->uploadParams();  
 
     CUstream stream;

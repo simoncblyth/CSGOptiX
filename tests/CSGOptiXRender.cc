@@ -1,5 +1,8 @@
-
 #include <sstream>
+
+#include "SSys.hh"
+#include "OPTICKS_LOG.hh"
+
 #include "sutil_vec_math.h"
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
@@ -7,6 +10,9 @@
 
 int main(int argc, char** argv)
 {
+    OPTICKS_LOG(argc, argv); 
+    const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" ); 
+
     int repeatIdx = argc > 1 ? atoi(argv[1]) : 0 ; 
 
     std::stringstream ss ; 
@@ -24,7 +30,6 @@ int main(int argc, char** argv)
     //fd->dump(); 
 
 
-
     const CSGSolid* so = fd->getSolid(repeatIdx); 
     float extent = so->center_extent.w ; 
     std::cout 
@@ -37,14 +42,14 @@ int main(int argc, char** argv)
     const float4 gce = so->center_extent ; 
     glm::vec4 ce(gce.x,gce.y,gce.z, gce.w );  // defines the center-extent of the region to view
 
-
-
     float tmin_model = CXUtil::GetEValue<float>("TMIN", 0.1) ;
     float tmax_model = CXUtil::GetEValue<float>("TMAX", 100.0) ;
 
-    CSGOptiX cx(fd); 
+    CSGOptiX cx(fd, outdir); 
+    cx.setTop( top.c_str() ); 
+
     cx.setCE(ce, tmin_model, tmax_model); 
-    cx.render( top.c_str() );  
+    cx.render();  
 
     return 0 ; 
 }

@@ -1,3 +1,4 @@
+#include "SSys.hh"
 
 #include "sutil_vec_math.h"
 #include "CSGFoundry.h"
@@ -7,15 +8,22 @@
 #include "DemoGeo.h"
 #include "glm/glm.hpp"
 
+#include "OPTICKS_LOG.hh"
+
+
 int main(int argc, char** argv)
 {
-    CSGFoundry foundry ; 
-    CSGOptiX cx(&foundry); 
+    OPTICKS_LOG(argc, argv); 
+    const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" );  
 
+    CSGFoundry foundry ; 
     DemoGeo dg(&foundry) ;  
-    dg.write(cx.outdir);  
+    dg.write(outdir);  
     foundry.dump(); 
     foundry.upload();   // uploads nodes, planes, transforms
+
+    CSGOptiX cx(&foundry, outdir); 
+    cx.setTop( dg.top ); 
 
     const float4 gce = dg.getCenterExtent() ;  
     glm::vec4 ce(gce.x,gce.y,gce.z, gce.w*1.4f );   // defines the center-extent of the region to view
@@ -24,7 +32,7 @@ int main(int argc, char** argv)
     float tmax_model = CXUtil::GetEValue<float>("TMAX", 100.0) ;
 
     cx.setCE(ce, tmin_model, tmax_model ); 
-    cx.render( dg.top ); 
+    cx.render(); 
 
     return 0 ; 
 }
