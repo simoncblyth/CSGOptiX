@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv); 
     ok.configure(); 
 
-    int meshIdx = SSys::getenvint("MIDX", 130); 
+    int meshIdx = SSys::getenvint("MIDX", 130);   // 130 is world box for default CFBASE
     int ordinal = SSys::getenvint("ORDINAL", 0 ); 
 
     const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" ); 
@@ -25,6 +25,7 @@ int main(int argc, char** argv)
     LOG(info) << "foundry " << foundry->desc() ; 
     foundry->summary(); 
 
+    // collect prim matching the MIDX and select the ORDINAL one
     std::vector<CSGPrim> prim ; 
     foundry->getMeshPrim(prim, meshIdx );  
     bool in_range = ordinal < prim.size() ; 
@@ -39,15 +40,22 @@ int main(int argc, char** argv)
          return 1 ;   
     }
 
-    const CSGPrim& pr = prim[ordinal] ;  
 
+
+    const CSGPrim& pr = prim[ordinal] ;  
     const float4 ce = pr.ce() ; 
+
     LOG(info)
         << " top " << top
         << " ce " << ce 
         << " ce.w " << ce.w 
         << " NB : no instance transforming : so this only makes sense for global prim " 
         ; 
+
+    // hmm for generality would also need to select an instance
+    // and look up the instance transform with which to transform the prim bbox 
+    // and get the instanced ce 
+
 
     CSGOptiX cx(&ok, foundry, outdir); 
     cx.setTop(top); 
