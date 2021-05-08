@@ -8,6 +8,7 @@
 #include "DemoGrid.h"
 #include "AABB.h"
 
+#include "PLOG.hh"
 #include "CSGFoundry.h"
 
 
@@ -29,10 +30,10 @@ DemoGrid::DemoGrid( CSGFoundry* foundry_, unsigned ias_idx_, unsigned num_solid_
     CXUtil::GetEVector(solid_modulo, "GRIDMODULO", "0,1" ); 
     CXUtil::GetEVector(solid_single, "GRIDSINGLE", "2" ); 
 
-    std::cout << "GRIDSPEC " << gridspec << std::endl ; 
-    std::cout << "GRIDSCALE " << gridscale << std::endl ; 
-    std::cout << "GRIDMODULO " << CXUtil::Present(solid_modulo) << std::endl ; 
-    std::cout << "GRIDSINGLE " << CXUtil::Present(solid_single) << std::endl ; 
+    LOG(info) << "GRIDSPEC " << gridspec ; 
+    LOG(info) << "GRIDSCALE " << gridscale ; 
+    LOG(info) << "GRIDMODULO " << CXUtil::Present(solid_modulo) ; 
+    LOG(info) << "GRIDSINGLE " << CXUtil::Present(solid_single) ; 
 
     init();   // add qat4 instances to foundry 
 }
@@ -59,12 +60,11 @@ void DemoGrid::init()
     unsigned num_solid_modulo = solid_modulo.size() ; 
     unsigned num_solid_single = solid_single.size() ; 
 
-    std::cout 
+    LOG(info) 
         << "DemoGrid::init"
         << " num_solid_modulo " << num_solid_modulo
         << " num_solid_single " << num_solid_single
         << " num_solid " << num_solid
-        << std::endl
         ;
 
     // check the input solid_idx are valid 

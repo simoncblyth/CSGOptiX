@@ -13,6 +13,9 @@
 #include "DemoGeo.h"
 #include "DemoGrid.h"
 
+#include "PLOG.hh"
+
+
 DemoGeo::DemoGeo(CSGFoundry* foundry_)
     :
     foundry(foundry_),
@@ -23,16 +26,14 @@ DemoGeo::DemoGeo(CSGFoundry* foundry_)
 
 void DemoGeo::init()
 {
-    std::cout << "[ DemoGeo::init " << std::endl ; 
+    LOG(info) << "[" ; 
 
     std::string geometry = CXUtil::GetEValue<std::string>("GEOMETRY", "parade" ); 
     unsigned layers = CXUtil::GetEValue<unsigned>("LAYERS", 1) ; 
 
-    std::cout
-        << "DemoGeo::init"
+    LOG(info) 
         << " geometry " << geometry
         << " layers " << layers 
-        << std::endl 
         ;    
 
     if(strcmp(geometry.c_str(), "sphere_containing_grid_of_spheres") == 0)
@@ -61,14 +62,12 @@ void DemoGeo::init()
     }
 
     const float4 ce  = getCenterExtent(); 
-    std::cout 
-        << "DemoGeo::init" 
+    LOG(info) 
         << " top_extent " << ce.w  
-        << std::endl 
         ; 
 
 
-    std::cout << "] DemoGeo::init " << std::endl ; 
+    LOG(info) << "]" ; 
 }
 
 /**
@@ -83,7 +82,7 @@ Container sphere "extent" needs to be sqrt(3) larger than the grid extent.
 
 void DemoGeo::init_sphere_containing_grid_of_spheres(unsigned layers )
 {
-    std::cout << "DemoGeo::init_sphere_containing_grid_of_spheres : layers " << layers << std::endl ; 
+    LOG(info) << "layers " << layers  ; 
     foundry->makeDemoSolids();  
     unsigned num_solid = foundry->getNumSolid() ; 
 
@@ -91,7 +90,7 @@ void DemoGeo::init_sphere_containing_grid_of_spheres(unsigned layers )
     const float4 ce = DemoGrid::AddInstances(foundry, ias_idx, num_solid) ; 
 
     float big_radius = float(ce.w)*sqrtf(3.f) ;
-    std::cout << " big_radius " << big_radius << std::endl ; 
+    LOG(info) << " big_radius " << big_radius ; 
 
     foundry->makeLayered("sphere", 0.7f, layers ); 
     foundry->makeLayered("sphere", 1.0f, layers ); 
@@ -105,7 +104,8 @@ void DemoGeo::init_sphere_containing_grid_of_spheres(unsigned layers )
 
 void DemoGeo::init_parade()
 {
-    std::cout << "[ DemoGeo::init_parade " << std::endl ; 
+    LOG(info) << "["  ;
+ 
     foundry->makeDemoSolids();  
     unsigned num_solid = foundry->getNumSolid() ; 
 
@@ -115,7 +115,7 @@ void DemoGeo::init_parade()
     top = strdup("i0") ; 
     setCenterExtent(ce); 
 
-    std::cout << "] DemoGeo::init_parade " << std::endl ; 
+    LOG(info) << "]"  ; 
 }
 
 /**
@@ -133,11 +133,10 @@ void DemoGeo::init_clustered(const char* name)
     float unit = CXUtil::GetEValue<float>("CLUSTERUNIT", 200.f ); 
     std::string clusterspec = CXUtil::GetEValue<std::string>("CLUSTERSPEC","-1:2:1,-1:2:1,-1:2:1") ; 
 
-    std::cout 
-        << "DemoGeo::init_clustered " << name 
+    LOG(info) 
+        << " name " << name 
         << " clusterspec " << clusterspec 
         << " unit " << unit 
-        << std::endl
         ; 
 
     bool inbox = false ; 
@@ -153,7 +152,7 @@ void DemoGeo::init_clustered(const char* name)
 void DemoGeo::init_layered(const char* name, unsigned layers)
 {
     CSGSolid* so = foundry->makeLayered(name, 100.f, layers ); 
-    std::cout << "DemoGeo::init_layered" << name << " so.center_extent " << so->center_extent << std::endl ; 
+    LOG(info) << " name " << name << " so.center_extent " << so->center_extent ; 
     setCenterExtent(so->center_extent); 
     top = strdup("g0") ; 
 }
@@ -161,7 +160,7 @@ void DemoGeo::init_layered(const char* name, unsigned layers)
 void DemoGeo::init(const char* name)
 {
     CSGSolid* so = foundry->make(name) ; 
-    std::cout << "DemoGeo::init" << name << " so.center_extent " << so->center_extent << std::endl ; 
+    LOG(info) << " name " << name << " so.center_extent " << so->center_extent ; 
     setCenterExtent(so->center_extent); 
     top = strdup("g0") ; 
 }
@@ -182,7 +181,7 @@ float4 DemoGeo::getCenterExtent() const  { return center_extent ;  }
 
 void DemoGeo::write(const char* dir) const 
 {
-    std::cout << "DemoGeo::write " << dir << std::endl ;  
+    LOG(info) << dir  ;  
 
     NP uspec("<u4", 5); 
     unsigned* u = uspec.values<unsigned>() ; 
