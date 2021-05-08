@@ -21,7 +21,7 @@ period=${PERIOD:-4}
 limit=${LIMIT:-600}
 scale0=${SCALE0:-3}
 scale1=${SCALE1:-0.5}
-flight=${FLIGHT:-RoundaboutXY}
+flight=${FLIGHT:-RoundaboutXY_XZ}
 
 
 export MIDX=${MIDX:-117}
