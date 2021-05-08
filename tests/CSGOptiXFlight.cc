@@ -32,6 +32,7 @@ int main(int argc, char** argv)
     cx.setTop(top);
     cx.setCE(ce); 
 
+/*
     double dt = cx.render();  
 
     std::string path = CSGOptiX::Path(outdir, "pixels.jpg" );  
@@ -40,6 +41,10 @@ int main(int argc, char** argv)
 
     LOG(info) << " writing " << path ; 
     cx.snap(path.c_str(), bottom_line.c_str(), top_line.c_str() );   
+*/
+
+    cx.render_flightpath() ; 
+
 
     return 0 ; 
 }
