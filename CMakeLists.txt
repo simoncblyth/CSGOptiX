@@ -68,7 +68,6 @@ set(CU_SOURCES)
 
 
 list(APPEND SOURCES
-    Frame.cc 
     Params.cc 
     CSGOptiX.cc
     CXUtil.cc
@@ -82,6 +81,7 @@ list(APPEND HEADERS
 if(OpticksOptiX_VERSION GREATER_EQUAL 70000)
    list(APPEND CU_SOURCES OptiX7Test.cu)
    list(APPEND SOURCES  
+        Frame.cc 
         Ctx.cc 
         Properties.cc 
         GAS.cc 

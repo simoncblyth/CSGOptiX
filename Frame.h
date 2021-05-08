@@ -4,7 +4,8 @@
 #include <vector_types.h>
 
 
-struct STTF ; 
+//struct STTF ; 
+struct SIMG ; 
 
 struct Frame
 {
@@ -13,8 +14,9 @@ struct Frame
     int depth ; 
     int channels ; 
 
-    bool     alloc ; 
-    STTF*    ttf ;
+    //bool     alloc ; 
+    SIMG*      img ; 
+   // STTF*    ttf ;
 
     std::vector<float4> isect ; 
     std::vector<uchar4> pixels ; 
@@ -22,7 +24,7 @@ struct Frame
     uchar4* d_pixels = nullptr ; 
     float4* d_isect = nullptr ; 
 
-    Frame(int width, int height, bool alloc=true );
+    Frame(int width, int height );
  
     void init(); 
     void init_pixels();
@@ -32,7 +34,7 @@ struct Frame
     void download_pixels();
     void download_isect();
 
-    void annotate( const char* bottom_line, const char* top_line, int line_height=24  );
+    void annotate( const char* bottom_line=nullptr, const char* top_line=nullptr, int line_height=24  );
 
     void write(const char* outdir, int jpg_quality) const ;
     void writePNG(const char* dir, const char* name) const ;
@@ -43,7 +45,10 @@ struct Frame
 
     void writeNP( const char* dir, const char* name) const ;
 
-    float* getIntersectData() const ;
+
+    unsigned char* getPixelsData() const ;
+    float*         getIntersectData() const ;
+
     uchar4* getDevicePixels() const ; 
     float4* getDeviceIsect() const ; 
 

@@ -56,8 +56,8 @@ struct CSGOptiX : public SRenderer
     Ctx* ctx ; 
     PIP* pip ; 
     SBT* sbt ; 
-#endif
     Frame* frame ; 
+#endif
 
 
     CSGOptiX(Opticks* ok, const CSGFoundry* foundry, const char* outdir); 

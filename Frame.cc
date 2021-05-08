@@ -8,21 +8,20 @@
 #include "NP.hh"
 #include "Frame.h"
 
-
-#define STTF_IMPLEMENTATION 1 
-#include "STTF.hh"
+//#define STTF_IMPLEMENTATION 1 
+//#include "STTF.hh"
 
 #define SIMG_IMPLEMENTATION 1 
 #include "SIMG.hh"
 
-Frame::Frame(int width_, int height_, bool alloc_)
+Frame::Frame(int width_, int height_)
     :
     width(width_),
     height(height_),
     depth(1),
     channels(4),
-    alloc(alloc_),
-    ttf(PLOG::instance->ttf)
+    img(new SIMG(width, height, channels,  nullptr )) 
+    //ttf(PLOG::instance->ttf)
 {
     init();
 }
@@ -37,7 +36,6 @@ Allocates pixels and isect on device.
 
 void Frame::init()
 {
-    if(!alloc) return ; 
     init_pixels(); 
     init_isect(); 
 }
@@ -74,13 +72,14 @@ float4* Frame::getDeviceIsect() const
 
 void Frame::download()
 {
+    LOG(info) ; 
     download_pixels();  
     download_isect();  
 }
 
 void Frame::download_pixels()
 {
-    std::cout << "Frame::download_pixels d_pixels " << d_pixels << std::endl ; 
+    LOG(info) << "d_pixels " << d_pixels << std::endl ; 
 
     pixels.resize(width*height);  
     CUDA_CHECK( cudaMemcpy(
@@ -93,7 +92,7 @@ void Frame::download_pixels()
 
 void Frame::download_isect()
 {
-    std::cout << "Frame::download_isect d_isect " << d_isect << std::endl ; 
+    LOG(info) << "d_isect " << d_isect << std::endl ; 
 
     isect.resize(width*height);  
     CUDA_CHECK( cudaMemcpy(
@@ -106,8 +105,19 @@ void Frame::download_isect()
 
 
 
+unsigned char* Frame::getPixelsData() const
+{
+    unsigned char* data = (unsigned char*)pixels.data();  
+    return data ; 
+}
+
+
 void Frame::annotate( const char* bottom_line, const char* top_line, int line_height )
 {
+    img->setData( getPixelsData() ); 
+    img->annotate( bottom_line, top_line, line_height ); 
+
+/*
     if(!ttf->valid || line_height > int(height)) return ; 
     unsigned char* ptr = (unsigned char*)pixels.data() ; 
 
@@ -116,46 +126,46 @@ void Frame::annotate( const char* bottom_line, const char* top_line, int line_he
 
     if( bottom_line )
         ttf->annotate( ptr, int(channels), int(width), int(height), line_height, bottom_line, true ); 
-}
+*/
 
+}
 
 
 
 void Frame::write(const char* outdir, int jpg_quality) const 
 {
-    std::cout << "Frame::write " << outdir << std::endl ; 
+    img->annotate();   // sets the image data
+
+    LOG(info) << outdir << std::endl ; 
     writePNG(outdir, "pixels.png");  
     writeJPG(outdir, "pixels.jpg", jpg_quality);  
     writeNP(  outdir, "posi.npy" );
 }
 
+
 void Frame::writePNG(const char* dir, const char* name) const 
 {
-    const unsigned char* data = (const unsigned char*)pixels.data();  
-    SIMG img(width, height, channels,  data ); 
-    img.writePNG(dir, name); 
+    //SIMG img(width, height, channels,  getPixelsData() ); 
+    img->writePNG(dir, name); 
 }
 void Frame::writePNG(const char* path) const 
 {
-    const unsigned char* data = (const unsigned char*)pixels.data();  
-    SIMG img(width, height, channels,  data ); 
-    img.writePNG(path); 
+    //SIMG img(width, height, channels,  getPixelsData() ); 
+    img->writePNG(path); 
 }
-
-
 
 void Frame::writeJPG(const char* dir, const char* name, int quality) const 
 {
-    const unsigned char* data = (const unsigned char*)pixels.data();  
-    SIMG img(width, height, channels,  data ); 
-    img.writeJPG(dir, name, quality); 
+    //SIMG img(width, height, channels,  getPixelsData() ); 
+    img->writeJPG(dir, name, quality); 
 }
 void Frame::writeJPG(const char* path, int quality) const 
 {
-    const unsigned char* data = (const unsigned char*)pixels.data();  
-    SIMG img(width, height, channels,  data ); 
-    img.writeJPG(path, quality); 
+    //SIMG img(width, height, channels,  getPixelsData() ); 
+    img->writeJPG(path, quality); 
 }
+
+
 
 
 void Frame::writeNP( const char* dir, const char* name) const 
@@ -163,13 +173,8 @@ void Frame::writeNP( const char* dir, const char* name) const
     std::cout << "Frame::writeNP " << dir << "/" << name << std::endl ; 
     NP::Write(dir, name, getIntersectData(), height, width, 4 );
 }
-
 float* Frame::getIntersectData() const
 {
     return (float*)isect.data();
 }
-
-
-
-
 

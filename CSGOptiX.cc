@@ -81,13 +81,12 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_
     //view(new CSGView),
     params(new Params),
 #if OPTIX_VERSION < 70000
-    six(new Six(ptxpath, geoptxpath, params)),
-    frame(new Frame(width, height, false))    // dont allocate, optix6 buffer holds the pixels
+    six(new Six(ptxpath, geoptxpath, params))
 #else
     ctx(new Ctx(params)),
     pip(new PIP(ptxpath)), 
     sbt(new SBT(pip)),
-    frame(new Frame(width, height, true))    // allocate, CUDA holds the pixels 
+    frame(new Frame(width, height))  // CUDA holds the pixels 
 #endif
 {
     init(); 
@@ -133,8 +132,8 @@ void CSGOptiX::initFrame()
 {
 #if OPTIX_VERSION < 70000
     six->initFrame();     // sets params->pixels, isect from optix device pointers
-    frame->d_pixels = params->pixels ; 
-    frame->d_isect = params->isect ; 
+    //frame->d_pixels = params->pixels ; 
+    //frame->d_isect = params->isect ; 
 #else
     params->pixels = frame->getDevicePixels(); 
     params->isect  = frame->getDeviceIsect(); 
@@ -200,9 +199,6 @@ void CSGOptiX::updateView()
 
     composition->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
 
-    //float tmin_model = CXUtil::GetEValue<float>("TMIN", 0.1) ;
-    //float tmax_model = CXUtil::GetEValue<float>("TMAX", 100.0) ;
-
     float tmin = composition->getNear(); 
     float tmax = composition->getFar(); 
     unsigned cameratype = composition->getCameraType(); 
@@ -219,11 +215,12 @@ void CSGOptiX::updateView()
 
     params->setView(eye, U, V, W);
     params->setCamera(tmin, tmax, cameratype ); 
-    params->setSize(frame->width, frame->height, frame->depth); 
 
 #if OPTIX_VERSION < 70000
+    params->setSize(width, height, depth); 
     six->updateContext(); 
 #else
+    params->setSize(frame->width, frame->height, frame->depth); 
     ctx->uploadParams();  
 #endif
 
@@ -283,9 +280,13 @@ std::string CSGOptiX::Path( const char* outdir, const char* name)
 
 void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
 {
+#if OPTIX_VERSION < 70000
+    six->snap(path, bottom_line, top_line, line_height); 
+#else
     frame->download(); 
     frame->annotate( bottom_line, top_line, line_height ); 
     frame->writeJPG(path, jpg_quality);  
+#endif
 }
 
 
@@ -295,7 +296,6 @@ int CSGOptiX::render_flightpath()
     int rc = fp->render( (SRenderer*)this  );
     return rc ; 
 }
-
 
 
 

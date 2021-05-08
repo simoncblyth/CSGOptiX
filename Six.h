@@ -46,6 +46,6 @@ struct Six
     void setTop(const char* spec);
     void launch();
 
-    //void save(const char* outdir) ; 
+    void snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height) ;
 
 };

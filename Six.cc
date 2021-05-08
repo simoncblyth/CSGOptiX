@@ -2,6 +2,12 @@
 #include <iostream>
 
 #include "PLOG.hh"
+#include "SPath.hh"
+#include "NP.hh"
+
+#define SIMG_IMPLEMENTATION 1 
+#include "SIMG.hh"
+
 #include "Params.h"
 
 #include "sutil_vec_math.h"
@@ -55,11 +61,18 @@ void Six::initFrame()
     LOG(info); 
     pixels_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, params->width, params->height);
     context["pixels_buffer"]->set( pixels_buffer );
-    params->pixels = (uchar4*)pixels_buffer->getDevicePointer(optix_device_ordinal); 
 
     posi_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, params->width, params->height);
     context["posi_buffer"]->set( posi_buffer );
+
+    params->pixels = (uchar4*)pixels_buffer->getDevicePointer(optix_device_ordinal); 
     params->isect = (float4*)posi_buffer->getDevicePointer(optix_device_ordinal); 
+
+    LOG(info) 
+        << " optix_device_ordinal " << optix_device_ordinal
+        << " params.pixels " << params->pixels
+        << " params.isect " << params->isect
+        ;
 }
 
 void Six::updateContext()
@@ -288,20 +301,21 @@ void Six::launch()
 }
 
 
-/*
-void Six::save(const char* outdir) 
+void Six::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
 {
     int channels = 4 ; 
     int quality = 50 ; 
 
-    const unsigned char* data = (const unsigned char*)pixels_buffer->map();  
-    SIMG img(int(params->width), int(params->height), channels,  data ); 
-    img.writeJPG(outdir, "pixels.jpg", quality); 
+    unsigned char* pixels  = (unsigned char*)pixels_buffer->map();  
+    SIMG img(int(params->width), int(params->height), channels,  pixels ); 
+    img.annotate(bottom_line, top_line, line_height ); 
+    img.writeJPG(path, quality); 
     pixels_buffer->unmap(); 
 
-    NP::Write(outdir, "posi.npy",  (float*)posi_buffer->map(), params->height, params->width, 4 );
+    const char* isects_path = SPath::ChangeName( path, "posi.npy" ) ; 
+    float* isects = (float*)posi_buffer->map() ;
+    NP::Write(isects_path, isects, params->height, params->width, 4 );
     posi_buffer->unmap(); 
 }
-*/
 
 
