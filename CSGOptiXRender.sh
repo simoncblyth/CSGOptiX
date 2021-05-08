@@ -12,6 +12,8 @@ usage(){ cat << EOU
    TMIN=2.0 EYE=-1.0,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx   ## blank grey
    TMIN=1.99 EYE=-1.0,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx   ## pink square 
 
+  j) TMIN=1.5 EYE=-1.0,-1.0,1.0,1.0  CAMERATYPE=1 TOP=i0 $GDB $bin $*  ;; 
+  i) TMIN=0.2 EYE=-0.5,0.0,0.0,1.0  CAMERATYPE=0 TOP=i0 $GDB $bin $*  ;;
       0) TMIN=0.4 EYE=-0.4,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
       1) TMIN=0.5 EYE=-0.8,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
       2) TMIN=0.5 EYE=-0.8,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
@@ -27,16 +29,18 @@ usage(){ cat << EOU
 EOU
 }
 
-arg1=${1:-j}
-shift
-
 pkg=CSGOptiX
 bin=CSGOptiXRender
 
 export CFBASE=/tmp/$USER/opticks/CSG_GGeo 
 [ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
 
-export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/${arg1}  
+## get 0-based meshIdx from : cat.py GItemList/GMeshLib.txt 
+## TODO: provide a name based approach, as the indices change meaning often
+## 117: sChimneySteel0x4e6eff0
+
+export MIDX=${MIDX:-117}  ## 
+export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/$MIDX
 mkdir -p $OUTDIR
 
 export LOGDIR=${OUTDIR}.logs
@@ -46,11 +50,7 @@ cd $LOGDIR
 export CSGOptiX=INFO
 export CUDA_VISIBLE_DEVICES=${CVD:-0}
 
-case $arg1 in
-  j) TMIN=1.5 EYE=-1.0,-1.0,1.0,1.0  CAMERATYPE=1 TOP=i0 $GDB $bin $*  ;; 
-  i) TMIN=0.2 EYE=-0.5,0.0,0.0,1.0  CAMERATYPE=0 TOP=i0 $GDB $bin $*  ;;
-  *) $GDB $bin $* ;; 
-esac
+$GDB $bin $* 
 
 jpg=$OUTDIR/pixels.jpg
 [ ! -f "$jpg" ] &&  echo FAILED TO CREATE jpg $jpg && exit 1
