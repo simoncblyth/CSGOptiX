@@ -38,6 +38,7 @@ int main(int argc, char** argv)
     std::string bottom_line = CSGOptiX::Annotation( dt ); 
     std::string top_line = "CSGOptiXFlight" ; 
 
+    LOG(info) << " writing " << path ; 
     cx.snap(path.c_str(), bottom_line.c_str(), top_line.c_str() );   
 
     return 0 ; 
