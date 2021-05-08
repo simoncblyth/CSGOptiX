@@ -3,8 +3,6 @@
 #include <vector>
 #include <vector_types.h>
 
-
-//struct STTF ; 
 struct SIMG ; 
 
 struct Frame
@@ -14,9 +12,7 @@ struct Frame
     int depth ; 
     int channels ; 
 
-    //bool     alloc ; 
     SIMG*      img ; 
-   // STTF*    ttf ;
 
     std::vector<float4> isect ; 
     std::vector<uchar4> pixels ; 
