@@ -57,6 +57,12 @@ void Params::setCamera(float tmin_, float tmax_, unsigned cameratype_ )
 
 }
 
+
+Params::Params(unsigned width, unsigned height, unsigned depth)
+{
+    setSize(width, height, depth); 
+}
+
 void Params::setSize(unsigned width_, unsigned height_, unsigned depth_ )
 {
     width = width_ ;

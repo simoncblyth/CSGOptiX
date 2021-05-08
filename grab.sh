@@ -1,15 +1,14 @@
 #!/bin/bash -l 
 
-pkg=CSGOptiX
+pkg=$(basename $(pwd))
 from=P:/tmp/$USER/opticks/$pkg/
 to=/tmp/$USER/opticks/$pkg/
 
-echo from $from
-echo to $to
+echo pkg $pkg from $from to $to
 
-rsync -zarv --progress --include="*/" --include="*.jpg" --exclude="*" "$from" "$to"
+if [ "$1" != "ls" ]; then
+rsync -zarv --progress --include="*/" --include="*.jpg" --include="*.mp4" --exclude="*" "$from" "$to"
+fi 
 
-
-#find ${to:0:-1} -name '*.jpg'    ## curious this works in commandline but gives error in script : -1: substring expression < 0
-find ${to%/} -name '*.jpg'
+ls -1rt `find ${to%/} -name '*.jpg' -o -name '*.mp4' `
 

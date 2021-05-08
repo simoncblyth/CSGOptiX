@@ -15,13 +15,13 @@ tmin=0.1
 
 tmax=100.
 
-#geometry=parade
+geometry=parade
 #geometry=sphere_containing_grid_of_spheres
 #geometry=layered_sphere
 #geometry=layered_zsphere
 #geometry=clustered_sphere
 #geometry=sphe
-geometry=zsph
+#geometry=zsph
 #geometry=cone
 #geometry=hype
 #geometry=box3 

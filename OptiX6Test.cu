@@ -9,6 +9,10 @@ rtDeclareVariable(float,         tmin, , );
 rtDeclareVariable(unsigned,      radiance_ray_type, , );
 rtDeclareVariable(unsigned,      cameratype, , );
 
+
+
+
+
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 

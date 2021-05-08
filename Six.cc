@@ -42,7 +42,7 @@ void Six::initContext()
     LOG(info); 
     context->setRayTypeCount(1);
     context->setPrintEnabled(true);
-    context->setPrintBufferSize(40960);
+    context->setPrintBufferSize(1024);
     context->setPrintLaunchIndex(-1,-1,-1); 
     context->setEntryPointCount(1);
 }
@@ -58,15 +58,15 @@ void Six::initPipeline()
 
 void Six::initFrame()
 {
-    LOG(info); 
+    LOG(info) << " params.width " << params->width << " params.height " << params->height ;  
     pixels_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, params->width, params->height);
     context["pixels_buffer"]->set( pixels_buffer );
 
     posi_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, params->width, params->height);
     context["posi_buffer"]->set( posi_buffer );
 
-    params->pixels = (uchar4*)pixels_buffer->getDevicePointer(optix_device_ordinal); 
-    params->isect = (float4*)posi_buffer->getDevicePointer(optix_device_ordinal); 
+    //params->pixels = (uchar4*)pixels_buffer->getDevicePointer(optix_device_ordinal); 
+    //params->isect = (float4*)posi_buffer->getDevicePointer(optix_device_ordinal); 
 
     LOG(info) 
         << " optix_device_ordinal " << optix_device_ordinal
@@ -296,26 +296,40 @@ void Six::setTop(const char* spec)
 
 void Six::launch()
 {
-    LOG(info) ; 
+    LOG(info) << " params.width " << params->width << " params.height " << params->height ; 
     context->launch( entry_point_index , params->width, params->height  );  
 }
 
 
 void Six::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
 {
+    LOG(info) << "[" ; 
     int channels = 4 ; 
     int quality = 50 ; 
 
     unsigned char* pixels  = (unsigned char*)pixels_buffer->map();  
+
+    LOG(info) 
+        << " params.width " << params->width   
+        << " params.height " << params->height 
+        ;
+
     SIMG img(int(params->width), int(params->height), channels,  pixels ); 
     img.annotate(bottom_line, top_line, line_height ); 
     img.writeJPG(path, quality); 
     pixels_buffer->unmap(); 
 
+    LOG(info) << " after pix " ; 
+
+
     const char* isects_path = SPath::ChangeName( path, "posi.npy" ) ; 
     float* isects = (float*)posi_buffer->map() ;
     NP::Write(isects_path, isects, params->height, params->width, 4 );
     posi_buffer->unmap(); 
+
+    LOG(info) << "]" ; 
 }
+
+
 
 
