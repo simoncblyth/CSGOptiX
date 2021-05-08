@@ -1,7 +1,10 @@
 #!/bin/bash -l 
 
+
+args=$* 
+echo args $args
+
 msg="=== $BASH_SOURCE :"
-spec=$1
 
 source ./env.sh 
 [ $? -ne 0 ] && echo $0 FAIL from ./env.sh && exit 1 
@@ -15,7 +18,7 @@ echo RM LOGDIR $LOGDIR
 rm -rf $LOGDIR
 mkdir -p $LOGDIR
 
-echo $msg BINARY $BINARY spec $spec LOGDIR $LOGDIR
+echo $msg BINARY $BINARY args $args LOGDIR $LOGDIR
 cd $LOGDIR
 
 export CSGOptiX=INFO
@@ -23,12 +26,12 @@ export CSGOptiX=INFO
 
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Linux" ]; then
-       gdb -ex r --args $BINARY $spec
+       gdb -ex r --args $BINARY $args
     elif [ "$(uname)" == "Darwin" ]; then
-       lldb_ $BINARY $spec
+       lldb_ $BINARY $args
     fi
 else
-    $BINARY $spec
+    $BINARY $args
 fi 
 
 [ $? -ne 0 ] && echo $0 : run  FAIL && exit 3
@@ -38,7 +41,6 @@ npy=$OUTDIR/posi.npy
 
 echo BINARY : $BINARY 
 echo OUTDIR : $OUTDIR
-echo spec : $spec
 echo jpg  : $jpg
 
 if [ "$(uname)" == "Linux" ]; then 

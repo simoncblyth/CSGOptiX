@@ -8,12 +8,12 @@
 
 int main(int argc, char** argv)
 {
-    int meshIdx = argc > 1 ? atoi(argv[1]) : 130 ; 
-    int ordinal = argc > 2 ? atoi(argv[2]) :   0 ; 
-
     OPTICKS_LOG(argc, argv); 
     Opticks ok(argc, argv); 
     ok.configure(); 
+
+    int meshIdx = SSys::getenvint("MIDX", 130); 
+    int ordinal = SSys::getenvint("ORDINAL", 0 ); 
 
     const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" ); 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
