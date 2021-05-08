@@ -40,8 +40,6 @@ int main(int argc, char** argv)
          return 1 ;   
     }
 
-
-
     const CSGPrim& pr = prim[ordinal] ;  
     const float4 ce = pr.ce() ; 
 
@@ -61,13 +59,21 @@ int main(int argc, char** argv)
     cx.setTop(top); 
     cx.setCE(ce);   // establish the coordinate system 
 
-    double dt = cx.render();  
 
-    std::string path = CSGOptiX::Path(outdir, "pixels.jpg" );  
-    std::string bottom_line = CSGOptiX::Annotation(dt); 
-    std::string top_line = "CSGOptiXRender" ; 
+    bool flight = ok.hasArg("--flightconfig") ; 
+    if(flight)
+    {
+        cx.render_flightpath() ; 
+    }
+    else
+    {
+        double dt = cx.render();  
 
-    cx.snap(path.c_str(), bottom_line.c_str(), top_line.c_str() );   
+        std::string path = CSGOptiX::Path(outdir, "pixels.jpg" );  
+        std::string bottom_line = CSGOptiX::Annotation(dt); 
+        std::string top_line = "CSGOptiXRender" ; 
 
+        cx.snap(path.c_str(), bottom_line.c_str(), top_line.c_str() );   
+    }
     return 0 ; 
 }
