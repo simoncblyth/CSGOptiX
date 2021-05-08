@@ -8,7 +8,8 @@
 
 int main(int argc, char** argv)
 {
-    int repeatIdx = argc > 1 ? atoi(argv[1]) : 0 ; 
+    int meshIdx = argc > 1 ? atoi(argv[1]) : 130 ; 
+    int ordinal = argc > 2 ? atoi(argv[2]) :   0 ; 
 
     OPTICKS_LOG(argc, argv); 
     Opticks ok(argc, argv); 
@@ -16,20 +17,36 @@ int main(int argc, char** argv)
 
     const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" ); 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
-    const char* cfbase = SSys::getenvvar("CFBASE", "/tmp" );  
+    const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
+
 
     CSGFoundry* foundry = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     foundry->upload(); 
     LOG(info) << "foundry " << foundry->desc() ; 
     foundry->summary(); 
 
-    const CSGSolid* so = foundry->getSolid(repeatIdx); 
-    const float4 ce = so->center_extent ; 
-    LOG(info)  
-        << " repeatIdx " << repeatIdx 
+    std::vector<CSGPrim> prim ; 
+    foundry->getMeshPrim(prim, meshIdx );  
+    bool in_range = ordinal < prim.size() ; 
+
+    if(!in_range)
+    {
+        LOG(info)  
+            << " meshIdx " << meshIdx
+            << " ordinal " << ordinal 
+            << " prim.size " << prim.size()
+            ;
+         return 1 ;   
+    }
+
+    const CSGPrim& pr = prim[ordinal] ;  
+
+    const float4 ce = pr.ce() ; 
+    LOG(info)
         << " top " << top
+        << " ce " << ce 
         << " ce.w " << ce.w 
-        << " so " << so->desc() 
+        << " NB : no instance transforming : so this only makes sense for global prim " 
         ; 
 
     CSGOptiX cx(&ok, foundry, outdir); 
