@@ -35,12 +35,11 @@ bin=CSGOptiXRender
 export CFBASE=/tmp/$USER/opticks/CSG_GGeo 
 [ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
 
-## get 0-based meshIdx from : cat.py GItemList/GMeshLib.txt 
-## TODO: provide a name based approach, as the indices change meaning often
-## 117: sChimneySteel0x4e6eff0
 
-export MIDX=${MIDX:-117}  ## 
-export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/$MIDX
+#moi=sStrut:10:0
+moi=sChimneySteel:0:0
+export MOI=${MOI:-$moi}  
+export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/$MOI
 mkdir -p $OUTDIR
 
 export LOGDIR=${OUTDIR}.logs
