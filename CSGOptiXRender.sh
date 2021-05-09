@@ -10,7 +10,19 @@ usage(){ cat << EOU
    MOI=ALL                               ./CSGOptiXRender.sh    
 
 
-   CFNAME=CSGDemoTest MOI=0 ./CSGOptiXRender.sh
+
+   Demo Geometry created by::
+
+      cd ~/CSG
+      ./CSGDemoTest.sh  
+
+   Unclear about what MOI is selecting on... 
+
+      CFNAME=CSGDemoTest MOI=0:0:4 EYE=-10,0,5,1  ./CSGOptiXRender.sh
+
+   TODO: add "meshnames" 
+   TODO: provide way to pick the ias (overall geometry) center-extent via MOI 
+
  
    TMIN is in units of extent, so when on axis disappearance at TMIN 2 of a box is to be expected
 
@@ -59,6 +71,10 @@ if [ "$MOI" == "ALL" ]; then
     render --arglist $arglist $* 
 else
     render $*
+    jpg=$OUTDIR/${MOI}.jpg
+    echo $msg jpg $jpg 
+    ls -l $jpg
+    [ "$(uname)" == "Darwin" ] && open $jpg
 fi 
 
 exit 0 
