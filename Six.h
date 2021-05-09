@@ -14,6 +14,8 @@ struct Params ;
 struct Six
 {
     const Opticks*     ok ; 
+    unsigned long long emm ; 
+
     optix::Context     context ;
     optix::Material    material ;
     optix::Buffer      pixels_buffer ; 

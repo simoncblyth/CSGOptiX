@@ -9,6 +9,8 @@
 #include <optix_stubs.h>
 #include <cuda_runtime.h>
 
+#include "Opticks.hh"
+
 #include "sutil_vec_math.h"  
 
 #include "OPTIX_CHECK.h"
@@ -46,8 +48,10 @@ PGs and their data.
 
 **/
 
-SBT::SBT(const PIP* pip_)
+SBT::SBT(const Opticks* ok_, const PIP* pip_)
     :
+    ok(ok_),
+    emm(ok->getEMM()),
     pip(pip_),
     raygen(nullptr),
     miss(nullptr),
@@ -85,7 +89,6 @@ void SBT::setFoundry(const CSGFoundry* foundry_)
     foundry = foundry_ ; 
 
     createGAS();  
-
     createIAS(); 
 
     createHitgroup(); 
@@ -176,7 +179,20 @@ void SBT::createGAS()
     for(unsigned i=0 ; i < num_solid ; i++)
     {
         unsigned gas_idx = i ; 
-        createGAS(gas_idx); 
+
+        bool enabled = ok->isEnabledMergedMesh(gas_idx) ;
+        bool enabled2 = emm & ( 0x1 << gas_idx ) ;  
+        assert( enabled == enabled2 );  
+
+        if( enabled )
+        {
+            LOG(info) << " emm proceed " << gas_idx ; 
+            createGAS(gas_idx); 
+        }
+        else
+        {
+            LOG(error) << " emm skip " << gas_idx ; 
+        }
     }
     LOG(info) << descGAS() ; 
 }
@@ -186,15 +202,12 @@ void SBT::createGAS(unsigned gas_idx)
     CSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
     GAS gas = {} ;  
     GAS_Builder::Build(gas, ps);
-    vgas.push_back(gas);  
+    vgas[gas_idx] = gas ;  
 }
 
 const GAS& SBT::getGAS(unsigned gas_idx) const 
 {
-    bool in_range =  gas_idx < vgas.size() ; 
-    if(!in_range) LOG(fatal) << "OUT OF RANGE gas_idx " << gas_idx << " vgas.size " << vgas.size() ; 
-    assert(in_range); 
-    return vgas[gas_idx]; 
+    return vgas.at(gas_idx); 
 }
 
 
@@ -212,11 +225,11 @@ void SBT::createIAS()
 void SBT::createIAS(unsigned ias_idx)
 {
     unsigned num_inst = foundry->getNumInst(); 
-    unsigned num_ias_inst = foundry->getNumInstancesIAS(ias_idx); 
+    unsigned num_ias_inst = foundry->getNumInstancesIAS(ias_idx, emm); 
     LOG(info) << " ias_idx " << ias_idx << " num_inst " << num_inst ;  
 
     std::vector<qat4> ias_inst ; 
-    foundry->getInstanceTransformsIAS(ias_inst, ias_idx );
+    foundry->getInstanceTransformsIAS(ias_inst, ias_idx, emm );
     assert( num_ias_inst == ias_inst.size() ); 
 
     IAS ias = {} ;  

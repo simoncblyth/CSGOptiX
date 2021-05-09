@@ -26,6 +26,7 @@
 Six::Six(const Opticks* ok_, const char* ptx_path_, const char* geo_ptx_path_, Params* params_)
     :
     ok(ok_), 
+    emm(ok->getEMM()),
     context(optix::Context::create()),
     material(context->createMaterial()),
     params(params_),
@@ -217,14 +218,18 @@ void Six::createIAS()
 optix::Group Six::createIAS(unsigned ias_idx)
 {
     unsigned num_inst = foundry->getNumInst(); 
-    unsigned ias_inst = foundry->getNumInstancesIAS(ias_idx); 
+    unsigned ias_inst = foundry->getNumInstancesIAS(ias_idx, emm); 
     LOG(info) 
         << " ias_idx " << ias_idx
-        << " num_inst " << num_inst 
+        << " num_inst " << num_inst << " (no emm?) " 
         << " ias_inst " << ias_inst 
+        << " emm(hex) " << std::hex << emm << std::dec
         ; 
     assert( ias_inst > 0); 
 
+
+   unsigned count = ias_inst ;  // the equiv of below pre-count done in qat4.h 
+/*
     unsigned count = 0 ; 
     unsigned skip = 0 ; 
     for(unsigned i=0 ; i < num_inst ; i++)
@@ -242,12 +247,13 @@ optix::Group Six::createIAS(unsigned ias_idx)
     }
 
     LOG(info) 
-         << " total ias_inst " << ias_inst 
+         << " ias_inst " << ias_inst 
          << " count " << count 
          << " skip " << skip 
          ;
-
     assert( count + skip == num_inst ); 
+*/
+
 
 
     const char* accel = "Trbvh" ; 

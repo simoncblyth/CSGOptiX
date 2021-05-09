@@ -1,7 +1,9 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
+
 #include <optix.h>
 
 #include "Binding.h"
@@ -16,23 +18,25 @@ Aim to minimize geometry specifics in here ...
 
 
 **/
+
+class Opticks ; 
+
 struct PIP ; 
 struct CSGFoundry ; 
 struct CSGPrim ; 
 
 struct SBT 
 {
-    const PIP*    pip ; 
+    const Opticks*  ok ; 
+    unsigned long long emm ; 
+    const PIP*      pip ; 
     Raygen*       raygen ;
     Miss*         miss ;
     HitGroup*     hitgroup ;
     HitGroup*     check ;
 
     const CSGFoundry*  foundry ; 
-    AS*              top ; 
-
-    //bool          is_1NN ;  // 1NN:true is smallest bbox chopped 
-    //bool          is_11N ; 
+    AS*                top ; 
  
     CUdeviceptr   d_raygen ;
     CUdeviceptr   d_miss ;
@@ -40,12 +44,11 @@ struct SBT
 
     OptixShaderBindingTable sbt = {};
 
-    std::vector<GAS> vgas ; 
+    //std::vector<GAS> vgas ; 
+    std::map<unsigned, GAS> vgas ; 
     std::vector<IAS> vias ; 
 
-
-    SBT( const PIP* pip_ ); 
-
+    SBT(const Opticks* ok, const PIP* pip_ ); 
 
 
     AS* getAS(const char* spec) const ;
