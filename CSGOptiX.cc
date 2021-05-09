@@ -10,6 +10,7 @@
 #include <cuda_runtime.h>
 #include <glm/glm.hpp>
 
+#include "SStr.hh"
 #include "SSys.hh"
 #include "BTimeStamp.hh"
 #include "PLOG.hh"
@@ -23,7 +24,6 @@
 #include "CSGPrim.h"
 #include "CSGFoundry.h"
 
-#include "CXUtil.h"
 #include "CSGView.h"
 #include "Frame.h"
 #include "Params.h"
@@ -68,14 +68,14 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_
     prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),
     outdir(outdir_),
     cmaketarget("CSGOptiX"),  
-    ptxpath(CXUtil::PTXPath( prefix, cmaketarget, PTXNAME )),
+    ptxpath(SStr::PTXPath( prefix, cmaketarget, PTXNAME )),
 #if OPTIX_VERSION < 70000 
-    geoptxpath(CXUtil::PTXPath(prefix, cmaketarget, GEO_PTXNAME )),
+    geoptxpath(SStr::PTXPath(prefix, cmaketarget, GEO_PTXNAME )),
 #else
     geoptxpath(nullptr),
 #endif
     tmin_model(SSys::getenvfloat("TMIN",0.1)), 
-    jpg_quality(CXUtil::GetEValue<int>("QUALITY", 50)),
+    jpg_quality(SStr::GetEValue<int>("QUALITY", 50)),
     params(new Params(width, height, depth)),
 #if OPTIX_VERSION < 70000
     six(new Six(ptxpath, geoptxpath, params))
@@ -95,7 +95,6 @@ void CSGOptiX::init()
     assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     assert( outdir && "expecting OUTDIR envvar " );
 
-    //CXUtil::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0,1.0"); 
     LOG(LEVEL) << " ptxpath " << ptxpath  ; 
     LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ; 
 

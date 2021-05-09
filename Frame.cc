@@ -11,6 +11,10 @@
 #define SIMG_IMPLEMENTATION 1 
 #include "SIMG.hh"
 
+
+const plog::Severity Frame::LEVEL = PLOG::EnvLevel("Frame", "DEBUG" ); 
+
+
 Frame::Frame(int width_, int height_)
     :
     width(width_),
@@ -67,14 +71,14 @@ float4* Frame::getDeviceIsect() const
 
 void Frame::download()
 {
-    LOG(info) ; 
+    //LOG(LEVEL) ; 
     download_pixels();  
     download_isect();  
 }
 
 void Frame::download_pixels()
 {
-    LOG(info) << "d_pixels " << d_pixels << std::endl ; 
+    //LOG(LEVEL) << "d_pixels " << d_pixels << std::endl ; 
 
     pixels.resize(width*height);  
     CUDA_CHECK( cudaMemcpy(
@@ -95,7 +99,7 @@ unsigned char* Frame::getPixelsData() const
 
 void Frame::download_isect()
 {
-    LOG(info) << "d_isect " << d_isect << std::endl ; 
+    //LOG(LEVEL) << "d_isect " << d_isect << std::endl ; 
 
     isect.resize(width*height);  
     CUDA_CHECK( cudaMemcpy(
@@ -114,7 +118,7 @@ void Frame::annotate( const char* bottom_line, const char* top_line, int line_he
 
 void Frame::write(const char* outdir, int jpg_quality) const 
 {
-    LOG(info) << outdir << std::endl ; 
+    //LOG(LEVEL) << outdir << std::endl ; 
     writePNG(outdir, "pixels.png");  
     writeJPG(outdir, "pixels.jpg", jpg_quality);  
     writeNP(  outdir, "posi.npy" );
@@ -140,7 +144,7 @@ void Frame::writeJPG(const char* path, int quality) const
 
 void Frame::writeNP( const char* dir, const char* name) const 
 {
-    LOG(info) << dir << "/" << name << std::endl ; 
+    //LOG(LEVEL) << dir << "/" << name ; 
     NP::Write(dir, name, getIntersectData(), height, width, 4 );
 }
 float* Frame::getIntersectData() const

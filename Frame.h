@@ -2,11 +2,14 @@
 
 #include <vector>
 #include <vector_types.h>
+#include "plog/Severity.h"
 
 struct SIMG ; 
 
 struct Frame
 {
+    static const plog::Severity LEVEL ; 
+
     int width ; 
     int height ; 
     int depth ; 

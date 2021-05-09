@@ -70,12 +70,10 @@ set(CU_SOURCES)
 list(APPEND SOURCES
     Params.cc 
     CSGOptiX.cc
-    CXUtil.cc
 )
 
 list(APPEND HEADERS
     CSGOptiX.h
-    CXUtil.h
 )
 
 if(OpticksOptiX_VERSION GREATER_EQUAL 70000)

@@ -8,6 +8,9 @@ usage(){ cat << EOU
    MOI=sChimneySteel                      ./CSGOptiXRender.sh 
    CVD=1 MOI=sChimneySteel                ./CSGOptiXRender.sh 
    MOI=ALL                               ./CSGOptiXRender.sh    
+
+
+   CFNAME=CSGDemoTest MOI=0 ./CSGOptiXRender.sh
  
    TMIN is in units of extent, so when on axis disappearance at TMIN 2 of a box is to be expected
 
@@ -24,11 +27,11 @@ echo $msg MOI $MOI CUDA_VISIBLE_DEVICES ${CUDA_VISIBLE_DEVICES}
 pkg=CSGOptiX
 bin=CSGOptiXRender
 
-
-export CFBASE=/tmp/$USER/opticks/CSG_GGeo 
+export CFNAME=${CFNAME:-CSG_GGeo}
+export CFBASE=/tmp/$USER/opticks/${CFNAME} 
 [ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
 
-export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/render/${CUDA_VISIBLE_DEVICES}
+export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/render/${CFNAME}/${CUDA_VISIBLE_DEVICES}
 mkdir -p $OUTDIR
 
 arglist=$OUTDIR/arglist.txt
@@ -45,8 +48,8 @@ make_arglist()
     local arglist=$1
     local mname=$CFBASE/CSGFoundry/name.txt 
     ls -l $mname
-    #cat $mname | grep -v Flange | sort | uniq | perl -ne 'm,(.*0x).*, && print "$1\n" ' -  > $arglist
-    cat $mname | grep -v Flange | sort | uniq > $arglist
+    #cat $mname | grep -v Flange | grep -v _virtual | sort | uniq | perl -ne 'm,(.*0x).*, && print "$1\n" ' -  > $arglist
+    cat $mname | grep -v Flange | grep -v _virtual | sort | uniq > $arglist
     ls -l $arglist && cat $arglist 
 }
 
