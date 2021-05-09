@@ -3,66 +3,59 @@ usage(){ cat << EOU
 
 ::
 
-   ./CSGOptiXRender.sh 
-
-   TMIN is in units of extent, so when on axis disappearance at TMIN 2 is to be expected
+   MOI=sStrut:10:0 EYE=-1,-1,1,1 TMIN=1.5 ./CSGOptiXRender.sh 
+   MOI=sChimneySteel:0:0                  ./CSGOptiXRender.sh 
+   MOI=sChimneySteel                      ./CSGOptiXRender.sh 
+   CVD=1 MOI=sChimneySteel                ./CSGOptiXRender.sh 
+   MOI=ALL                               ./CSGOptiXRender.sh    
+ 
+   TMIN is in units of extent, so when on axis disappearance at TMIN 2 of a box is to be expected
 
 EOU
 }
 
-#moi=sStrut:10:0
-moi=sChimneySteel:0:0
-moi=${1:-$moi}
+msg="=== $BASH_SOURCE :"
 
-echo moi $moi
+export MOI=${MOI:-sStrut}
+export CUDA_VISIBLE_DEVICES=${CVD:-0}
+
+echo $msg MOI $MOI CUDA_VISIBLE_DEVICES ${CUDA_VISIBLE_DEVICES}
 
 pkg=CSGOptiX
 bin=CSGOptiXRender
 
-#export CSGOptiX=INFO
-export CUDA_VISIBLE_DEVICES=${CVD:-0}
 
 export CFBASE=/tmp/$USER/opticks/CSG_GGeo 
 [ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
 
+export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/render/${CUDA_VISIBLE_DEVICES}
+mkdir -p $OUTDIR
 
-render()
+arglist=$OUTDIR/arglist.txt
+
+export LOGDIR=${OUTDIR}.logs
+mkdir -p $LOGDIR 
+cd $LOGDIR 
+
+render(){ $GDB $bin $* ; }
+
+
+make_arglist()
 {
-    export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/$MOI
-    mkdir -p $OUTDIR
-
-    export LOGDIR=${OUTDIR}.logs
-    mkdir -p $LOGDIR 
-    cd $LOGDIR 
-
-    $GDB $bin $* 
-
-    jpg=$OUTDIR/pixels.jpg
-    [ ! -f "$jpg" ] &&  echo FAILED TO CREATE jpg $jpg && exit 1
-
-    echo $jpg && ls -l $jpg
-    [ "$(uname)" == "Darwin" ] && open $jpg
+    local arglist=$1
+    local mname=$CFBASE/CSGFoundry/name.txt 
+    ls -l $mname
+    #cat $mname | grep -v Flange | sort | uniq | perl -ne 'm,(.*0x).*, && print "$1\n" ' -  > $arglist
+    cat $mname | grep -v Flange | sort | uniq > $arglist
+    ls -l $arglist && cat $arglist 
 }
 
 
-
-if [ "$moi" == "ALL" ]; then 
-
-    npath=$CFBASE/CSGFoundry/name.txt
-    ls -l $npath
-
-    #names=$(cat $npath | grep -v Flange | sort | uniq | perl -ne 'm,(.*0x).*, && print "$1\n" ' - )
-    names=$(cat $npath | grep -v Flange | grep -v irtual | sort | uniq )
-    for name in $names ; do 
-       echo $name 
-       export MOI=$name 
-       render 
-    done
-
+if [ "$MOI" == "ALL" ]; then 
+    make_arglist $arglist 
+    render --arglist $arglist $* 
 else
-    export MOI=${MOI:-$moi}  
-    render 
+    render $*
 fi 
-
 
 exit 0 

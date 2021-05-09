@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <iterator>
+
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
@@ -21,42 +24,56 @@ int main(int argc, char** argv)
     LOG(info) << "foundry " << fd->desc() ; 
     fd->summary(); 
 
-    const char* moi = SSys::getenvvar("MOI", "sWorld:0:0"); 
-    int midx, mord, iidx ; 
-    fd->parseMOI(midx, mord, iidx,  moi );  
-
-    LOG(info) 
-        << " MOI " << moi 
-        << " midx " << midx 
-        << " mord " << mord 
-        << " iidx " << iidx
-        ;   
-
-
-    float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
-    int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
-    if(rc != 0) return 1 ; 
-
-
     CSGOptiX cx(&ok, fd, outdir); 
     cx.setTop(top); 
-    cx.setCE(ce);   // establish the coordinate system 
 
 
     bool flight = ok.hasArg("--flightconfig") ; 
-    if(flight)
-    {
-        cx.render_flightpath() ; 
+    const std::vector<std::string>& arglist = ok.getArgList() ;  // --arglist /path/to/arglist.txt
+    std::string top_line = "CSGOptiXRender" ; 
+
+    std::vector<std::string> args ; 
+    if( arglist.size() > 0 )
+    {    
+        std::copy(arglist.begin(), arglist.end(), std::back_inserter(args));
     }
     else
     {
-        double dt = cx.render();  
+        args.push_back(SSys::getenvvar("MOI", "sWorld:0:0"));  
+    }
 
-        std::string path = CSGOptiX::Path(outdir, "pixels.jpg" );  
-        std::string bottom_line = CSGOptiX::Annotation(dt); 
-        std::string top_line = "CSGOptiXRender" ; 
 
-        cx.snap(path.c_str(), bottom_line.c_str(), top_line.c_str() );   
+    for(unsigned i=0 ; i < args.size() ; i++)
+    {
+        const std::string& arg = args[i];
+
+        int midx, mord, iidx ; 
+        fd->parseMOI(midx, mord, iidx,  arg.c_str() );  
+
+        LOG(info) << " i " << i << " arg " << arg << " midx " << midx << " mord " << mord << " iidx " << iidx ;   
+
+        float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
+        int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
+        if(rc == 0 )
+        {
+            cx.setCE(ce);   // establish the coordinate system 
+
+            if(flight)
+            {
+                cx.render_flightpath(); 
+            }
+            else
+            {
+                double dt = cx.render();  
+                std::string path = CSGOptiX::Path(outdir, arg.c_str(), ".jpg" );  
+                std::string bottom_line = CSGOptiX::Annotation(dt); 
+                cx.snap(path.c_str(), bottom_line.c_str(), top_line.c_str() );   
+            }
+        }
+        else
+        {
+            LOG(error) << " SKIPPING as failed to lookup CE " << arg ; 
+        }
     }
     return 0 ; 
 }

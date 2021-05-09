@@ -272,6 +272,16 @@ std::string CSGOptiX::Path( const char* outdir, const char* name)
     return path ;
 }
 
+std::string CSGOptiX::Path( const char* outdir, const char* stem, const char* ext)
+{
+    std::stringstream tt ; 
+    tt << outdir << "/" << stem << ext ; 
+    std::string path = tt.str(); 
+    return path ;
+}
+
+
+
 
 void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
 {
