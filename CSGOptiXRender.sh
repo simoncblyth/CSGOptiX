@@ -7,54 +7,56 @@ usage(){ cat << EOU
 
    TMIN is in units of extent, so when on axis disappearance at TMIN 2 is to be expected
 
-   Formerly with ridx 8  
-
-   TMIN=2.0 EYE=-1.0,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx   ## blank grey
-   TMIN=1.99 EYE=-1.0,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx   ## pink square 
-
-  j) TMIN=1.5 EYE=-1.0,-1.0,1.0,1.0  CAMERATYPE=1 TOP=i0 $GDB $bin $*  ;; 
-  i) TMIN=0.2 EYE=-0.5,0.0,0.0,1.0  CAMERATYPE=0 TOP=i0 $GDB $bin $*  ;;
-      0) TMIN=0.4 EYE=-0.4,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
-      1) TMIN=0.5 EYE=-0.8,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
-      2) TMIN=0.5 EYE=-0.8,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
-      3) TMIN=0.5 EYE=-0.8,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
-      4) TMIN=0.5 EYE=-1.0,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
-      5) TMIN=0.5 EYE=-1.0,0.0,-0.2,1.0 CAMERATYPE=1 $bin $ridx  ;;
-      6) TMIN=0.5 EYE=-1.0,0.0,-0.2,1.0 CAMERATYPE=1 $bin $ridx  ;;    ## Greek Temple : dias too small for columns
-      7) TMIN=0.5 EYE=-1.0,0.0,0.0,1.0  CAMERATYPE=1 $bin $ridx  ;;
-      8) TMIN=0.001 TMAX=1000. EYE=-2.0,-2.0,2.0,1.0  CAMERATYPE=1 $bin $ridx  ;;     ## giant crazy sphere prim, blank render 
-      9) TMIN=0.7 EYE=-0.8,0.0,0.5,1.0  CAMERATYPE=1 $bin $ridx  ;;
-      *) TMIN=0.5 EYE=-0.8,0.0,0.0,1.0  $bin $ridx  ;;
-
 EOU
 }
 
+#moi=sStrut:10:0
+moi=sChimneySteel:0:0
+moi=${1:-$moi}
+
 pkg=CSGOptiX
 bin=CSGOptiXRender
+
+#export CSGOptiX=INFO
+export CUDA_VISIBLE_DEVICES=${CVD:-0}
 
 export CFBASE=/tmp/$USER/opticks/CSG_GGeo 
 [ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
 
 
-#moi=sStrut:10:0
-moi=sChimneySteel:0:0
-export MOI=${MOI:-$moi}  
-export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/$MOI
-mkdir -p $OUTDIR
+render()
+{
+    export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/$MOI
+    mkdir -p $OUTDIR
 
-export LOGDIR=${OUTDIR}.logs
-mkdir -p $LOGDIR 
-cd $LOGDIR 
+    export LOGDIR=${OUTDIR}.logs
+    mkdir -p $LOGDIR 
+    cd $LOGDIR 
 
-export CSGOptiX=INFO
-export CUDA_VISIBLE_DEVICES=${CVD:-0}
+    $GDB $bin $* 
 
-$GDB $bin $* 
+    jpg=$OUTDIR/pixels.jpg
+    [ ! -f "$jpg" ] &&  echo FAILED TO CREATE jpg $jpg && exit 1
 
-jpg=$OUTDIR/pixels.jpg
-[ ! -f "$jpg" ] &&  echo FAILED TO CREATE jpg $jpg && exit 1
+    echo $jpg && ls -l $jpg
+    [ "$(uname)" == "Darwin" ] && open $jpg
+}
 
-echo $jpg && ls -l $jpg
-[ "$(uname)" == "Darwin" ] && open $jpg
+
+
+if [ "$moi" == "ALL" ]; then 
+
+    names=$(cat $CFBASE/CSGFoundry/name.txt | grep -v Flange | sort | uniq | perl -ne 'm,(.*0x).*, && print "$1\n" ' - )
+    for name in $names ; do 
+       echo $name 
+       export MOI=$name 
+       render 
+    done
+
+else
+    export MOI=${MOI:-$moi}  
+    render 
+fi 
+
 
 exit 0 
