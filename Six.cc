@@ -8,6 +8,9 @@
 #define SIMG_IMPLEMENTATION 1 
 #include "SIMG.hh"
 
+#include "Opticks.hh"
+
+
 #include "Params.h"
 
 #include "sutil_vec_math.h"
@@ -20,8 +23,9 @@
 #include "Six.h"
 
     
-Six::Six(const char* ptx_path_, const char* geo_ptx_path_, Params* params_)
+Six::Six(const Opticks* ok_, const char* ptx_path_, const char* geo_ptx_path_, Params* params_)
     :
+    ok(ok_), 
     context(optix::Context::create()),
     material(context->createMaterial()),
     params(params_),
@@ -52,7 +56,6 @@ void Six::initPipeline()
     LOG(info); 
     context->setRayGenerationProgram( entry_point_index, context->createProgramFromPTXFile( ptx_path , "raygen" ));
     context->setMissProgram(   entry_point_index, context->createProgramFromPTXFile( ptx_path , "miss" ));
-
     material->setClosestHitProgram( entry_point_index, context->createProgramFromPTXFile( ptx_path, "closest_hit" ));
 }
 
@@ -180,10 +183,25 @@ void Six::createGAS()
 
     for(unsigned i=0 ; i < num_solid ; i++)
     {
-        optix::Geometry solid = createGeometry(i); 
-        solids.push_back(solid); 
+        if(ok->isEnabledMergedMesh(i))
+        {
+            LOG(info) << " create optix::Geometry solid/ mm " << i ; 
+            optix::Geometry solid = createGeometry(i); 
+            solids[i] = solid ;  
+        }
+        else
+        {
+            LOG(error) << " emm skipping " << i ; 
+        }
     }
 }
+
+
+optix::Geometry Six::getGeometry(unsigned solid_idx) const 
+{
+    return solids.at(solid_idx); 
+}
+
 
 void Six::createIAS()
 {
@@ -207,15 +225,40 @@ optix::Group Six::createIAS(unsigned ias_idx)
         ; 
     assert( ias_inst > 0); 
 
+    unsigned count = 0 ; 
+    unsigned skip = 0 ; 
+    for(unsigned i=0 ; i < num_inst ; i++)
+    {
+        const qat4* qc = foundry->getInst(i); 
+        unsigned ins_idx,  gas_idx, ias_idx_ ;
+        qc->getIdentity( ins_idx,  gas_idx, ias_idx_ ); 
+        assert( ins_idx == i ); 
+        bool gas_enabled = ok->isEnabledMergedMesh(gas_idx); 
+        if( ias_idx_ == ias_idx )
+        {
+            count += (gas_enabled ? 1 : 0) ; 
+            skip  += (gas_enabled ? 0 : 1) ; 
+        }
+    }
+
+    LOG(info) 
+         << " total ias_inst " << ias_inst 
+         << " count " << count 
+         << " skip " << skip 
+         ;
+
+    assert( count + skip == num_inst ); 
+
+
     const char* accel = "Trbvh" ; 
     optix::Acceleration instance_accel = context->createAcceleration(accel);
     optix::Acceleration group_accel  = context->createAcceleration(accel);
 
     optix::Group group = context->createGroup();
-    group->setChildCount( ias_inst );
+    group->setChildCount( count );
     group->setAcceleration( group_accel );  
 
-    unsigned count = 0 ; 
+    unsigned count2 = 0 ; 
     for(unsigned i=0 ; i < num_inst ; i++)
     {
         const qat4* qc = foundry->getInst(i); 
@@ -223,7 +266,9 @@ optix::Group Six::createIAS(unsigned ias_idx)
         qc->getIdentity( ins_idx,  gas_idx, ias_idx_ ); 
         assert( ins_idx == i ); 
 
-        if( ias_idx_ == ias_idx )
+        bool gas_enabled = ok->isEnabledMergedMesh(gas_idx); 
+
+        if( ias_idx_ == ias_idx && gas_enabled)
         {
             const float* qcf = qc->cdata(); 
             qat4 q(qcf);        // copy to clear identity before passing to OptiX
@@ -232,26 +277,35 @@ optix::Group Six::createIAS(unsigned ias_idx)
             optix::Transform xform = context->createTransform();
             bool transpose = true ; 
             xform->setMatrix(transpose, q.data(), 0); 
-            group->setChild(count, xform);
+            group->setChild(count2, xform);
 
+            // here referencing the GAS into the IAS with gas_idx
             optix::GeometryInstance pergi = createGeometryInstance(gas_idx, ins_idx); 
             optix::GeometryGroup perxform = context->createGeometryGroup();
             perxform->addChild(pergi); 
             perxform->setAcceleration(instance_accel) ; 
             xform->setChild(perxform);
 
-            count += 1 ; 
+            count2 += 1 ; 
         }
     }
-    assert( count == ias_inst ); 
+
+
+    LOG(info) 
+         << " count " << count 
+         << " count2 " << count2 
+         ;
+
+    assert( count2 == count ); 
+
+
     return group ;
 }
 
 optix::GeometryInstance Six::createGeometryInstance(unsigned gas_idx, unsigned ins_idx)
 {
-    //std::cout << "Six::createGeometryInstance" << " gas_idx " << gas_idx << " ins_idx " << ins_idx << std::endl ;   
-    optix::Geometry solid = solids[gas_idx]; 
-
+    //LOG(info) << " gas_idx " << gas_idx << " ins_idx " << ins_idx  ;   
+    optix::Geometry solid = getGeometry(gas_idx); 
     optix::GeometryInstance pergi = context->createGeometryInstance() ;
     pergi->setMaterialCount(1);
     pergi->setMaterial(0, material );
@@ -291,9 +345,6 @@ void Six::setTop(const char* spec)
     }
 }
 
-
-
-
 void Six::launch()
 {
     LOG(info) << " params.width " << params->width << " params.height " << params->height ; 
@@ -303,24 +354,21 @@ void Six::launch()
 
 void Six::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
 {
-    LOG(info) << "[" ; 
+    LOG(info) 
+        << "["
+        << " params.width " << params->width   
+        << " params.height " << params->height 
+        ;
+
     int channels = 4 ; 
     int quality = 50 ; 
 
     unsigned char* pixels  = (unsigned char*)pixels_buffer->map();  
 
-    LOG(info) 
-        << " params.width " << params->width   
-        << " params.height " << params->height 
-        ;
-
     SIMG img(int(params->width), int(params->height), channels,  pixels ); 
     img.annotate(bottom_line, top_line, line_height ); 
     img.writeJPG(path, quality); 
     pixels_buffer->unmap(); 
-
-    LOG(info) << " after pix " ; 
-
 
     const char* isects_path = SPath::ChangeName( path, "posi.npy" ) ; 
     float* isects = (float*)posi_buffer->map() ;
@@ -329,7 +377,4 @@ void Six::snap(const char* path, const char* bottom_line, const char* top_line, 
 
     LOG(info) << "]" ; 
 }
-
-
-
 

@@ -11,14 +11,19 @@ usage(){ cat << EOU
 
 
 
-   Demo Geometry created by::
+   Demo "parade" geometry created by::
 
       cd ~/CSG
       ./CSGDemoTest.sh  
 
    Unclear about what MOI is selecting on... 
 
-      CFNAME=CSGDemoTest MOI=0:0:4 EYE=-10,0,5,1  ./CSGOptiXRender.sh
+   Six:Any skipping other than last one segments at launch.
+
+      CFNAME=CSGDemoTest MOI=0:0:4 EYE=-10,0,5,1  ./CSGOptiXRender.sh -e ~4,5,6
+      CFNAME=CSGDemoTest MOI=0:0:4 EYE=-10,0,5,1  ./CSGOptiXRender.sh -e ~1,2,3,4,5,6,7,8,9
+      CFNAME=CSGDemoTest MOI=0:0:4 EYE=-10,0,5,1 GDB=lldb_  ./CSGOptiXRender.sh -- -e ~1,2,3,4,5,6,7,8,9 
+      CFNAME=CSGDemoTest MOI=0:0:4 EYE=-10,0,5,1 GDB=gdb ./CSGOptiXRender.sh -- -e ~15,14
 
    TODO: add "meshnames" 
    TODO: provide way to pick the ias (overall geometry) center-extent via MOI 

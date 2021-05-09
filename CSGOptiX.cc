@@ -78,7 +78,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_
     jpg_quality(SStr::GetEValue<int>("QUALITY", 50)),
     params(new Params(width, height, depth)),
 #if OPTIX_VERSION < 70000
-    six(new Six(ptxpath, geoptxpath, params))
+    six(new Six(ok, ptxpath, geoptxpath, params))
 #else
     ctx(new Ctx(params)),
     pip(new PIP(ptxpath)), 

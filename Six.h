@@ -1,7 +1,10 @@
 #pragma once
 
+#include <map>
 #include <vector>
 #include <optixu/optixpp_namespace.h>
+
+class Opticks ; 
 
 struct CSGFoundry ; 
 struct CSGSolid ; 
@@ -10,6 +13,7 @@ struct Params ;
 
 struct Six
 {
+    const Opticks*     ok ; 
     optix::Context     context ;
     optix::Material    material ;
     optix::Buffer      pixels_buffer ; 
@@ -22,10 +26,12 @@ struct Six
     unsigned          optix_device_ordinal ; 
     const CSGFoundry* foundry ; 
 
-    std::vector<optix::Geometry> solids ; 
+    //std::vector<optix::Geometry> solids ; 
+    std::map<unsigned, optix::Geometry> solids ; 
+
     std::vector<optix::Group>    groups ; 
 
-    Six(const char* ptx_path, const char* geo_ptx_path, Params* params_);  
+    Six(const Opticks* ok, const char* ptx_path, const char* geo_ptx_path, Params* params_);  
     void initContext();
     void initFrame();   // hookup pixels and isect buffers
 
@@ -42,6 +48,7 @@ struct Six
     optix::Group              createIAS(unsigned ias_idx);
     optix::GeometryInstance   createGeometryInstance(unsigned solid_idx, unsigned identity);
     optix::Geometry           createGeometry(unsigned solid_idx);
+    optix::Geometry           getGeometry(unsigned solid_idx) const ;  
  
     void setTop(const char* spec);
     void launch();
