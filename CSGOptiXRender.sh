@@ -14,6 +14,8 @@ EOU
 moi=sChimneySteel:0:0
 moi=${1:-$moi}
 
+echo moi $moi
+
 pkg=CSGOptiX
 bin=CSGOptiXRender
 
@@ -46,7 +48,11 @@ render()
 
 if [ "$moi" == "ALL" ]; then 
 
-    names=$(cat $CFBASE/CSGFoundry/name.txt | grep -v Flange | sort | uniq | perl -ne 'm,(.*0x).*, && print "$1\n" ' - )
+    npath=$CFBASE/CSGFoundry/name.txt
+    ls -l $npath
+
+    #names=$(cat $npath | grep -v Flange | sort | uniq | perl -ne 'm,(.*0x).*, && print "$1\n" ' - )
+    names=$(cat $npath | grep -v Flange | grep -v irtual | sort | uniq )
     for name in $names ; do 
        echo $name 
        export MOI=$name 
