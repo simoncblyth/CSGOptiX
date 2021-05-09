@@ -24,13 +24,13 @@ scale1=${SCALE1:-0.5}
 flight=${FLIGHT:-RoundaboutXY_XZ}
 
 
-export MIDX=${MIDX:-117}
+export MOI=${MOI:-sStrut}
 
 pkg=CSGOptiX
 bin=CSGOptiXRender
-outbase=/tmp/$USER/opticks/$pkg/$bin/flight/$(CSGOptiXVersion)/$MIDX
+outbase=/tmp/$USER/opticks/$pkg/$bin/flight/$(CSGOptiXVersion)/$MOI
 
-prefix="${flight}__${MIDX}"
+prefix="${flight}__${MOI}"
 outdir="$outbase/$prefix"
 config="flight=$flight,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
 
