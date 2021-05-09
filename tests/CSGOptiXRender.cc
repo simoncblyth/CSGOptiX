@@ -12,25 +12,33 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv); 
     ok.configure(); 
 
-    int midx = SSys::getenvint("MIDX", 130);   // 130 is world box for default CFBASE
-    int mord = SSys::getenvint("MORD",   0); 
-    int iidx = SSys::getenvint("IIDX",   0);
-
     const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" ); 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
 
-    CSGFoundry* foundry = CSGFoundry::Load(cfbase, "CSGFoundry"); 
-    foundry->upload(); 
-    LOG(info) << "foundry " << foundry->desc() ; 
-    foundry->summary(); 
+    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+    fd->upload(); 
+    LOG(info) << "foundry " << fd->desc() ; 
+    fd->summary(); 
+
+    const char* moi = SSys::getenvvar("MOI", "sWorld:0:0"); 
+    int midx, mord, iidx ; 
+    fd->parseMOI(midx, mord, iidx,  moi );  
+
+    LOG(info) 
+        << " MOI " << moi 
+        << " midx " << midx 
+        << " mord " << mord 
+        << " iidx " << iidx
+        ;   
+
 
     float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
-    int rc = foundry->getCenterExtent(ce, midx, mord, iidx) ;
+    int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
     if(rc != 0) return 1 ; 
 
 
-    CSGOptiX cx(&ok, foundry, outdir); 
+    CSGOptiX cx(&ok, fd, outdir); 
     cx.setTop(top); 
     cx.setCE(ce);   // establish the coordinate system 
 

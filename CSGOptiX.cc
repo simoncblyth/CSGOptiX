@@ -110,7 +110,7 @@ void CSGOptiX::initGeometry()
 {
     params->node = foundry->d_node ; 
     params->plan = foundry->d_plan ; 
-    params->tran = foundry->d_tran ; 
+    //params->tran = foundry->d_tran ; 
     params->itra = foundry->d_itra ; 
 
     bool is_uploaded =  params->node != nullptr ;
