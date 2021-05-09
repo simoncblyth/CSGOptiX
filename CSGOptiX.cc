@@ -82,7 +82,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_
 #else
     ctx(new Ctx(params)),
     pip(new PIP(ptxpath)), 
-    sbt(new SBT(pip)),
+    sbt(new SBT(ok, pip)),
     frame(new Frame(width, height))  // CUDA holds the pixels 
 #endif
 {

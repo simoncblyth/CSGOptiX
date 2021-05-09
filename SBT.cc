@@ -279,7 +279,7 @@ AS* SBT::getAS(const char* spec) const
    }   
    else if( c == 'g' )
    {   
-       const GAS& gas = vgas[idx]; 
+       const GAS& gas = getGAS(idx) ; 
        a = (AS*)&gas ; 
    }   
    return a ; 
@@ -327,9 +327,13 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
 {
     unsigned offset_sbt = 0 ; 
 
-    for(unsigned i=0 ; i < vgas.size() ; i++)
+    typedef std::map<unsigned, GAS>::const_iterator IT ; 
+    for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
     {
-        const GAS& gas = vgas[i] ;    
+        unsigned gas_idx = it->first ; 
+        const GAS& gas = it->second ; 
+
+        assert( ok->isEnabledMergedMesh(gas_idx) ); 
         unsigned num_bi = gas.bis.size(); 
 
         for(unsigned j=0 ; j < num_bi ; j++)
@@ -342,7 +346,7 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
             { 
                 //unsigned layer_idx = is_1NN ? j : k ;  
                 unsigned layer_idx = k ;  
-                if( solid_idx_ == i && layer_idx_ == layer_idx ) return offset_sbt ;
+                if( solid_idx_ == gas_idx && layer_idx_ == layer_idx ) return offset_sbt ;
                 offset_sbt += 1 ; 
             }
         }         
@@ -357,9 +361,14 @@ unsigned SBT::getTotalRec() const
 {
     unsigned tot_bi = 0 ; 
     unsigned tot_rec = 0 ; 
-    for(unsigned i=0 ; i < vgas.size() ; i++)
+
+    typedef std::map<unsigned, GAS>::const_iterator IT ; 
+    for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
     {
-        const GAS& gas = vgas[i] ;    
+        unsigned gas_idx = it->first ; 
+        const GAS& gas = it->second ; 
+        assert( ok->isEnabledMergedMesh(gas_idx) ); 
+ 
         unsigned num_bi = gas.bis.size(); 
         tot_bi += num_bi ; 
         for(unsigned j=0 ; j < num_bi ; j++)
@@ -396,9 +405,13 @@ std::string SBT::descGAS() const
         << " bi.numRec ( " 
         ;
 
-    for(unsigned i=0 ; i < vgas.size() ; i++)
+    typedef std::map<unsigned, GAS>::const_iterator IT ; 
+    for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
     {
-        const GAS& gas = vgas[i] ;    
+        unsigned gas_idx = it->first ; 
+        const GAS& gas = it->second ; 
+        assert( ok->isEnabledMergedMesh(gas_idx) ); 
+
         unsigned num_bi = gas.bis.size(); 
         tot_bi += num_bi ; 
         for(unsigned j=0 ; j < num_bi ; j++)
@@ -450,22 +463,26 @@ void SBT::createHitgroup()
     hitgroup = new HitGroup[tot_rec] ; 
     HitGroup* hg = hitgroup ; 
 
+
     for(unsigned i=0 ; i < tot_rec ; i++)   // pack headers CPU side
          OPTIX_CHECK( optixSbtRecordPackHeader( pip->hitgroup_pg, hitgroup + i ) ); 
     
     unsigned sbt_offset = 0 ; 
-    for(unsigned i=0 ; i < num_gas ; i++)
-    {
-        unsigned solidIdx = i ;    
-        const GAS& gas = vgas[i] ;    
-        unsigned num_bi = gas.bis.size(); 
-        //if(is_11N) assert( num_bi == 1 ); // 11N mode every GAS has only one BI with aabb for each CSGPrim 
 
-        const CSGSolid* so = foundry->getSolid(solidIdx) ;
+
+    typedef std::map<unsigned, GAS>::const_iterator IT ; 
+    for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
+    {
+        unsigned gas_idx = it->first ; 
+        const GAS& gas = it->second ; 
+        assert( ok->isEnabledMergedMesh(gas_idx) ); 
+        unsigned num_bi = gas.bis.size(); 
+
+        const CSGSolid* so = foundry->getSolid(gas_idx) ;
         int numPrim = so->numPrim ; 
         int primOffset = so->primOffset ; 
 
-        LOG(info) << "solidIdx " << solidIdx << " so.numPrim " << numPrim << " so.primOffset " << primOffset  ; 
+        LOG(info) << "gas_idx " << gas_idx << " so.numPrim " << numPrim << " so.primOffset " << primOffset  ; 
 
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
@@ -474,18 +491,14 @@ void SBT::createHitgroup()
             unsigned num_rec = buildInputCPA.numSbtRecords ; 
             assert( num_rec == numPrim ) ; 
 
-            //if(is_1NN) assert( num_rec == 1 );  // 1NN mode : every BI has one aabb : THIS WAY CHOPS TO SMALLEST BBOX AND IS NO LONGER USED 
-
             for( unsigned k=0 ; k < num_rec ; k++)
             { 
-                //unsigned localPrimIdx = is_1NN ? j : k ;   
                 unsigned localPrimIdx = k ;   
                 unsigned globalPrimIdx = primOffset + localPrimIdx ;   
                 const CSGPrim* prim = foundry->getPrim( globalPrimIdx ); 
                 setPrimData( hg->data, prim ); 
-                //dumpPrimData( hg->data ); 
 
-                unsigned check_sbt_offset = getOffset(solidIdx, localPrimIdx ); 
+                unsigned check_sbt_offset = getOffset(gas_idx, localPrimIdx ); 
 
                 /*
                 std::cout 
@@ -493,7 +506,7 @@ void SBT::createHitgroup()
                     << " gas(i) " << i 
                     << " bi(j) " << j
                     << " sbt(k) " << k 
-                    << " solidIdx " << solidIdx 
+                    << " gas_idx " << gas_idx 
                     << " localPrimIdx " << localPrimIdx 
                     << " globalPrimIdx " << globalPrimIdx 
                     << " check_sbt_offset " << check_sbt_offset
