@@ -7,6 +7,9 @@ flight7.sh
 See also flight.sh 
 
 
+    CVD=1 ./flight7.sh -e ~8,
+
+
 EOU
 }
 
@@ -17,8 +20,8 @@ export CFBASE=/tmp/$USER/opticks/CSG_GGeo
 
 
 size=${SIZE:-2560,1440,1}  # currently ignored
-period=${PERIOD:-4}
-limit=${LIMIT:-600}
+period=${PERIOD:-16}
+limit=${LIMIT:-1024}
 scale0=${SCALE0:-3}
 scale1=${SCALE1:-0.5}
 flight=${FLIGHT:-RoundaboutXY_XZ}

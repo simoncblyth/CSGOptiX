@@ -3,15 +3,18 @@ usage(){ cat << EOU
 
 ::
 
-   MOI=sStrut:10:0 EYE=-1,-1,1,1 TMIN=1.5 ./CSGOptiXRender.sh 
-   MOI=sChimneySteel:0:0                  ./CSGOptiXRender.sh 
-   MOI=sChimneySteel                      ./CSGOptiXRender.sh 
-   CVD=1 MOI=sChimneySteel                ./CSGOptiXRender.sh 
-   MOI=ALL                               ./CSGOptiXRender.sh    
+    CVD=1 ./CSGOptiXRender.sh -e ~8,
+    CVD=0 ./CSGOptiXRender.sh -e ~8,
+
+    MOI=sStrut:10:0 EYE=-1,-1,1,1 TMIN=1.5 ./CSGOptiXRender.sh 
+    MOI=sChimneySteel:0:0                  ./CSGOptiXRender.sh 
+    MOI=sChimneySteel                      ./CSGOptiXRender.sh 
+    CVD=1 MOI=sChimneySteel                ./CSGOptiXRender.sh 
+    MOI=ALL                               ./CSGOptiXRender.sh    
 
 
 
-   Demo "parade" geometry created by::
+    Demo "parade" geometry created by::
 
       cd ~/CSG
       ./CSGDemoTest.sh  

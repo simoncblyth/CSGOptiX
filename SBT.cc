@@ -298,7 +298,7 @@ unsigned SBT::getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
 {
     unsigned num_gas = vgas.size(); 
     unsigned num_solid = foundry->getNumSolid(); 
-    assert( num_gas == num_solid ); 
+    //assert( num_gas == num_solid );   // not when emm active
 
     unsigned offset_sbt = _getOffset(solid_idx_, layer_idx_ ); 
  
@@ -451,7 +451,7 @@ void SBT::createHitgroup()
 {
     unsigned num_solid = foundry->getNumSolid(); 
     unsigned num_gas = vgas.size(); 
-    assert( num_gas == num_solid ); 
+    //assert( num_gas == num_solid );   // not when emm active : then there are less gas than solid
     unsigned tot_rec = getTotalRec(); 
 
     LOG(info)
@@ -564,12 +564,15 @@ void SBT::checkHitgroup()
         << " num_prim " << num_prim
         ; 
 
-    assert( num_prim == num_sbt ); 
+    //assert( num_prim == num_sbt );   // not with emm enabled
 
+   // hmm this is not so easy with skips
+
+/*
     check = new HitGroup[num_prim] ; 
-    CUDA_CHECK( cudaMemcpy(check, reinterpret_cast<void*>( sbt.hitgroupRecordBase ), sizeof( HitGroup )*num_prim, cudaMemcpyDeviceToHost ));
+    CUDA_CHECK( cudaMemcpy(check, reinterpret_cast<void*>( sbt.hitgroupRecordBase ), sizeof( HitGroup )*num_sbt, cudaMemcpyDeviceToHost ));
     HitGroup* hg = check ; 
-    for(unsigned i=0 ; i < num_prim ; i++)
+    for(unsigned i=0 ; i < num_sbt ; i++)
     {
         unsigned globalPrimIdx = i ; 
         const CSGPrim* prim = foundry->getPrim(globalPrimIdx);         
@@ -577,5 +580,8 @@ void SBT::checkHitgroup()
         hg++ ; 
     }
     delete [] check ; 
+
+*/
+
 }
 
