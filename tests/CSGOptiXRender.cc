@@ -22,7 +22,8 @@ int main(int argc, char** argv)
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
     LOG(info) << "foundry " << fd->desc() ; 
-    fd->summary(); 
+    //fd->summary(); 
+
 
     CSGOptiX cx(&ok, fd, outdir); 
     cx.setTop(top); 

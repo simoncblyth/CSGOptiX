@@ -157,12 +157,14 @@ optix::Geometry Six::createGeometry(unsigned solid_idx)
     unsigned numPrim = so->numPrim ; 
     CSGPrim* d_pr = foundry->d_prim + primOffset ; 
 
+    /*
     LOG(info) 
         << " solid_idx " << std::setw(3) << solid_idx
         << " numPrim " << std::setw(3) << numPrim 
         << " primOffset " << std::setw(3) << primOffset
         << " d_pr " << d_pr
         ;
+    */
 
     optix::Geometry solid = context->createGeometry();
     solid->setPrimitiveCount( numPrim );
