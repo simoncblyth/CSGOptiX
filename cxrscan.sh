@@ -23,7 +23,7 @@ scan-ee()
 for e in $(scan-ee) 
 do 
     echo $e 
-    EMM=$e cxr.sh $*
+    EMM=$e ./cxr.sh $*
 done 
 
 

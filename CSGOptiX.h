@@ -30,11 +30,10 @@ struct CSGOptiX : public SRenderer
     static const char* GEO_PTXNAME ; 
     static const char* ENV(const char* key, const char* fallback);
 
-    unsigned width = 1280u ; 
-    unsigned height = 720u ; 
-    unsigned depth = 1u ; 
-
     Opticks*          ok ;  
+    unsigned          width ; 
+    unsigned          height ; 
+    unsigned          depth ; 
     Composition*      composition ; 
  
     const CSGFoundry* foundry ; 
@@ -74,6 +73,7 @@ struct CSGOptiX : public SRenderer
 
 
     int  render_flightpath(); 
+
 
     // fulfil SRenderer protocol
     double render();    

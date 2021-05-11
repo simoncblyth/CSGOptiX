@@ -68,6 +68,8 @@ emm=t8,          # what to include in the GPU geometry
 moi=sWaterTube   # should be same as lLowerChimney_phys
 eye=-1,-1,-1,1   # where to look from, see okc/View::home 
 
+[ "$(uname)" == "Darwin" ] && cvd=0 
+
 export CVD=${CVD:-$cvd}
 export EMM=${EMM:-$emm}
 export MOI=${MOI:-$moi}

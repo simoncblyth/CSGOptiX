@@ -63,6 +63,9 @@ const char* CSGOptiX::ENV(const char* key, const char* fallback)
 CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_) 
     :
     ok(ok_),
+    width(ok->getWidth()),
+    height(ok->getHeight()),
+    depth(1),
     composition(ok->getComposition()),
     foundry(foundry_),
     prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),
