@@ -12,6 +12,9 @@
 
 #include "SStr.hh"
 #include "SSys.hh"
+#include "SMeta.hh"
+#include "SVec.hh"
+
 #include "BTimeStamp.hh"
 #include "PLOG.hh"
 #include "Opticks.hh"
@@ -81,13 +84,14 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_
     jpg_quality(SStr::GetEValue<int>("QUALITY", 50)),
     params(new Params(width, height, depth)),
 #if OPTIX_VERSION < 70000
-    six(new Six(ok, ptxpath, geoptxpath, params))
+    six(new Six(ok, ptxpath, geoptxpath, params)),
 #else
     ctx(new Ctx(params)),
     pip(new PIP(ptxpath)), 
     sbt(new SBT(ok, pip)),
-    frame(new Frame(width, height))  // CUDA holds the pixels 
+    frame(new Frame(width, height)),  // CUDA holds the pixels 
 #endif
+    meta(new SMeta)
 {
     init(); 
 }
@@ -245,6 +249,8 @@ double CSGOptiX::render()
 #endif
     t1 = BTimeStamp::RealTime();
     double dt = t1 - t0 ; 
+    frame_times.push_back(dt);  
+
     LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
     return dt ; 
 }
@@ -290,6 +296,7 @@ void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_l
     frame->annotate( bottom_line, top_line, line_height ); 
     frame->writeJPG(path, jpg_quality);  
 #endif
+    save(); 
 }
 
 
@@ -299,6 +306,33 @@ int CSGOptiX::render_flightpath()
     int rc = fp->render( (SRenderer*)this  );
     return rc ; 
 }
+
+
+void CSGOptiX::save() const
+{
+    const std::vector<double>& t = frame_times ;
+    double mn, mx, av ;
+    SVec<double>::MinMaxAvg(t,mn,mx,av);
+
+    const char* nameprefix = ok->getNamePrefix() ;
+
+    nlohmann::json& js = meta->js ;
+    js["argline"] = ok->getArgLine();
+    js["nameprefix"] = nameprefix ; 
+    js["emm"] = ok->getEnabledMergedMesh() ;
+    js["mn"] = mn ;
+    js["mx"] = mx ;
+    js["av"] = av ;
+
+    std::string js_name(nameprefix) ;
+    js_name += ".json" ;
+    meta->save(outdir,  js_name.c_str() );
+
+    //std::string np_name(nameprefix) ;
+    //np_name += ".npy" ;
+    //NP::Write(outdir, np_name.c_str(), (double*)t.data(),  t.size() );
+}
+
 
 
 

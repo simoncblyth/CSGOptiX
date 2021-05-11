@@ -5,11 +5,13 @@
 #include <glm/fwd.hpp>
 #include "plog/Severity.h"
 
+struct SMeta ; 
+
 struct CSGFoundry ; 
 struct CSGView ; 
 
-struct Params ; 
 
+struct Params ; 
 class Opticks ; 
 
 #if OPTIX_VERSION < 70000
@@ -42,12 +44,10 @@ struct CSGOptiX : public SRenderer
     const char*       cmaketarget ; 
     const char*       ptxpath ; 
     const char*       geoptxpath ; 
-    //unsigned          cameratype ; 
     float             tmin_model ; 
     int               jpg_quality ; 
+    std::vector<double>  frame_times ;
 
-    //glm::vec4         eye_model ; 
-    //CSGView*          view ; 
     Params*           params  ; 
 #if OPTIX_VERSION < 70000
     Six* six ;  
@@ -57,6 +57,7 @@ struct CSGOptiX : public SRenderer
     SBT* sbt ; 
     Frame* frame ; 
 #endif
+    SMeta* meta ; 
 
 
     CSGOptiX(Opticks* ok, const CSGFoundry* foundry, const char* outdir); 
@@ -78,6 +79,9 @@ struct CSGOptiX : public SRenderer
     // fulfil SRenderer protocol
     double render();    
     void snap(const char* path, const char* bottom_line, const char* top_line=nullptr, unsigned line_height=24); 
+
+
+    void save() const ;
 
     static std::string Annotation( double dt ); 
     static std::string Path( const char* outdir, const char* name);
