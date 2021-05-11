@@ -75,7 +75,7 @@ struct CSGOptiX : public SRenderer
     double render();    
     void snap(const char* path, const char* bottom_line, const char* top_line=nullptr, unsigned line_height=24); 
 
-    void save() const ;
+    void saveMeta(const char* jpg_path) const ;
 
     static std::string Annotation( double dt ); 
     static std::string Path( const char* outdir, const char* name);

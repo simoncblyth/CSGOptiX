@@ -294,7 +294,7 @@ void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_l
     frame->annotate( bottom_line, top_line, line_height ); 
     frame->writeJPG(path, jpg_quality);  
 #endif
-    save(); 
+    saveMeta(path); 
 }
 
 
@@ -305,9 +305,10 @@ int CSGOptiX::render_flightpath()
     return rc ; 
 }
 
-
-void CSGOptiX::save() const
+void CSGOptiX::saveMeta(const char* jpg_path) const
 {
+    const char* json_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".json"); 
+
     const std::vector<double>& t = frame_times ;
     double mn, mx, av ;
     SVec<double>::MinMaxAvg(t,mn,mx,av);
@@ -317,19 +318,17 @@ void CSGOptiX::save() const
     nlohmann::json& js = meta->js ;
     js["argline"] = ok->getArgLine();
     js["nameprefix"] = nameprefix ; 
+    js["jpg"] = jpg_path ; 
     js["emm"] = ok->getEnabledMergedMesh() ;
     js["mn"] = mn ;
     js["mx"] = mx ;
     js["av"] = av ;
 
-    std::string js_name(nameprefix) ;
-    js_name += ".json" ;
-    meta->save(outdir,  js_name.c_str() );
-    LOG(info) << outdir << "/" << js_name ; 
+    meta->save(json_path);
+    LOG(info) << json_path ; 
 
-    //std::string np_name(nameprefix) ;
-    //np_name += ".npy" ;
-    //NP::Write(outdir, np_name.c_str(), (double*)t.data(),  t.size() );
+    //const char* npy_path = SStr::ReplaceEnd(jpgpath, ".jpg", ".npy"); 
+    //NP::Write(npy_path, (double*)t.data(),  t.size() );
 }
 
 
