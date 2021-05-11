@@ -31,6 +31,9 @@ int main(int argc, char** argv)
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
 
+    int one_gas_ias = ok->getOneGASIAS(); 
+
+
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
     LOG(info) << "foundry " << fd->desc() ; 
@@ -57,13 +60,20 @@ int main(int argc, char** argv)
     {
         const std::string& arg = args[i];
 
-        int midx, mord, iidx ; 
-        fd->parseMOI(midx, mord, iidx,  arg.c_str() );  
-
-        LOG(info) << " i " << i << " arg " << arg << " midx " << midx << " mord " << mord << " iidx " << iidx ;   
-
+        int rc = 0 ; 
         float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
-        int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
+        if(one_gas_ias > -1)
+        {
+            fd->gasCE(ce, one_gas_ias ); 
+        }
+        else
+        {
+            int midx, mord, iidx ; 
+            fd->parseMOI(midx, mord, iidx,  arg.c_str() );  
+            LOG(info) << " i " << i << " arg " << arg << " midx " << midx << " mord " << mord << " iidx " << iidx ;   
+            rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
+        }
+
         if(rc == 0 )
         {
             cx.setCE(ce);   // establish the coordinate system 
