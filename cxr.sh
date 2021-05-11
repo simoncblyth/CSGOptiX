@@ -61,13 +61,23 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
+
+export CFNAME=${CFNAME:-CSG_GGeo}
+export CFBASE=/tmp/$USER/opticks/${CFNAME} 
+[ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
+
+
+pkg=CSGOptiX
+bin=CSGOptiXRender
+
 # defaults 
 cvd=1            # which GPU to use
 emm=t8,          # what to include in the GPU geometry 
 #moi=sStrut      # what to look at 
 moi=sWaterTube   # should be same as lLowerChimney_phys
 eye=-1,-1,-1,1   # where to look from, see okc/View::home 
-top=i0
+top=i0           # hmm difficuly to support
+ogi=-1           # one_gas_ias less disruptive perhaps 
 
 [ "$(uname)" == "Darwin" ] && cvd=0 
 
@@ -76,19 +86,14 @@ export EMM=${EMM:-$emm}
 export MOI=${MOI:-$moi}
 export EYE=${EYE:-$eye}
 export TOP=${TOP:-$top}
+export OGI=${OGI:-$ogi}
+
+vars="CVD EMM MOI EYE TOP OGI"
+for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
 nameprefix=cxr_${top}_${EMM}_
 
-echo $msg CVD $CVD TOP $top EMM $EMM MOI $MOI EYE $EYE nameprefix $nameprefix
-
-pkg=CSGOptiX
-bin=CSGOptiXRender
-
-export CFNAME=${CFNAME:-CSG_GGeo}
-export CFBASE=/tmp/$USER/opticks/${CFNAME} 
-[ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
-
-export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/render/${CFNAME}/${CVD}/${TOP}
+export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/render/${CFNAME}/${CVD}/${TOP}/${OGI}
 mkdir -p $OUTDIR
 
 arglist=$OUTDIR/arglist.txt
@@ -97,7 +102,7 @@ export LOGDIR=${OUTDIR}.logs
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 
-render(){ $GDB $bin --nameprefix $nameprefix --cvd $CVD -e $EMM $* ; }   # MOI enters via arglist 
+render(){ $GDB $bin --nameprefix $nameprefix --cvd $CVD -e $EMM --one_gas_ias $OGI  $* ; }   # MOI enters via arglist 
 
 
 make_arglist()
