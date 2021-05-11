@@ -240,6 +240,7 @@ void SBT::createOneGASIAS(unsigned ias_idx, unsigned one_gas_ias)
     unsigned gas_idx = one_gas_ias ; 
     qat4 q ; 
     q.setIdentity(ins_idx, gas_idx, ias_idx );
+    ias_inst.push_back(q); 
 
     IAS ias = {} ;  
     IAS_Builder::Build(ias, ias_inst, this );
