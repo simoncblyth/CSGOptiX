@@ -135,8 +135,6 @@ void CSGOptiX::initFrame()
 {
 #if OPTIX_VERSION < 70000
     six->initFrame();     // sets params->pixels, isect from optix device pointers
-    //frame->d_pixels = params->pixels ; 
-    //frame->d_isect = params->isect ; 
 #else
     params->pixels = frame->getDevicePixels(); 
     params->isect  = frame->getDeviceIsect(); 
@@ -327,6 +325,7 @@ void CSGOptiX::save() const
     std::string js_name(nameprefix) ;
     js_name += ".json" ;
     meta->save(outdir,  js_name.c_str() );
+    LOG(info) << outdir << "/" < js_name ; 
 
     //std::string np_name(nameprefix) ;
     //np_name += ".npy" ;

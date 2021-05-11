@@ -10,7 +10,6 @@ struct SMeta ;
 struct CSGFoundry ; 
 struct CSGView ; 
 
-
 struct Params ; 
 class Opticks ; 
 
@@ -59,7 +58,6 @@ struct CSGOptiX : public SRenderer
 #endif
     SMeta* meta ; 
 
-
     CSGOptiX(Opticks* ok, const CSGFoundry* foundry, const char* outdir); 
 
     void init(); 
@@ -71,23 +69,16 @@ struct CSGOptiX : public SRenderer
     void setCE(const glm::vec4& ce); 
 
     void updateView(); 
-
-
     int  render_flightpath(); 
-
 
     // fulfil SRenderer protocol
     double render();    
     void snap(const char* path, const char* bottom_line, const char* top_line=nullptr, unsigned line_height=24); 
-
 
     void save() const ;
 
     static std::string Annotation( double dt ); 
     static std::string Path( const char* outdir, const char* name);
     static std::string Path( const char* outdir, const char* nameprefix, const char* namestem, const char* ext);
-
 };
-
-
 
