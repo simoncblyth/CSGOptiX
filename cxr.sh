@@ -67,6 +67,7 @@ emm=t8,          # what to include in the GPU geometry
 #moi=sStrut      # what to look at 
 moi=sWaterTube   # should be same as lLowerChimney_phys
 eye=-1,-1,-1,1   # where to look from, see okc/View::home 
+top=i0
 
 [ "$(uname)" == "Darwin" ] && cvd=0 
 
@@ -74,10 +75,11 @@ export CVD=${CVD:-$cvd}
 export EMM=${EMM:-$emm}
 export MOI=${MOI:-$moi}
 export EYE=${EYE:-$eye}
+export TOP=${TOP:-$top}
 
-nameprefix=cxr_${EMM}_
+nameprefix=cxr_${top}_${EMM}_
 
-echo $msg CVD $CVD EMM $EMM MOI $MOI EYE $EYE nameprefix $nameprefix
+echo $msg CVD $CVD TOP $top EMM $EMM MOI $MOI EYE $EYE nameprefix $nameprefix
 
 pkg=CSGOptiX
 bin=CSGOptiXRender
@@ -86,7 +88,7 @@ export CFNAME=${CFNAME:-CSG_GGeo}
 export CFBASE=/tmp/$USER/opticks/${CFNAME} 
 [ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
 
-export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/render/${CFNAME}/${CVD}
+export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/render/${CFNAME}/${CVD}/${TOP}
 mkdir -p $OUTDIR
 
 arglist=$OUTDIR/arglist.txt

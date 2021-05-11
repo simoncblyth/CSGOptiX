@@ -28,6 +28,7 @@ struct CSGPrim ;
 struct SBT 
 {
     const Opticks*  ok ; 
+    int        one_gas_ias ; // --one_gas_ias  default -1 means disabled
     unsigned long long emm ; 
     const PIP*      pip ; 
     Raygen*       raygen ;
@@ -70,6 +71,8 @@ struct SBT
 
     void createIAS();
     void createIAS(unsigned ias_idx);
+    void createOneGASIAS(unsigned ias_idx, unsigned one_gas_ias) ; // --one_gas_ias gas_idx
+
     const IAS& getIAS(unsigned ias_idx) const ;
 
     void createGAS();

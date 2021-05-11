@@ -51,6 +51,7 @@ PGs and their data.
 SBT::SBT(const Opticks* ok_, const PIP* pip_)
     :
     ok(ok_),
+    one_gas_ias(ok->getOneGASIAS()),
     emm(ok->getEMM()),
     pip(pip_),
     raygen(nullptr),
@@ -89,8 +90,8 @@ void SBT::setFoundry(const CSGFoundry* foundry_)
     foundry = foundry_ ; 
 
     createGAS();  
-    createIAS(); 
 
+    createIAS(); 
     createHitgroup(); 
     checkHitgroup(); 
 
@@ -214,12 +215,35 @@ const GAS& SBT::getGAS(unsigned gas_idx) const
 
 void SBT::createIAS()
 {
-    unsigned num_ias = foundry->getNumUniqueIAS() ; 
-    for(unsigned i=0 ; i < num_ias ; i++)
+    if( one_gas_ias > -1 )
     {
-        unsigned ias_idx = foundry->ias[i]; 
-        createIAS(ias_idx); 
+        unsigned ias_idx = 0 ; 
+        unsigned gas_idx = one_gas_ias ; 
+        createOneGASIAS( ias_idx, gas_idx ); 
     }
+    else
+    {
+        unsigned num_ias = foundry->getNumUniqueIAS() ; 
+        for(unsigned i=0 ; i < num_ias ; i++)
+        {
+            unsigned ias_idx = foundry->ias[i]; 
+            createIAS(ias_idx); 
+        }
+    }
+}
+
+void SBT::createOneGASIAS(unsigned ias_idx, unsigned one_gas_ias)
+{
+    std::vector<qat4> ias_inst ; 
+
+    unsigned ins_idx = 0 ; 
+    unsigned gas_idx = one_gas_idx ; 
+    qat4 q ; 
+    q.setIdentity(ins_idx, gas_idx, ias_idx );
+
+    IAS ias = {} ;  
+    IAS_Builder::Build(ias, ias_inst, this );
+    vias.push_back(ias);  
 }
 
 void SBT::createIAS(unsigned ias_idx)
