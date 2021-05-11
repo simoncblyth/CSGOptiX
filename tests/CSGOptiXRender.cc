@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
 
-    int one_gas_ias = ok->getOneGASIAS(); 
+    int one_gas_ias = ok.getOneGASIAS(); 
 
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
