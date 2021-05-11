@@ -325,7 +325,7 @@ void CSGOptiX::save() const
     std::string js_name(nameprefix) ;
     js_name += ".json" ;
     meta->save(outdir,  js_name.c_str() );
-    LOG(info) << outdir << "/" < js_name ; 
+    LOG(info) << outdir << "/" << js_name ; 
 
     //std::string np_name(nameprefix) ;
     //np_name += ".npy" ;
