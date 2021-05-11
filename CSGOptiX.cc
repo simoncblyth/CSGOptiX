@@ -109,7 +109,7 @@ void CSGOptiX::initGeometry()
 {
     params->node = foundry->d_node ; 
     params->plan = foundry->d_plan ; 
-    //params->tran = foundry->d_tran ; 
+    params->tran = nullptr ; 
     params->itra = foundry->d_itra ; 
 
     bool is_uploaded =  params->node != nullptr ;
@@ -218,11 +218,9 @@ void CSGOptiX::updateView()
     ctx->uploadParams();  
 #endif
 
-
-    std::cout 
-        << "CSGOptiX::updateView composition.desc " << std::endl 
+    LOG(info)
+        << "composition.desc " << std::endl 
         << composition->desc() 
-        << std::endl
         ; 
 
 }
@@ -233,22 +231,16 @@ double CSGOptiX::render()
 
     LOG(LEVEL) << "[" ; 
     double t0, t1 ; 
+    t0 = BTimeStamp::RealTime();
 #if OPTIX_VERSION < 70000
-    t0 = BTimeStamp::RealTime();
     six->launch(); 
-    t1 = BTimeStamp::RealTime();
 #else
-
-    t0 = BTimeStamp::RealTime();
-
     CUstream stream;
     CUDA_CHECK( cudaStreamCreate( &stream ) );
     OPTIX_CHECK( optixLaunch( pip->pipeline, stream, ctx->d_param, sizeof( Params ), &(sbt->sbt), frame->width, frame->height, frame->depth ) );
     CUDA_SYNC_CHECK();
-
-    t1 = BTimeStamp::RealTime();
-
 #endif
+    t1 = BTimeStamp::RealTime();
     double dt = t1 - t0 ; 
     LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
     return dt ; 
@@ -271,10 +263,14 @@ std::string CSGOptiX::Path( const char* outdir, const char* name)
     return path ;
 }
 
-std::string CSGOptiX::Path( const char* outdir, const char* stem, const char* ext)
+std::string CSGOptiX::Path( const char* outdir, const char* nameprefix, const char* namestem, const char* ext)
 {
     std::stringstream tt ; 
-    tt << outdir << "/" << stem << ext ; 
+    tt 
+        << outdir 
+        << "/" 
+        << nameprefix << namestem << ext
+        ; 
     std::string path = tt.str(); 
     return path ;
 }

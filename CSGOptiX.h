@@ -81,7 +81,7 @@ struct CSGOptiX : public SRenderer
 
     static std::string Annotation( double dt ); 
     static std::string Path( const char* outdir, const char* name);
-    static std::string Path( const char* outdir, const char* stem, const char* ext);
+    static std::string Path( const char* outdir, const char* nameprefix, const char* namestem, const char* ext);
 
 };
 

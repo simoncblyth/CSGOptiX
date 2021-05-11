@@ -1,3 +1,15 @@
+/**
+CSGOptiXRender
+=================
+
+With option --arglist /path/to/arglist.txt each line of the arglist file 
+is taken as an MOI specifying the center_extent box to target. 
+Without an --arglist option the MOI envvar or default value  "sWorld:0:0" 
+is consulted to set the target box.
+ 
+
+**/
+
 #include <algorithm>
 #include <iterator>
 
@@ -24,10 +36,8 @@ int main(int argc, char** argv)
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 
-
     CSGOptiX cx(&ok, fd, outdir); 
     cx.setTop(top); 
-
 
     bool flight = ok.hasArg("--flightconfig") ; 
     const std::vector<std::string>& arglist = ok.getArgList() ;  // --arglist /path/to/arglist.txt
@@ -42,7 +52,6 @@ int main(int argc, char** argv)
     {
         args.push_back(SSys::getenvvar("MOI", "sWorld:0:0"));  
     }
-
 
     for(unsigned i=0 ; i < args.size() ; i++)
     {
@@ -66,7 +75,12 @@ int main(int argc, char** argv)
             else
             {
                 double dt = cx.render();  
-                std::string path = CSGOptiX::Path(outdir, arg.c_str(), ".jpg" );  
+
+                const char* nameprefix = ok.getNamePrefix() ;  // eg "cxr_t8,_"
+                const char* namestem = arg.c_str() ; 
+                const char* ext = ".jpg" ; 
+
+                std::string path = CSGOptiX::Path(outdir, nameprefix, namestem, ext );  
                 std::string bottom_line = CSGOptiX::Annotation(dt); 
                 cx.snap(path.c_str(), bottom_line.c_str(), top_line.c_str() );   
             }
