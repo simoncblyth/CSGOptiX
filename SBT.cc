@@ -237,7 +237,7 @@ void SBT::createOneGASIAS(unsigned ias_idx, unsigned one_gas_ias)
     std::vector<qat4> ias_inst ; 
 
     unsigned ins_idx = 0 ; 
-    unsigned gas_idx = one_gas_idx ; 
+    unsigned gas_idx = one_gas_ias ; 
     qat4 q ; 
     q.setIdentity(ins_idx, gas_idx, ias_idx );
 
