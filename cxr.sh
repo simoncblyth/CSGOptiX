@@ -79,7 +79,7 @@ export CVD=${CVD:-$cvd}    # --cvd
 export EMM=${EMM:-$emm}    # -e 
 export MOI=${MOI:-$moi}    # evar:MOI OR --arglist when MOI=ALL  
 export EYE=${EYE:-$eye}    # evar:EYE 
-export TOP=${TOP:-$top}    # evar:TOP?
+export TOP=$top            # evar:TOP? getting TOP=0 from somewhere causing crash
 export OGI=${OGI:-$ogi}    # --one_gas_ias
 export CAM=${CAM:-$cam}    # evar:CAMERATYPE
 export TMIN=${TMIN:-$tmin} # evar:TMIN
