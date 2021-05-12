@@ -100,7 +100,7 @@ extern "C" __global__ void __raygen__rg()
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
 
-    const float2      d = 2.0f * make_float2(
+    float2 d = 2.0f * make_float2(
             static_cast<float>( idx.x ) / static_cast<float>( dim.x ),
             static_cast<float>( idx.y ) / static_cast<float>( dim.y )
             ) - 1.0f;
