@@ -1,12 +1,12 @@
 #!/bin/bash -l 
 
 nmm=${NMM:-9}   # geometry specific 
+script=${SCRIPT:-cxr_overview}
 
 usage(){ cat << EOU
 ::
 
-    cxrscan.sh 
-    NMM=5 cxrscan.sh 
+    ./cxr_scan.sh 
 
 EOU
 }
@@ -23,7 +23,7 @@ scan-ee()
 for e in $(scan-ee) 
 do 
     echo $e 
-    EMM=$e ./cxr.sh $*
+    EMM=$e ./$script.sh $*
 done 
 
 

@@ -1,12 +1,12 @@
 #!/bin/bash -l
 
 usage(){ cat << EOU
-flight7.sh
+cxr_flight.sh
 ===============
 
-See also flight.sh::
+See also opticks/bin/flight.sh::
 
-    ./flight7.sh
+    ./cxr_flight.sh
 
 Before taking flight check a single render with eg::
 
