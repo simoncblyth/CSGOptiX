@@ -3,6 +3,10 @@ usage(){ cat << EOU
 
 ::
 
+
+    OGI=0 ./cxr.sh     # one_gas_ias
+    OGI=1 ./cxr.sh
+
     CVD=1 ./cxr.sh -e t8,
     CVD=0 ./cxr.sh -e t8,
 
@@ -78,6 +82,7 @@ moi=sWaterTube   # should be same as lLowerChimney_phys
 eye=-1,-1,-1,1   # where to look from, see okc/View::home 
 top=i0           # hmm difficuly to support
 ogi=-1           # one_gas_ias less disruptive perhaps 
+cam=0            # 0:perpective 1:orthographic 2:equirect (not supported in CSGOptiX(7) yet)
 
 [ "$(uname)" == "Darwin" ] && cvd=0 
 
@@ -87,9 +92,13 @@ export MOI=${MOI:-$moi}
 export EYE=${EYE:-$eye}
 export TOP=${TOP:-$top}
 export OGI=${OGI:-$ogi}
+export CAM=${CAM:-$cam}
 
 vars="CVD EMM MOI EYE TOP OGI"
 for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
+
+export CAMERATYPE=$CAM     # okc/Camera default 
+
 
 nameprefix=cxr_${top}_${EMM}_
 
@@ -102,7 +111,7 @@ export LOGDIR=${OUTDIR}.logs
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 
-render(){ $GDB $bin --nameprefix $nameprefix --cvd $CVD -e $EMM --one_gas_ias $OGI  $* ; }   # MOI enters via arglist 
+render(){ $GDB $bin --nameprefix $nameprefix --cvd $CVD -e $EMM --one_gas_ias $OGI  $* ; }   # MOI enters via arglist or envvar
 
 
 make_arglist()

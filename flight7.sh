@@ -9,17 +9,20 @@ See also flight.sh
 
     CVD=1 ./flight7.sh -e ~8,
 
+Developments here need to follow cxr.sh to some extent. 
 
 EOU
 }
 
 msg="=== $0 :"
 
-export CFBASE=/tmp/$USER/opticks/CSG_GGeo 
+export CFNAME=${CFNAME:-CSG_GGeo}
+export CFBASE=/tmp/$USER/opticks/${CFNAME} 
 [ ! -d "$CFBASE/CSGFoundry" ] && echo $msg ERROR no such directory $CFBASE/CSGFoundry && exit 1
 
+pkg=CSGOptiX
+bin=CSGOptiXRender
 
-size=${SIZE:-2560,1440,1}  # currently ignored
 period=${PERIOD:-16}
 limit=${LIMIT:-1024}
 scale0=${SCALE0:-3}
@@ -27,18 +30,41 @@ scale1=${SCALE1:-0.5}
 flight=${FLIGHT:-RoundaboutXY_XZ}
 
 
-export MOI=${MOI:-sStrut}
+# defaults 
+cvd=1            # which GPU to use
+emm=t8,          # what to include in the GPU geometry 
+#moi=sStrut      # what to look at 
+moi=sWaterTube   # sWaterTube should be same as lLowerChimney_phys
+eye=-1,-1,-1,1   # where to look from, see okc/View::home 
+top=i0           # hmm difficuly to support
+ogi=-1           # one_gas_ias less disruptive perhaps : -1 default means not enabled
+cam=0            # 0:perpective 1:orthographic 2:equirect (not supported in CSGOptiX(7) yet)
 
-pkg=CSGOptiX
-bin=CSGOptiXRender
-outbase=/tmp/$USER/opticks/$pkg/$bin/flight/$(CSGOptiXVersion)/$MOI
+[ "$(uname)" == "Darwin" ] && cvd=0 
+
+export CVD=${CVD:-$cvd}
+export EMM=${EMM:-$emm}
+export MOI=${MOI:-$moi}
+export EYE=${EYE:-$eye}
+export TOP=${TOP:-$top}
+export OGI=${OGI:-$ogi}
+export CAM=${CAM:-$cam}
+
+export CAMERATYPE=$CAM     # okc/Camera default 
+
+vars="CVD EMM MOI EYE TOP OGI CAM"
+for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
+
+nameprefix=cxr_${top}_${EMM}_
+outbase=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/flight/$CFNAME/$CVD/$TOP/$OGI
 
 prefix="${flight}__${MOI}"
 outdir="$outbase/$prefix"
 config="flight=$flight,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
+mkdir -p $outdir 
 
 flight-cmd(){ cat << EOC
-$bin --flightconfig "$config" --flightoutdir "$outdir" --nameprefix "$prefix"   $*
+$bin --flightconfig "$config" --flightoutdir "$outdir" --nameprefix "$prefix" --cvd $CVD -e $EMM --one_gas_ias $OGI  $*
 EOC
 }
 
@@ -85,7 +111,6 @@ flight-render()
 flight-grab()
 {
     [ -z "$outbase" ] && echo $msg outbase $outbase not defined && return 1 
-
     local cmd="rsync -rtz --progress P:$outbase/ $outbase/"
     echo $cmd
     eval $cmd
@@ -93,12 +118,9 @@ flight-grab()
     return 0 
 }
 
-
 if [ "$(uname)" == "Darwin" ]; then
     flight-grab
 else
     flight-render $*
 fi 
-
-
 
