@@ -27,7 +27,6 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv); 
     ok.configure(); 
 
-    const char* outdir = SSys::getenvvar("OUTDIR", "/tmp" ); 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
 
@@ -39,7 +38,7 @@ int main(int argc, char** argv)
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 
-    CSGOptiX cx(&ok, fd, outdir); 
+    CSGOptiX cx(&ok, fd); 
     cx.setTop(top); 
 
     bool flight = ok.hasArg("--flightconfig") ; 
@@ -86,11 +85,11 @@ int main(int argc, char** argv)
             {
                 double dt = cx.render();  
 
-                const char* nameprefix = ok.getNamePrefix() ;  // eg "cxr_t8,_"
                 const char* namestem = arg.c_str() ; 
                 const char* ext = ".jpg" ; 
+                int index = -1 ;  
+                const char* path = ok->getOutPath(namestem, ext, index ); 
 
-                std::string path = CSGOptiX::Path(outdir, nameprefix, namestem, ext );  
                 std::string bottom_line = CSGOptiX::Annotation(dt); 
                 cx.snap(path.c_str(), bottom_line.c_str(), top_line.c_str() );   
             }

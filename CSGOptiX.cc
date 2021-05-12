@@ -63,7 +63,7 @@ const char* CSGOptiX::ENV(const char* key, const char* fallback)
 }
 
 
-CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_) 
+CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_) 
     :
     ok(ok_),
     width(ok->getWidth()),
@@ -72,7 +72,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_, const char* outdir_
     composition(ok->getComposition()),
     foundry(foundry_),
     prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),
-    outdir(outdir_),
+    outdir(ok->getOutDir()),    // evar:OUTDIR default overridden by --outdir option   
     cmaketarget("CSGOptiX"),  
     ptxpath(SStr::PTXPath( prefix, cmaketarget, PTXNAME )),
 #if OPTIX_VERSION < 70000 
@@ -262,27 +262,6 @@ std::string CSGOptiX::Annotation( double dt )  // static
     return anno ; 
 }
 
-std::string CSGOptiX::Path( const char* outdir, const char* name)
-{
-    std::stringstream tt ; 
-    tt << outdir << "/" << name  ; 
-    std::string path = tt.str(); 
-    return path ;
-}
-
-std::string CSGOptiX::Path( const char* outdir, const char* nameprefix, const char* namestem, const char* ext)
-{
-    std::stringstream tt ; 
-    tt 
-        << outdir 
-        << "/" 
-        << nameprefix << namestem << ext
-        ; 
-    std::string path = tt.str(); 
-    return path ;
-}
-
-
 
 
 void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
@@ -330,7 +309,6 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     //const char* npy_path = SStr::ReplaceEnd(jpgpath, ".jpg", ".npy"); 
     //NP::Write(npy_path, (double*)t.data(),  t.size() );
 }
-
 
 
 

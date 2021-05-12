@@ -58,7 +58,7 @@ struct CSGOptiX : public SRenderer
 #endif
     SMeta* meta ; 
 
-    CSGOptiX(Opticks* ok, const CSGFoundry* foundry, const char* outdir); 
+    CSGOptiX(Opticks* ok, const CSGFoundry* foundry ); 
 
     void init(); 
     void initGeometry();
@@ -78,7 +78,5 @@ struct CSGOptiX : public SRenderer
     void saveMeta(const char* jpg_path) const ;
 
     static std::string Annotation( double dt ); 
-    static std::string Path( const char* outdir, const char* name);
-    static std::string Path( const char* outdir, const char* nameprefix, const char* namestem, const char* ext);
 };
 

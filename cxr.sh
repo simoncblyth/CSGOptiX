@@ -39,21 +39,9 @@ EYE, LOOK, UP envvars are read in okc/View::home : they define Composition view 
 
     281 void View::home()
     282 {
-    283     m_changed = true ;
-    284 
-    285     m_eye.x = -1.f ;
-    286     m_eye.y = -1.f ;
-    287     m_eye.z =  0.f ;
+    ...
     288     m_eye = SGLM::EVec3("EYE", "-1,-1,0" );
-    289 
-    290     m_look.x =  0.f ;
-    291     m_look.y =  0.f ;
-    292     m_look.z =  0.f ;
     293     m_look = SGLM::EVec3("LOOK", "0,0,0" );
-    294 
-    295     m_up.x =  0.f ;
-    296     m_up.y =  0.f ;
-    297     m_up.z =  1.f ;
     298     m_up = SGLM::EVec3("UP", "0,0,1" );
     299 }
 
@@ -75,33 +63,36 @@ pkg=CSGOptiX
 bin=CSGOptiXRender
 
 # defaults 
-cvd=1            # which GPU to use
+cvd=1            # default GPU to use
 emm=t8,          # what to include in the GPU geometry 
 #moi=sStrut      # what to look at 
 moi=sWaterTube   # should be same as lLowerChimney_phys
 eye=-1,-1,-1,1   # where to look from, see okc/View::home 
-top=i0           # hmm difficuly to support
-ogi=-1           # one_gas_ias less disruptive perhaps 
-cam=0            # 0:perpective 1:orthographic 2:equirect (not supported in CSGOptiX(7) yet)
+top=i0           # hmm difficuly to support other than i0
+ogi=-1           # one_gas_ias less disruptive perhaps that changing top, -1 means disabled 
+cam=0            # 0:perpective 1:orthographic 2:equirect (2:not supported in CSGOptiX(7) yet)
+tmin=0.1         # near in units of extent, so typical range is 0.1-2.0 for visibility, depending on EYE->LOOK distance
 
-[ "$(uname)" == "Darwin" ] && cvd=0 
+[ "$(uname)" == "Darwin" ] && cvd=0    # only one GPU on laptop 
 
-export CVD=${CVD:-$cvd}
-export EMM=${EMM:-$emm}
-export MOI=${MOI:-$moi}
-export EYE=${EYE:-$eye}
-export TOP=${TOP:-$top}
-export OGI=${OGI:-$ogi}
-export CAM=${CAM:-$cam}
+export CVD=${CVD:-$cvd}    # --cvd 
+export EMM=${EMM:-$emm}    # -e 
+export MOI=${MOI:-$moi}    # evar:MOI OR --arglist when MOI=ALL  
+export EYE=${EYE:-$eye}    # evar:EYE 
+export TOP=${TOP:-$top}    # evar:TOP?
+export OGI=${OGI:-$ogi}    # --one_gas_ias
+export CAM=${CAM:-$cam}    # evar:CAMERATYPE
+export TMIN=${TMIN:-$tmin} # evar:TMIN
 
-vars="CVD EMM MOI EYE TOP OGI"
+vars="CVD EMM MOI EYE TOP OGI CAM"
 for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
-export CAMERATYPE=$CAM     # okc/Camera default 
+export CAMERATYPE=$CAM    # okc/Camera::Camera default 
 
 
 nameprefix=cxr_${top}_${EMM}_
 
+export NAMEPREFIX=$nameprefix
 export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/render/${CFNAME}/${CVD}/${TOP}/${OGI}
 mkdir -p $OUTDIR
 
@@ -111,7 +102,31 @@ export LOGDIR=${OUTDIR}.logs
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 
-render(){ $GDB $bin --nameprefix $nameprefix --cvd $CVD -e $EMM --one_gas_ias $OGI  $* ; }   # MOI enters via arglist or envvar
+
+render-cmd(){ cat << EOC
+$GDB $bin --nameprefix $nameprefix --cvd $CVD -e $EMM --one_gas_ias $OGI  $* 
+EOC
+}   
+
+render()
+{
+   local msg="=== $FUNCNAME :"
+   which $bin
+   pwd
+
+   local log=$bin.log
+   local cmd=$(render-cmd $*) 
+   echo $cmd
+
+   printf "\n\n\n$cmd\n\n\n" >> $log 
+
+   eval $cmd
+   local rc=$?
+
+   printf "\n\n\nRC $rc\n\n\n" >> $log 
+
+   echo $msg rc $rc
+}
 
 
 make_arglist()
