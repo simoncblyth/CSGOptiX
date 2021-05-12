@@ -151,4 +151,3 @@ else
     [ "$(uname)" == "Darwin" ] && open $jpg
 fi 
 
-exit 0 
