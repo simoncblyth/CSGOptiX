@@ -32,6 +32,7 @@ struct CSGOptiX : public SRenderer
     static const char* ENV(const char* key, const char* fallback);
 
     Opticks*          ok ;  
+    bool              flight ; 
     unsigned          width ; 
     unsigned          height ; 
     unsigned          depth ; 

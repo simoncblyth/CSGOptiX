@@ -88,10 +88,10 @@ int main(int argc, char** argv)
                 const char* namestem = arg.c_str() ; 
                 const char* ext = ".jpg" ; 
                 int index = -1 ;  
-                const char* path = ok->getOutPath(namestem, ext, index ); 
+                const char* path = ok.getOutPath(namestem, ext, index ); 
 
                 std::string bottom_line = CSGOptiX::Annotation(dt); 
-                cx.snap(path.c_str(), bottom_line.c_str(), top_line.c_str() );   
+                cx.snap(path, bottom_line.c_str(), top_line.c_str() );   
             }
         }
         else

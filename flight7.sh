@@ -8,6 +8,11 @@ See also flight.sh::
 
     ./flight7.sh
 
+Before taking flight check a single render with eg::
+
+    ./cxr.sh 
+    ./cxr_overview.sh 
+
 Developments here need to follow cxr.sh to some extent. 
 This requires the invoked script to set OUTDIR to the 
 directory with the jpg renders and to name the jpg smth_00000.jpg 
@@ -21,8 +26,8 @@ msg="=== $0 :"
 script=${SCRIPT:-cxr_overview}
 period=${PERIOD:-16}
 limit=${LIMIT:-1024}
-scale0=${SCALE0:-3}
-scale1=${SCALE1:-0.5}
+scale0=${SCALE0:-0.6}
+scale1=${SCALE1:-0.3}
 flight=${FLIGHT:-RoundaboutXY_XZ}
 
 flightconfig="flight=$flight,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"

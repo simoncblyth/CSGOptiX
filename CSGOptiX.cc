@@ -66,6 +66,7 @@ const char* CSGOptiX::ENV(const char* key, const char* fallback)
 CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_) 
     :
     ok(ok_),
+    flight(ok->hasArg("--flightconfig")),
     width(ok->getWidth()),
     height(ok->getHeight()),
     depth(1),
@@ -273,7 +274,10 @@ void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_l
     frame->annotate( bottom_line, top_line, line_height ); 
     frame->writeJPG(path, jpg_quality);  
 #endif
-    saveMeta(path); 
+    if(!flight || SStr::Contains(path,"00000"))
+    {
+        saveMeta(path); 
+    }
 }
 
 
