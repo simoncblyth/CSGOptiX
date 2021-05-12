@@ -72,7 +72,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     depth(1),
     composition(ok->getComposition()),
     foundry(foundry_),
-    prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),
+    prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
     outdir(ok->getOutDir()),    // evar:OUTDIR default overridden by --outdir option   
     cmaketarget("CSGOptiX"),  
     ptxpath(SStr::PTXPath( prefix, cmaketarget, PTXNAME )),
@@ -205,7 +205,7 @@ void CSGOptiX::updateView()
     float tmax = composition->getFar(); 
     unsigned cameratype = composition->getCameraType(); 
 
-    LOG(info)
+    if(!flight) LOG(info)
         << " extent " << extent
         << " tmin " << tmin 
         << " tmax " << tmax 
@@ -224,7 +224,7 @@ void CSGOptiX::updateView()
     ctx->uploadParams();  
 #endif
 
-    LOG(info)
+    if(!flight) LOG(info)
         << "composition.desc " << std::endl 
         << composition->desc() 
         ; 

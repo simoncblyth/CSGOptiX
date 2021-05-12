@@ -105,6 +105,10 @@ extern "C" __global__ void __raygen__rg()
             static_cast<float>( idx.y ) / static_cast<float>( dim.y )
             ) - 1.0f;
 
+    const bool yflip = true ;
+    if(yflip) d.y = -d.y ;
+
+
 
     const unsigned cameratype = params.cameratype ;  
     const float3 dxyUV = d.x * params.U + d.y * params.V ; 
@@ -130,8 +134,7 @@ extern "C" __global__ void __raygen__rg()
     );
 
     uchar4 color = make_color( normal, identity );
-    const bool yflip = true ; 
-    unsigned index = ( yflip ? dim.y - 1u - idx.y : idx.y ) * params.width + idx.x ;
+    unsigned index = idx.y * params.width + idx.x ;
 
     params.pixels[index] = color ; 
     params.isect[index] = make_float4( position.x, position.y, position.z, uint_as_float(identity)) ; 
