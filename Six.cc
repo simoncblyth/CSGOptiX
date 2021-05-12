@@ -26,6 +26,7 @@
 Six::Six(const Opticks* ok_, const char* ptx_path_, const char* geo_ptx_path_, Params* params_)
     :
     ok(ok_), 
+    one_gas_ias(ok->getOneGASIAS()),
     emm(ok->getEMM()),
     context(optix::Context::create()),
     material(context->createMaterial()),
@@ -205,110 +206,129 @@ optix::Geometry Six::getGeometry(unsigned solid_idx) const
     return solids.at(solid_idx); 
 }
 
-
 void Six::createIAS()
 {
-    unsigned num_ias = foundry->getNumUniqueIAS() ; 
-    for(unsigned i=0 ; i < num_ias ; i++)
+    if( one_gas_ias < 0 )
     {
-        unsigned ias_idx = foundry->ias[i]; 
-        optix::Group group = createIAS(ias_idx); 
-        groups.push_back(group); 
+        unsigned num_ias = foundry->getNumUniqueIAS() ; 
+        for(unsigned i=0 ; i < num_ias ; i++)
+        {
+            unsigned ias_idx = foundry->ias[i]; 
+            optix::Group ias = createIAS(ias_idx); 
+            groups.push_back(ias); 
+        }
+    }
+    else
+    {
+        unsigned ias_idx = 0 ; 
+        unsigned gas_idx = one_gas_ias ; 
+        optix::Group ias = createOneGASIAS( ias_idx, gas_idx ); 
+        groups.push_back(ias); 
     }
 }
 
 optix::Group Six::createIAS(unsigned ias_idx)
 {
-    unsigned num_inst = foundry->getNumInst(); 
-    unsigned ias_inst = foundry->getNumInstancesIAS(ias_idx, emm); 
+    unsigned tot_inst = foundry->getNumInst(); 
+    unsigned num_inst = foundry->getNumInstancesIAS(ias_idx, emm); 
     LOG(info) 
         << " ias_idx " << ias_idx
-        << " num_inst " << num_inst << " (no emm?) " 
-        << " ias_inst " << ias_inst 
+        << " tot_inst " << tot_inst
+        << " num_inst " << num_inst 
         << " emm(hex) " << std::hex << emm << std::dec
         ; 
-    assert( ias_inst > 0); 
+    assert( num_inst > 0); 
+
+    std::vector<qat4> inst ; 
+    foundry->getInstanceTransformsIAS(inst, ias_idx, emm ); 
+    assert( inst.size() == num_inst );  
+
+    optix::Group ias = createIAS(inst); 
+    return ias ; 
+}
+
+optix::Group Six::createOneGASIAS(unsigned ias_idx, unsigned one_gas_ias)
+{
+    std::vector<qat4> inst ; 
+    unsigned ins_idx = 0 ; 
+    unsigned gas_idx = one_gas_ias ; 
+
+    qat4 q ; 
+    q.setIdentity(ins_idx, gas_idx, ias_idx );
+    inst.push_back(q); 
+
+    optix::Group ias = createIAS(inst); 
+    return ias ; 
+}
 
 
-   unsigned count = ias_inst ;  // the equiv of below pre-count done in qat4.h 
-/*
-    unsigned count = 0 ; 
-    unsigned skip = 0 ; 
-    for(unsigned i=0 ; i < num_inst ; i++)
-    {
-        const qat4* qc = foundry->getInst(i); 
-        unsigned ins_idx,  gas_idx, ias_idx_ ;
-        qc->getIdentity( ins_idx,  gas_idx, ias_idx_ ); 
-        assert( ins_idx == i ); 
-        bool gas_enabled = ok->isEnabledMergedMesh(gas_idx); 
-        if( ias_idx_ == ias_idx )
-        {
-            count += (gas_enabled ? 1 : 0) ; 
-            skip  += (gas_enabled ? 0 : 1) ; 
-        }
-    }
 
-    LOG(info) 
-         << " ias_inst " << ias_inst 
-         << " count " << count 
-         << " skip " << skip 
-         ;
-    assert( count + skip == num_inst ); 
-*/
+/**
+Six::createIAS
+---------------
 
+group
+    xform
+        perxform
+            pergi
+    xform
+        perxform
+            pergi
+    xform
+        perxform
+            pergi
+    ...
 
+**/
+
+optix::Group Six::createIAS(const std::vector<qat4>& inst )
+{
+    unsigned num_inst = inst.size() ;
+    LOG(info) << " num_inst " << num_inst ; 
 
     const char* accel = "Trbvh" ; 
     optix::Acceleration instance_accel = context->createAcceleration(accel);
     optix::Acceleration group_accel  = context->createAcceleration(accel);
 
     optix::Group group = context->createGroup();
-    group->setChildCount( count );
+    group->setChildCount( num_inst );
     group->setAcceleration( group_accel );  
 
-    unsigned count2 = 0 ; 
     for(unsigned i=0 ; i < num_inst ; i++)
     {
-        const qat4* qc = foundry->getInst(i); 
-        unsigned ins_idx,  gas_idx, ias_idx_ ;
-        qc->getIdentity( ins_idx,  gas_idx, ias_idx_ ); 
+        const qat4& qc = inst[i] ; 
+
+        unsigned ins_idx,  gas_idx, ias_idx ;
+        qc.getIdentity( ins_idx,  gas_idx, ias_idx ); 
+
+        LOG(info) 
+            << " i " << i  
+            << " ins_idx " << ins_idx  
+            << " gas_idx " << gas_idx  
+            << " ias_idx " << ias_idx  
+            ;
+
         assert( ins_idx == i ); 
 
-        bool gas_enabled = ok->isEnabledMergedMesh(gas_idx); 
+        const float* qcf = qc.cdata(); 
+        qat4 q(qcf);        // copy to clear identity before passing to OptiX
+        q.clearIdentity(); 
 
-        if( ias_idx_ == ias_idx && gas_enabled)
-        {
-            const float* qcf = qc->cdata(); 
-            qat4 q(qcf);        // copy to clear identity before passing to OptiX
-            q.clearIdentity(); 
+        optix::Transform xform = context->createTransform();
+        bool transpose = true ; 
+        xform->setMatrix(transpose, q.data(), 0); 
+        group->setChild(i, xform);
 
-            optix::Transform xform = context->createTransform();
-            bool transpose = true ; 
-            xform->setMatrix(transpose, q.data(), 0); 
-            group->setChild(count2, xform);
-
-            // here referencing the GAS into the IAS with gas_idx
-            optix::GeometryInstance pergi = createGeometryInstance(gas_idx, ins_idx); 
-            optix::GeometryGroup perxform = context->createGeometryGroup();
-            perxform->addChild(pergi); 
-            perxform->setAcceleration(instance_accel) ; 
-            xform->setChild(perxform);
-
-            count2 += 1 ; 
-        }
+        // here referencing the GAS into the IAS with gas_idx
+        optix::GeometryInstance pergi = createGeometryInstance(gas_idx, ins_idx); 
+        optix::GeometryGroup perxform = context->createGeometryGroup();
+        perxform->addChild(pergi); 
+        perxform->setAcceleration(instance_accel) ; 
+        xform->setChild(perxform);
     }
-
-
-    LOG(info) 
-         << " count " << count 
-         << " count2 " << count2 
-         ;
-
-    assert( count2 == count ); 
-
-
     return group ;
 }
+
 
 optix::GeometryInstance Six::createGeometryInstance(unsigned gas_idx, unsigned ins_idx)
 {
@@ -319,7 +339,6 @@ optix::GeometryInstance Six::createGeometryInstance(unsigned gas_idx, unsigned i
     pergi->setMaterial(0, material );
     pergi->setGeometry(solid);
     pergi["identity"]->setUint(ins_idx);
-
     return pergi ; 
 }
 
