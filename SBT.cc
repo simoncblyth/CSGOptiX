@@ -269,7 +269,7 @@ void SBT::createIAS(unsigned ias_idx)
 
     std::vector<qat4> inst ; 
     foundry->getInstanceTransformsIAS(inst, ias_idx, emm );
-    assert( num_ias_inst == ias_inst.size() ); 
+    assert( num_ias_inst == inst.size() ); 
 
     createIAS(inst); 
 }
@@ -309,7 +309,7 @@ void SBT::createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>&
 void SBT::createIAS(const std::vector<qat4>& inst )
 {
     IAS ias = {} ;  
-    IAS_Builder::Build(ias, ias_inst, this );
+    IAS_Builder::Build(ias, inst, this );
     vias.push_back(ias);  
 }
 
