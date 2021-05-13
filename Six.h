@@ -43,10 +43,14 @@ struct Six
     void initPipeline();
     void setFoundry(const CSGFoundry* foundry);
 
-    void create();
+    void createGeom();
     void createContextBuffers();
     void createGAS();
+    void createGAS_Standard();
+    void createGAS_Selection();
     void createIAS();
+    void createIAS_Standard();
+    void createIAS_Selection();
 
     template<typename T> void createContextBuffer( T* d_ptr, unsigned num_item, const char* name ); 
     optix::Group              createIAS(unsigned ias_idx);

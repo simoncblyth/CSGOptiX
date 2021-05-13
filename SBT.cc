@@ -51,7 +51,7 @@ PGs and their data.
 SBT::SBT(const Opticks* ok_, const PIP* pip_)
     :
     ok(ok_),
-    one_gas_ias(ok->getOneGASIAS()),
+    solid_selection(ok->getSolidSelection()),
     emm(ok->getEMM()),
     pip(pip_),
     raygen(nullptr),
@@ -86,15 +86,17 @@ SBT::setFoundry
 
 void SBT::setFoundry(const CSGFoundry* foundry_)
 {
-    LOG(info) << "[" ; 
     foundry = foundry_ ; 
+    createGeom(); 
+}
 
+void SBT::createGeom()
+{
+    LOG(info) << "[" ; 
     createGAS();  
-
     createIAS(); 
     createHitgroup(); 
     checkHitgroup(); 
-
     LOG(info) << "]" ; 
 }
 
@@ -176,11 +178,22 @@ prim extent is used.
 
 void SBT::createGAS()  
 {
-    unsigned num_solid = foundry->getNumSolid(); 
+    if( solid_selection.size() == 0  )
+    {
+        createGAS_Standard();  
+    }
+    else
+    {
+        createGAS_Selection();  
+    }
+}
+
+void SBT::createGAS_Standard()
+{ 
+    unsigned num_solid = foundry->getNumSolid();   // STANDARD_SOLID
     for(unsigned i=0 ; i < num_solid ; i++)
     {
         unsigned gas_idx = i ; 
-
         bool enabled = ok->isEnabledMergedMesh(gas_idx) ;
         bool enabled2 = emm & ( 0x1 << gas_idx ) ;  
         assert( enabled == enabled2 );  
@@ -198,6 +211,16 @@ void SBT::createGAS()
     LOG(info) << descGAS() ; 
 }
 
+void SBT::createGAS_Selection()
+{ 
+    for(unsigned i=0 ; i < solid_selection.size() ; i++)
+    {
+        unsigned gas_idx = solid_selection[i] ; 
+        createGAS(gas_idx); 
+    }
+}
+ 
+
 void SBT::createGAS(unsigned gas_idx)
 {
     CSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
@@ -208,6 +231,9 @@ void SBT::createGAS(unsigned gas_idx)
 
 const GAS& SBT::getGAS(unsigned gas_idx) const 
 {
+    unsigned count = vgas.count(gas_idx); 
+    assert( count < 2 ); 
+    if( count == 0 ) LOG(fatal) << " no such gas_idx " << gas_idx ; 
     return vgas.at(gas_idx); 
 }
 
@@ -215,36 +241,24 @@ const GAS& SBT::getGAS(unsigned gas_idx) const
 
 void SBT::createIAS()
 {
-    if( one_gas_ias > -1 )
+    if( solid_selection.size() == 0  )
     {
-        unsigned ias_idx = 0 ; 
-        unsigned gas_idx = one_gas_ias ; 
-        createOneGASIAS( ias_idx, gas_idx ); 
+        createIAS_Standard(); 
     }
     else
     {
-        unsigned num_ias = foundry->getNumUniqueIAS() ; 
-        for(unsigned i=0 ; i < num_ias ; i++)
-        {
-            unsigned ias_idx = foundry->ias[i]; 
-            createIAS(ias_idx); 
-        }
+        createIAS_Selection();
     }
 }
 
-void SBT::createOneGASIAS(unsigned ias_idx, unsigned one_gas_ias)
+void SBT::createIAS_Standard()
 {
-    std::vector<qat4> ias_inst ; 
-
-    unsigned ins_idx = 0 ; 
-    unsigned gas_idx = one_gas_ias ; 
-    qat4 q ; 
-    q.setIdentity(ins_idx, gas_idx, ias_idx );
-    ias_inst.push_back(q); 
-
-    IAS ias = {} ;  
-    IAS_Builder::Build(ias, ias_inst, this );
-    vias.push_back(ias);  
+    unsigned num_ias = foundry->getNumUniqueIAS() ; 
+    for(unsigned i=0 ; i < num_ias ; i++)
+    {
+        unsigned ias_idx = foundry->ias[i]; 
+        createIAS(ias_idx); 
+    }
 }
 
 void SBT::createIAS(unsigned ias_idx)
@@ -253,14 +267,52 @@ void SBT::createIAS(unsigned ias_idx)
     unsigned num_ias_inst = foundry->getNumInstancesIAS(ias_idx, emm); 
     LOG(info) << " ias_idx " << ias_idx << " num_inst " << num_inst ;  
 
-    std::vector<qat4> ias_inst ; 
-    foundry->getInstanceTransformsIAS(ias_inst, ias_idx, emm );
+    std::vector<qat4> inst ; 
+    foundry->getInstanceTransformsIAS(inst, ias_idx, emm );
     assert( num_ias_inst == ias_inst.size() ); 
 
+    createIAS(inst); 
+}
+
+void SBT::createIAS_Selection()
+{
+    unsigned ias_idx = 0 ; 
+    createSolidSelectionIAS( ias_idx, solid_selection ); 
+}
+
+void SBT::createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection)
+{
+    unsigned num_select = solid_selection.size() ; 
+    assert( num_select > 0 ); 
+    float mxe = foundry->getMaxExtent(solid_selection); 
+
+    std::vector<qat4> inst ; 
+    unsigned ins_idx = 0 ; 
+    unsigned middle = num_select/2 ; 
+
+    for(unsigned i=0 ; i < num_select ; i++)
+    {
+        unsigned gas_idx = solid_selection[i] ; 
+        int ii = int(i) - int(middle) ; 
+
+        qat4 q ; 
+        q.setIdentity(ins_idx, gas_idx, ias_idx );
+        q.q3.f.x = 2.0*mxe*float(ii) ;   
+
+        inst.push_back(q); 
+        ins_idx += 1 ; 
+    }
+    createIAS(inst); 
+}
+
+
+void SBT::createIAS(const std::vector<qat4>& inst )
+{
     IAS ias = {} ;  
     IAS_Builder::Build(ias, ias_inst, this );
     vias.push_back(ias);  
 }
+
 
 const IAS& SBT::getIAS(unsigned ias_idx) const 
 {

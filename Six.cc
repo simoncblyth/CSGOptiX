@@ -113,10 +113,10 @@ template void Six::createContextBuffer( float*, unsigned, const char* ) ;
 void Six::setFoundry(const CSGFoundry* foundry_)  // HMM: maybe makes more sense to get given directly the lower level CSGFoundry ?
 {
     foundry = foundry_ ; 
-    create(); 
+    createGeom(); 
 }
     
-void Six::create()
+void Six::createGeom()
 {
     LOG(info) << "[" ; 
     createContextBuffers(); 
@@ -135,6 +135,8 @@ to each geometry "solid"
 
 These CSGNode float4 planes and qat4 inverse transforms are 
 here because those are globally referenced.
+
+This is equivalent to foundry upload with SBT.cc in OptiX 7 
 
 **/
 void Six::createContextBuffers()
@@ -184,31 +186,41 @@ void Six::createGAS()
 {
     if( solid_selection.size() == 0  )
     {
-        unsigned num_solid = foundry->getNumSolid();   
-        LOG(info) << "num_solid " << num_solid ;  
-
-        for(unsigned i=0 ; i < num_solid ; i++)
-        {
-            if(ok->isEnabledMergedMesh(i))
-            {
-                LOG(info) << " create optix::Geometry solid/ mm " << i ; 
-                optix::Geometry solid = createGeometry(i); 
-                solids[i] = solid ;  
-            }
-            else
-            {
-                LOG(error) << " emm skipping " << i ; 
-            }
-        }
+        createGAS_Standard();  
     }
     else
     {
-        for(unsigned i=0 ; i < solid_selection.size() ; i++)
+        createGAS_Selection();  
+    }
+}
+
+void Six::createGAS_Standard()
+{
+    unsigned num_solid = foundry->getNumSolid();   
+    LOG(info) << "num_solid " << num_solid ;  
+
+    for(unsigned i=0 ; i < num_solid ; i++)
+    {
+        if(ok->isEnabledMergedMesh(i))
         {
-            unsigned solidIdx = solid_selection[i] ; 
-            optix::Geometry solid = createGeometry(solidIdx); 
-            solids[solidIdx] = solid ;  
+            LOG(info) << " create optix::Geometry solid/ mm " << i ; 
+            optix::Geometry solid = createGeometry(i); 
+            solids[i] = solid ;  
         }
+        else
+        {
+            LOG(error) << " emm skipping " << i ; 
+        }
+    }
+}
+
+void Six::createGAS_Selection()
+{
+    for(unsigned i=0 ; i < solid_selection.size() ; i++)
+    {
+        unsigned solidIdx = solid_selection[i] ; 
+        optix::Geometry solid = createGeometry(solidIdx); 
+        solids[solidIdx] = solid ;  
     }
 }
 
@@ -221,25 +233,40 @@ optix::Geometry Six::getGeometry(unsigned solid_idx) const
     return solids.at(solid_idx); 
 }
 
+
 void Six::createIAS()
 {
     if( solid_selection.size() == 0 )
     {
-        unsigned num_ias = foundry->getNumUniqueIAS() ; 
-        for(unsigned i=0 ; i < num_ias ; i++)
-        {
-            unsigned ias_idx = foundry->ias[i]; 
-            optix::Group ias = createIAS(ias_idx); 
-            groups.push_back(ias); 
-        }
+        createIAS_Standard(); 
     }
     else
     {
-        unsigned ias_idx = 0 ; 
-        optix::Group ias = createSolidSelectionIAS( ias_idx, solid_selection ); 
+        createIAS_Selection(); 
+    }
+}
+
+void Six::createIAS_Standard()
+{
+    unsigned num_ias = foundry->getNumUniqueIAS() ; 
+    for(unsigned i=0 ; i < num_ias ; i++)
+    {
+        unsigned ias_idx = foundry->ias[i]; 
+        optix::Group ias = createIAS(ias_idx); 
         groups.push_back(ias); 
     }
 }
+
+void Six::createIAS_Selection()
+{
+    unsigned ias_idx = 0 ; 
+    optix::Group ias = createSolidSelectionIAS( ias_idx, solid_selection ); 
+    groups.push_back(ias); 
+}
+
+
+
+
 
 optix::Group Six::createIAS(unsigned ias_idx)
 {
@@ -263,33 +290,24 @@ optix::Group Six::createIAS(unsigned ias_idx)
 
 optix::Group Six::createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection)
 {
+    unsigned num_select = solid_selection.size() ; 
+    assert( num_select > 0 ); 
+    float mxe = foundry->getMaxExtent(solid_selection); 
+
+
     std::vector<qat4> inst ; 
     unsigned ins_idx = 0 ; 
+    unsigned middle = num_select/2 ; 
 
-    float mxe = 0.f ; 
-
-    for(unsigned i=0 ; i < solid_selection.size() ; i++)
+    for(unsigned i=0 ; i < num_select ; i++)
     {
         unsigned gas_idx = solid_selection[i] ; 
-        const CSGSolid* so = foundry->getSolid(gas_idx); 
-        float4 ce = so->center_extent ; 
-        if(ce.w > mxe) mxe = ce.w ; 
-        LOG(info) << " gas_idx " << std::setw(3) << gas_idx << " ce " << ce << " mxe " << mxe ; 
-    }
-
-
-    unsigned middle = solid_selection.size()/2 ; 
-
-    for(unsigned i=0 ; i < solid_selection.size() ; i++)
-    {
         int ii = int(i) - int(middle) ; 
 
-        unsigned gas_idx = solid_selection[i] ; 
         qat4 q ; 
         q.setIdentity(ins_idx, gas_idx, ias_idx );
         q.q3.f.x = 2.0*mxe*float(ii) ;   
-        // HUH: why still overlapping at 1.5*mxe ? 
-        // with perspectove cam it looks like are not perp to view somehow
+
         inst.push_back(q); 
         ins_idx += 1 ; 
     }

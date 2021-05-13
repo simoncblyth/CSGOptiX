@@ -9,6 +9,7 @@
 #include "Binding.h"
 #include "GAS.h"
 #include "IAS.h"
+#include "qat4.h"
 
 /**
 SBT : RG,MS,HG program data preparation 
@@ -28,7 +29,7 @@ struct CSGPrim ;
 struct SBT 
 {
     const Opticks*  ok ; 
-    int        one_gas_ias ; // --one_gas_ias  default -1 means disabled
+    const std::vector<unsigned>&  solid_selection ; 
     unsigned long long emm ; 
     const PIP*      pip ; 
     Raygen*       raygen ;
@@ -45,7 +46,6 @@ struct SBT
 
     OptixShaderBindingTable sbt = {};
 
-    //std::vector<GAS> vgas ; 
     std::map<unsigned, GAS> vgas ; 
     std::vector<IAS> vias ; 
 
@@ -66,16 +66,22 @@ struct SBT
 
     void setFoundry(const CSGFoundry* foundry); 
 
+    void createGeom();  
     void createHitgroup();
     void checkHitgroup();
 
     void createIAS();
+    void createIAS_Standard();
     void createIAS(unsigned ias_idx);
-    void createOneGASIAS(unsigned ias_idx, unsigned one_gas_ias) ; // --one_gas_ias gas_idx
+    void createIAS_Selection();
+    void createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection);
+    void createIAS(const std::vector<qat4>& inst );
 
     const IAS& getIAS(unsigned ias_idx) const ;
 
     void createGAS();
+    void createGAS_Standard();
+    void createGAS_Selection();
     void createGAS(unsigned gas_idx);
     const GAS& getGAS(unsigned gas_idx) const ;
     std::string descGAS() const ; 
@@ -87,7 +93,6 @@ struct SBT
     unsigned getOffset(unsigned shape_idx_ , unsigned layer_idx_ ) const ; 
     unsigned _getOffset(unsigned shape_idx_ , unsigned layer_idx_ ) const ;
     unsigned getTotalRec() const ;
-
 
 };
 
