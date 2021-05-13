@@ -29,12 +29,26 @@ int main(int argc, char** argv)
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
-
-    int one_gas_ias = ok.getOneGASIAS(); 
-
+    const char* solid_label = ok.getSolidLabel(); 
+    std::vector<unsigned>& solid_selection = ok.getSolidSelection(); 
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
+
+    // hmm maybe eliminate one_gas_ias as solid_label more general 
+    // because the string label is more friendly an input approach
+
+    if( solid_label )
+    {
+        fd->findSolidIdx(solid_selection, solid_label); 
+        LOG(error) 
+            << " --solid_label " << solid_label
+            << " solid_selection.size  " << solid_selection.size() 
+            ;
+    }
+
+        ;
+
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 
@@ -61,9 +75,10 @@ int main(int argc, char** argv)
 
         int rc = 0 ; 
         float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
-        if(one_gas_ias > -1)
+        if(solid_selection.size() > 0)
         {
-            fd->gasCE(ce, one_gas_ias ); 
+            unsigned target = solid_selection.size()/2 ;  // target the middle selected solid
+            fd->gasCE(ce, solid_selection[target] );  
         }
         else
         {

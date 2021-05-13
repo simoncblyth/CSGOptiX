@@ -213,6 +213,7 @@ void CSGOptiX::updateView()
         << " U (" << U.x << " " << U.y << " " << U.z << " ) "
         << " V (" << V.x << " " << V.y << " " << V.z << " ) "
         << " W (" << W.x << " " << W.y << " " << W.z << " ) "
+        << " cameratype " << cameratype
         ;
 
     params->setView(eye, U, V, W);

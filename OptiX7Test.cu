@@ -150,10 +150,18 @@ extern "C" __global__ void __miss__ms()
     setPayload( normal,  t_cand, position, identity );
 }
 
+/**
+__intersection__is
+----------------------
+
+HitGroupData provides the numNode and nodeOffset of the intersected CSGPrim.
+Which Prim gets intersected relies on the CSGPrim::setSbtIndexOffset
+
+**/
 extern "C" __global__ void __intersection__is()
 {
-    HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();
-    int numNode = hg->numNode ; 
+    HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();  
+    int numNode = hg->numNode ;      
     int nodeOffset = hg->nodeOffset ; 
 
     const CSGNode* node = params.node + nodeOffset ;  
@@ -194,9 +202,6 @@ extern "C" __global__ void __closesthit__ch()
     unsigned prim_id  = 1u + optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI 
     unsigned identity = (( prim_id & 0xff ) << 24 ) | ( instance_id & 0x00ffffff ) ; 
 
-
-
- 
     float3 normal = normalize( optixTransformNormalFromObjectToWorldSpace( isect_normal ) ) * 0.5f + 0.5f ;  
 
     const float3 world_origin = optixGetWorldRayOrigin() ; 

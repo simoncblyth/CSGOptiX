@@ -26,7 +26,7 @@
 Six::Six(const Opticks* ok_, const char* ptx_path_, const char* geo_ptx_path_, Params* params_)
     :
     ok(ok_), 
-    one_gas_ias(ok->getOneGASIAS()),
+    solid_selection(ok->getSolidSelection()),
     emm(ok->getEMM()),
     context(optix::Context::create()),
     material(context->createMaterial()),
@@ -182,20 +182,32 @@ optix::Geometry Six::createGeometry(unsigned solid_idx)
 
 void Six::createGAS()
 {
-    unsigned num_solid = foundry->getNumSolid();   
-    LOG(info) << "num_solid " << num_solid ;  
-
-    for(unsigned i=0 ; i < num_solid ; i++)
+    if( solid_selection.size() == 0  )
     {
-        if(ok->isEnabledMergedMesh(i))
+        unsigned num_solid = foundry->getNumSolid();   
+        LOG(info) << "num_solid " << num_solid ;  
+
+        for(unsigned i=0 ; i < num_solid ; i++)
         {
-            LOG(info) << " create optix::Geometry solid/ mm " << i ; 
-            optix::Geometry solid = createGeometry(i); 
-            solids[i] = solid ;  
+            if(ok->isEnabledMergedMesh(i))
+            {
+                LOG(info) << " create optix::Geometry solid/ mm " << i ; 
+                optix::Geometry solid = createGeometry(i); 
+                solids[i] = solid ;  
+            }
+            else
+            {
+                LOG(error) << " emm skipping " << i ; 
+            }
         }
-        else
+    }
+    else
+    {
+        for(unsigned i=0 ; i < solid_selection.size() ; i++)
         {
-            LOG(error) << " emm skipping " << i ; 
+            unsigned solidIdx = solid_selection[i] ; 
+            optix::Geometry solid = createGeometry(solidIdx); 
+            solids[solidIdx] = solid ;  
         }
     }
 }
@@ -203,12 +215,15 @@ void Six::createGAS()
 
 optix::Geometry Six::getGeometry(unsigned solid_idx) const 
 {
+    unsigned count = solids.count(solid_idx); 
+    assert( count <= 1 ) ; 
+    if( count == 0 ) LOG(fatal) << " FAILED to find solid_idx " << solid_idx ; 
     return solids.at(solid_idx); 
 }
 
 void Six::createIAS()
 {
-    if( one_gas_ias < 0 )
+    if( solid_selection.size() == 0 )
     {
         unsigned num_ias = foundry->getNumUniqueIAS() ; 
         for(unsigned i=0 ; i < num_ias ; i++)
@@ -221,8 +236,7 @@ void Six::createIAS()
     else
     {
         unsigned ias_idx = 0 ; 
-        unsigned gas_idx = one_gas_ias ; 
-        optix::Group ias = createOneGASIAS( ias_idx, gas_idx ); 
+        optix::Group ias = createSolidSelectionIAS( ias_idx, solid_selection ); 
         groups.push_back(ias); 
     }
 }
@@ -247,15 +261,38 @@ optix::Group Six::createIAS(unsigned ias_idx)
     return ias ; 
 }
 
-optix::Group Six::createOneGASIAS(unsigned ias_idx, unsigned one_gas_ias)
+optix::Group Six::createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection)
 {
     std::vector<qat4> inst ; 
     unsigned ins_idx = 0 ; 
-    unsigned gas_idx = one_gas_ias ; 
 
-    qat4 q ; 
-    q.setIdentity(ins_idx, gas_idx, ias_idx );
-    inst.push_back(q); 
+    float mxe = 0.f ; 
+
+    for(unsigned i=0 ; i < solid_selection.size() ; i++)
+    {
+        unsigned gas_idx = solid_selection[i] ; 
+        const CSGSolid* so = foundry->getSolid(gas_idx); 
+        float4 ce = so->center_extent ; 
+        if(ce.w > mxe) mxe = ce.w ; 
+        LOG(info) << " gas_idx " << std::setw(3) << gas_idx << " ce " << ce << " mxe " << mxe ; 
+    }
+
+
+    unsigned middle = solid_selection.size()/2 ; 
+
+    for(unsigned i=0 ; i < solid_selection.size() ; i++)
+    {
+        int ii = int(i) - int(middle) ; 
+
+        unsigned gas_idx = solid_selection[i] ; 
+        qat4 q ; 
+        q.setIdentity(ins_idx, gas_idx, ias_idx );
+        q.q3.f.x = 2.0*mxe*float(ii) ;   
+        // HUH: why still overlapping at 1.5*mxe ? 
+        // with perspectove cam it looks like are not perp to view somehow
+        inst.push_back(q); 
+        ins_idx += 1 ; 
+    }
 
     optix::Group ias = createIAS(inst); 
     return ias ; 

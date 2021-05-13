@@ -70,6 +70,7 @@ moi=sWaterTube   # should be same as lLowerChimney_phys
 eye=-1,-1,-1,1   # where to look from, see okc/View::home 
 top=i0           # hmm difficuly to support other than i0
 ogi=-1           # one_gas_ias less disruptive perhaps that changing top, -1 means disabled 
+sla=
 cam=0            # 0:perpective 1:orthographic 2:equirect (2:not supported in CSGOptiX(7) yet)
 tmin=0.1         # near in units of extent, so typical range is 0.1-2.0 for visibility, depending on EYE->LOOK distance
 
@@ -81,13 +82,13 @@ export MOI=${MOI:-$moi}    # evar:MOI OR --arglist when MOI=ALL
 export EYE=${EYE:-$eye}    # evar:EYE 
 export TOP=$top            # evar:TOP? getting TOP=0 from somewhere causing crash
 export OGI=${OGI:-$ogi}    # --one_gas_ias
+export SLA=${SLA:-$sla}    # --solid_label
 export CAM=${CAM:-$cam}    # evar:CAMERATYPE
 export TMIN=${TMIN:-$tmin} # evar:TMIN
-
-vars="CVD EMM MOI EYE TOP OGI CAM"
-for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
-
 export CAMERATYPE=$CAM    # okc/Camera::Camera default 
+
+vars="CVD EMM MOI EYE TOP OGI SLA CAM TMIN CAMERATYPE"
+for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
 
 nameprefix=cxr_${top}_${EMM}_
@@ -103,8 +104,11 @@ mkdir -p $LOGDIR
 cd $LOGDIR 
 
 
+DIV=""
+[ -n "$GDB" ] && DIV="--" 
+
 render-cmd(){ cat << EOC
-$GDB $bin --nameprefix $nameprefix --cvd $CVD -e $EMM --one_gas_ias $OGI  $* 
+$GDB $bin $DIV --nameprefix $nameprefix --cvd $CVD -e $EMM --one_gas_ias $OGI --solid_label $SLA $* 
 EOC
 }   
 

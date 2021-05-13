@@ -14,9 +14,9 @@ struct Params ;
 
 struct Six
 {
-    const Opticks*     ok ; 
-    int                one_gas_ias ; 
-    unsigned long long emm ; 
+    const Opticks*          ok ; 
+    const std::vector<unsigned>&  solid_selection ; 
+    unsigned long long      emm ; 
 
     optix::Context     context ;
     optix::Material    material ;
@@ -51,7 +51,7 @@ struct Six
     template<typename T> void createContextBuffer( T* d_ptr, unsigned num_item, const char* name ); 
     optix::Group              createIAS(unsigned ias_idx);
     optix::Group              createIAS(const std::vector<qat4>& inst );
-    optix::Group              createOneGASIAS(unsigned ias_idx, unsigned one_gas_ias) ;
+    optix::Group              createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection);
 
     optix::GeometryInstance   createGeometryInstance(unsigned solid_idx, unsigned identity);
     optix::Geometry           createGeometry(unsigned solid_idx);
