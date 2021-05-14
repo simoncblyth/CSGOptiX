@@ -357,6 +357,7 @@ optix::Group Six::createIAS(const std::vector<qat4>& inst )
         unsigned ins_idx,  gas_idx, ias_idx ;
         qc.getIdentity( ins_idx,  gas_idx, ias_idx ); 
 
+        /*
         LOG(info) 
             << " i " << i  
             << " ins_idx " << ins_idx  
@@ -364,6 +365,7 @@ optix::Group Six::createIAS(const std::vector<qat4>& inst )
             << " ias_idx " << ias_idx  
             ;
 
+        */
         assert( ins_idx == i ); 
 
         const float* qcf = qc.cdata(); 
