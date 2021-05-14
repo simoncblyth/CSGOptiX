@@ -10,7 +10,7 @@ export CAM=0
 #export ZOOM=1.5 
 export QUALITY=90 
 
-export NAMEPREFIX=cxr_view_${moi}_
+export NAMEPREFIX=cxr_view_       # MOI is appended by tests/CSGOptiXRender.cc when --solid_label yields no solids
 export RELDIR=cxr_view/cam_${CAM}
 
 stamp=$(date +"%Y-%m-%d %H:%M")
