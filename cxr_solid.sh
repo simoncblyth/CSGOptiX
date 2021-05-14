@@ -14,6 +14,11 @@ in Y for visibility.
     ./cxr_solid.sh r3p
     ./cxr_solid.sh r4p
 
+    ./cxr_solid.sh R2P0N
+
+    ./cxr_solid.sh R8P0N11,R8P0N13,R8P0N14,R8P0N16,R8P0N17,R8P0N18,R8P0N19,R8P0N20,R8P0N21,R8P0N22,R8P0N15,R8P0N26
+
+
 EOU
 }
 
