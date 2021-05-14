@@ -80,12 +80,12 @@ export EMM=${EMM:-$emm}    # -e
 export MOI=${MOI:-$moi}    # evar:MOI OR --arglist when MOI=ALL  
 export EYE=${EYE:-$eye}    # evar:EYE 
 export TOP=$top            # evar:TOP? getting TOP=0 from somewhere causing crash
-export SLA=${SLA:-$sla}    # --solid_label
+export SLA="${SLA:-$sla}"  # --solid_label
 export CAM=${CAM:-$cam}    # evar:CAMERATYPE
 export TMIN=${TMIN:-$tmin} # evar:TMIN
 export CAMERATYPE=$CAM    # okc/Camera::Camera default 
 
-vars="CVD EMM MOI EYE TOP OGI SLA CAM TMIN CAMERATYPE"
+vars="CVD EMM MOI EYE TOP SLA CAM TMIN CAMERATYPE"
 for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
 export BASEDIR=/tmp/$USER/opticks/$pkg/$bin/${CFNAME}/cvd${CVD}/$(CSGOptiXVersion)
@@ -111,7 +111,7 @@ DIV=""
 [ -n "$GDB" ] && DIV="--" 
 
 render-cmd(){ cat << EOC
-$GDB $bin $DIV --nameprefix $NAMEPREFIX --cvd $CVD -e $EMM --solid_label "$SLA" $* 
+$GDB $bin $DIV --nameprefix "$NAMEPREFIX" --cvd $CVD -e "$EMM" --solid_label "$SLA" $* 
 EOC
 }   
 

@@ -23,6 +23,8 @@ is consulted to set the target box.
 
 int main(int argc, char** argv)
 {
+    for(int i=0 ; i < argc ; i++ ) std::cout << argv[i] << std::endl; 
+
     OPTICKS_LOG(argc, argv); 
     Opticks ok(argc, argv); 
     ok.configure(); 

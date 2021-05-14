@@ -9,6 +9,11 @@ in Y for visibility.
 
 ::
 
+    ./cxr_solid.sh r1@
+    ./cxr_solid.sh r2@
+    ./cxr_solid.sh r3@
+    ./cxr_solid.sh r4@
+
     ./cxr_solid.sh r1p
     ./cxr_solid.sh r2p
     ./cxr_solid.sh r3p
@@ -23,15 +28,17 @@ EOU
 }
 
 
-sla=${1:-r1p}
+sla="${1:-r1p}"
+eye="0,-5,0,1"
+[ "${sla:(-1)}" == "@" ] && eye="0,-1,0,1"
 
-export SLA=$sla
+export SLA="$sla"
 export CAM=1
-export EYE=0,-5,0,1 
+export EYE=${EYE:-$eye} 
 export LOOK=0,0,0,1
 #export GDB=lldb_ 
 
-export NAMEPREFIX=cxr_solid_${sla}_
+export NAMEPREFIX="cxr_solid_${sla}_"
 export RELDIR=cxr_solid/cam_${CAM}
 
 stamp=$(date +"%Y-%m-%d %H:%M")
