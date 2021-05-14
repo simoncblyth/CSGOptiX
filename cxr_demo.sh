@@ -27,9 +27,11 @@ cfname=CSGDemoTest    # picks the CSGFoundry geometry to load
 moi=0:0:4             # what to look at 
 eye=-10,0,5,1         # where to look from 
 
+emm=t0                # default to no solid skips with demo geometry 
 
 export MOI=${1:-$moi}
 export CFNAME=${CFNAME:-$cfname}
+export EMM=${EMM:-$emm}
 
 [ "${MOI:0:2}" == "-1" ] && eye=-1,0,1,1  # change default eye when are targetting midx -1 (entire ias)
 

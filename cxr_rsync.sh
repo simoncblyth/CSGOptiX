@@ -2,9 +2,10 @@
 
 usage(){ cat << EOU
 
-From an environment with NAMEPREFIX defined run::
+::
 
-   source ./cxr_rsync.sh 
+   ./cxr_rsync.sh cxr_view
+   ./cxr_rsync.sh cxr_solid
 
 This will copy jpg with names starting with the NAMEPREFIX 
 to the BASE directory with the source directory structure
@@ -20,17 +21,29 @@ BASE=$HOME/simoncblyth.bitbucket.io/env/presentation
 #BASE=/tmp/env/presentation
 TMPBASE=/tmp/$USER/opticks/CSGOptiX/CSGOptiXRender
 
-NAMEPREFIX=${NAMEPREFIX:-cxr_solid}
+NAMEPREFIX=${1:-cxr_view}
 from=$TMPBASE
 to=$BASE
+
 
 vars="BASE TMPBASE NAMEPREFIX from to"
 for var in $vars ; do printf " %20s : %s \n" $var ${!var} ; done 
 
-rsync  -zarv --include="*/" --include="${NAMEPREFIX}*.jpg" --exclude="*" "$from" "$to"
+find $from -name "${NAMEPREFIX}*.jpg"
+
+read -p "Enter YES to proceed with rsync-ing those to $to : " ans 
+
+if [ "$ans" == "YES" ]; then 
+
+    rsync  -zarv --include="*/" --include="${NAMEPREFIX}*.jpg" --exclude="*" "$from" "$to"
+
+    find $BASE -name "${NAMEPREFIX}*.jpg"
+
+else
+    echo SKIP
+fi 
 
 
-find $BASE -name "${NAMEPREFIX}*.jpg"
 
 
 

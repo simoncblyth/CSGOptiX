@@ -357,6 +357,7 @@ optix::Group Six::createIAS(const std::vector<qat4>& inst )
         unsigned ins_idx,  gas_idx, ias_idx ;
         qc.getIdentity( ins_idx,  gas_idx, ias_idx ); 
 
+        /*
         if( ins_idx != i )
         {
             LOG(info) 
@@ -366,8 +367,8 @@ optix::Group Six::createIAS(const std::vector<qat4>& inst )
                 << " ias_idx " << ias_idx  
                 ;
         }        
-
-        //assert( ins_idx == i );   when emm skipping ? because original ins_idx didnt account for emm perhaps  
+        //assert( ins_idx == i );   when emm skipping this doesnt match, ins_idx didnt account for emm perhaps  
+        */
 
         const float* qcf = qc.cdata(); 
         qat4 q(qcf);        // copy to clear identity before passing to OptiX
