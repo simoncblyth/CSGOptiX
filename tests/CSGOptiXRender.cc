@@ -46,8 +46,8 @@ int main(int argc, char** argv)
             << " solid_selection.size  " << solid_selection.size() 
             ;
     }
+    unsigned num_select = solid_selection.size();  
 
-        ;
 
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 
     bool flight = ok.hasArg("--flightconfig") ; 
     const std::vector<std::string>& arglist = ok.getArgList() ;  // --arglist /path/to/arglist.txt
-    std::string top_line = "CSGOptiXRender" ; 
+    std::string top_line = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
 
     std::vector<std::string> args ; 
     if( arglist.size() > 0 )
@@ -72,6 +72,7 @@ int main(int argc, char** argv)
     for(unsigned i=0 ; i < args.size() ; i++)
     {
         const std::string& arg = args[i];
+        const char* namestem = num_select == 0 ? arg.c_str() : SSys::getenvvar("NAMESTEM", "")  ; 
 
         int rc = 0 ; 
         float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
@@ -99,11 +100,10 @@ int main(int argc, char** argv)
             else
             {
                 double dt = cx.render();  
-
-                const char* namestem = arg.c_str() ; 
                 const char* ext = ".jpg" ; 
                 int index = -1 ;  
                 const char* path = ok.getOutPath(namestem, ext, index ); 
+                LOG(error) << " path " << path ; 
 
                 std::string bottom_line = CSGOptiX::Annotation(dt); 
                 cx.snap(path, bottom_line.c_str(), top_line.c_str() );   

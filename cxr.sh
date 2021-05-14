@@ -65,12 +65,11 @@ bin=CSGOptiXRender
 # defaults 
 cvd=1            # default GPU to use
 emm=t8,          # what to include in the GPU geometry 
-#moi=sStrut      # what to look at 
 moi=sWaterTube   # should be same as lLowerChimney_phys
 eye=-1,-1,-1,1   # where to look from, see okc/View::home 
 top=i0           # hmm difficuly to support other than i0
 ogi=-1           # one_gas_ias less disruptive perhaps that changing top, -1 means disabled 
-sla=
+sla=             # solid_label selection 
 cam=0            # 0:perpective 1:orthographic 2:equirect (2:not supported in CSGOptiX(7) yet)
 tmin=0.1         # near in units of extent, so typical range is 0.1-2.0 for visibility, depending on EYE->LOOK distance
 
@@ -81,7 +80,7 @@ export EMM=${EMM:-$emm}    # -e
 export MOI=${MOI:-$moi}    # evar:MOI OR --arglist when MOI=ALL  
 export EYE=${EYE:-$eye}    # evar:EYE 
 export TOP=$top            # evar:TOP? getting TOP=0 from somewhere causing crash
-export OGI=${OGI:-$ogi}    # --one_gas_ias
+export OGI=${OGI:-$ogi}    # --one_gas_ias  (being replaced by --solid_label)
 export SLA=${SLA:-$sla}    # --solid_label
 export CAM=${CAM:-$cam}    # evar:CAMERATYPE
 export TMIN=${TMIN:-$tmin} # evar:TMIN
@@ -90,11 +89,16 @@ export CAMERATYPE=$CAM    # okc/Camera::Camera default
 vars="CVD EMM MOI EYE TOP OGI SLA CAM TMIN CAMERATYPE"
 for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
+export BASEDIR=/tmp/$USER/opticks/$pkg/$bin/${CFNAME}/cvd${CVD}/$(CSGOptiXVersion)
 
+# these RELDIR and NAMEPREFIX defaults are typically overridden from higher level script
 nameprefix=cxr_${top}_${EMM}_
+export NAMEPREFIX=${NAMEPREFIX:-$nameprefix}
 
-export NAMEPREFIX=$nameprefix
-export OUTDIR=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)/render/${CFNAME}/${CVD}/${TOP}/${OGI}
+reldir=${TOP}_${OGI}  
+export RELDIR=${RELDIR:-$reldir}
+
+export OUTDIR=${BASEDIR}/${RELDIR}
 mkdir -p $OUTDIR
 
 arglist=$OUTDIR/arglist.txt
@@ -108,7 +112,7 @@ DIV=""
 [ -n "$GDB" ] && DIV="--" 
 
 render-cmd(){ cat << EOC
-$GDB $bin $DIV --nameprefix $nameprefix --cvd $CVD -e $EMM --one_gas_ias $OGI --solid_label $SLA $* 
+$GDB $bin $DIV --nameprefix $NAMEPREFIX --cvd $CVD -e $EMM --one_gas_ias $OGI --solid_label $SLA $* 
 EOC
 }   
 
@@ -149,9 +153,11 @@ if [ "$MOI" == "ALL" ]; then
     render --arglist $arglist $*            ## multiple MOI via the arglist 
 else
     render $*                               ## single MOI via envvar 
-    jpg=$OUTDIR/${nameprefix}${MOI}.jpg
+
+    ls -1rt `find $OUTDIR -name '*.jpg' `
+    jpg=$(ls -1rt `find $OUTDIR -name '*.jpg' ` | tail -1)
     echo $msg jpg $jpg 
     ls -l $jpg
-    [ "$(uname)" == "Darwin" ] && open $jpg
+    [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg
 fi 
 

@@ -316,4 +316,3 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
 }
 
 
-

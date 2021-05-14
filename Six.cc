@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "PLOG.hh"
+#include "SStr.hh"
 #include "SPath.hh"
 #include "NP.hh"
 
@@ -452,9 +453,9 @@ void Six::snap(const char* path, const char* bottom_line, const char* top_line, 
     img.writeJPG(path, quality); 
     pixels_buffer->unmap(); 
 
-    const char* isects_path = SPath::ChangeName( path, "posi.npy" ) ; 
+    const char* npy_path = SStr::ReplaceEnd( path, ".jpg", ".npy");
     float* isects = (float*)posi_buffer->map() ;
-    NP::Write(isects_path, isects, params->height, params->width, 4 );
+    NP::Write(npy_path, isects, params->height, params->width, 4 );
     posi_buffer->unmap(); 
 
     LOG(info) << "]" ; 

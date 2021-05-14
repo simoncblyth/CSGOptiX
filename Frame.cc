@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <csignal>
 
 #include <cuda_runtime.h>
 #include "CUDA_CHECK.h"
@@ -122,6 +123,8 @@ void Frame::write(const char* outdir, int jpg_quality) const
     writePNG(outdir, "pixels.png");  
     writeJPG(outdir, "pixels.jpg", jpg_quality);  
     writeNP(  outdir, "posi.npy" );
+
+    //std::raise(SIGINT); 
 }
 
 void Frame::writePNG(const char* dir, const char* name) const 
