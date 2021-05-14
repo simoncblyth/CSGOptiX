@@ -367,7 +367,7 @@ optix::Group Six::createIAS(const std::vector<qat4>& inst )
                 ;
         }        
 
-        //assert( ins_idx == i ); 
+        //assert( ins_idx == i );   when emm skipping ? because original ins_idx didnt account for emm perhaps  
 
         const float* qcf = qc.cdata(); 
         qat4 q(qcf);        // copy to clear identity before passing to OptiX
@@ -433,8 +433,9 @@ void Six::setTop(const char* spec)
 
 void Six::launch()
 {
-    LOG(info) << " params.width " << params->width << " params.height " << params->height ; 
+    LOG(info) << "[ params.width " << params->width << " params.height " << params->height ; 
     context->launch( entry_point_index , params->width, params->height  );  
+    LOG(info) << "]" ; 
 }
 
 

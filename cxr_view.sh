@@ -10,13 +10,15 @@ export CAM=0
 #export ZOOM=1.5 
 export QUALITY=90 
 
-export NAMEPREFIX=cxr_view_       # MOI is appended by tests/CSGOptiXRender.cc when --solid_label yields no solids
-export RELDIR=cxr_view/cam_${CAM}
+export TMM=1,
+
+export NAMEPREFIX=cxr_view_      # MOI is appended by tests/CSGOptiXRender.cc when --solid_label yields no solids
+export RELDIR=cxr_view/cam_${CAM}_${TMM}
 
 stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion)
 
-export TOPLINE="./cxr_view.sh $MOI      # EYE $EYE   $stamp  $version " 
+export TOPLINE="./cxr_view.sh $MOI      # EYE $EYE TMM $TMM  $stamp  $version " 
 
 source ./cxr.sh     
 #source cxr_rsync.sh 
