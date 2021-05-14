@@ -80,7 +80,6 @@ export EMM=${EMM:-$emm}    # -e
 export MOI=${MOI:-$moi}    # evar:MOI OR --arglist when MOI=ALL  
 export EYE=${EYE:-$eye}    # evar:EYE 
 export TOP=$top            # evar:TOP? getting TOP=0 from somewhere causing crash
-export OGI=${OGI:-$ogi}    # --one_gas_ias  (being replaced by --solid_label)
 export SLA=${SLA:-$sla}    # --solid_label
 export CAM=${CAM:-$cam}    # evar:CAMERATYPE
 export TMIN=${TMIN:-$tmin} # evar:TMIN
@@ -112,7 +111,7 @@ DIV=""
 [ -n "$GDB" ] && DIV="--" 
 
 render-cmd(){ cat << EOC
-$GDB $bin $DIV --nameprefix $NAMEPREFIX --cvd $CVD -e $EMM --one_gas_ias $OGI --solid_label $SLA $* 
+$GDB $bin $DIV --nameprefix $NAMEPREFIX --cvd $CVD -e $EMM --solid_label "$SLA" $* 
 EOC
 }   
 

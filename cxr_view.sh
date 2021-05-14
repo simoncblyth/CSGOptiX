@@ -1,6 +1,5 @@
 #!/bin/bash -l 
 
-
 #moi=sStrut      # what to look at 
 moi=sWaterTube   # should be same as lLowerChimney_phys
 
@@ -19,10 +18,6 @@ version=$(CSGOptiXVersion)
 
 export TOPLINE="./cxr_view.sh $MOI      # EYE $EYE   $stamp  $version " 
 
-
 source ./cxr.sh     
-
-
 #source cxr_rsync.sh 
-
 
