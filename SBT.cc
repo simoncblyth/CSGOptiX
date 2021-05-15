@@ -410,7 +410,7 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
         unsigned gas_idx = it->first ; 
         const GAS& gas = it->second ; 
 
-        assert( ok->isEnabledMergedMesh(gas_idx) ); 
+        //assert( ok->isEnabledMergedMesh(gas_idx) ); 
         unsigned num_bi = gas.bis.size(); 
 
         for(unsigned j=0 ; j < num_bi ; j++)
@@ -444,7 +444,7 @@ unsigned SBT::getTotalRec() const
     {
         unsigned gas_idx = it->first ; 
         const GAS& gas = it->second ; 
-        assert( ok->isEnabledMergedMesh(gas_idx) ); 
+        //assert( ok->isEnabledMergedMesh(gas_idx) ); 
  
         unsigned num_bi = gas.bis.size(); 
         tot_bi += num_bi ; 
@@ -487,7 +487,7 @@ std::string SBT::descGAS() const
     {
         unsigned gas_idx = it->first ; 
         const GAS& gas = it->second ; 
-        assert( ok->isEnabledMergedMesh(gas_idx) ); 
+        //assert( ok->isEnabledMergedMesh(gas_idx) ); 
 
         unsigned num_bi = gas.bis.size(); 
         tot_bi += num_bi ; 
@@ -552,7 +552,7 @@ void SBT::createHitgroup()
     {
         unsigned gas_idx = it->first ; 
         const GAS& gas = it->second ; 
-        assert( ok->isEnabledMergedMesh(gas_idx) ); 
+        //assert( ok->isEnabledMergedMesh(gas_idx) ); 
         unsigned num_bi = gas.bis.size(); 
 
         const CSGSolid* so = foundry->getSolid(gas_idx) ;
