@@ -102,6 +102,7 @@ int main(int argc, char** argv)
             else
             {
                 double dt = cx.render();  
+
                 const char* ext = ".jpg" ; 
                 int index = -1 ;  
                 const char* path = ok.getOutPath(namestem, ext, index ); 

@@ -13,6 +13,13 @@ beneath the TMPBASE dir preserved in the copy::
 
    TMPBASE  $TMPBASE
 
+Using rsync like this tends to result in lots of empty dirs
+in the destination. Find and delete those with::
+
+   find $HOME/simoncblyth.bitbucket.io/env/presentation/CSGOptiXRender -type d -empty 
+   find $HOME/simoncblyth.bitbucket.io/env/presentation/CSGOptiXRender -type d -empty -delete
+
+
 EOU
 }
 
@@ -42,8 +49,6 @@ if [ "$ans" == "YES" ]; then
 else
     echo SKIP
 fi 
-
-
 
 
 
