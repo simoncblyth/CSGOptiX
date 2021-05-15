@@ -37,15 +37,20 @@ int main(int argc, char** argv)
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
 
-    // hmm maybe eliminate one_gas_ias as solid_label more general 
-    // because the string label is more friendly an input approach
-
     if( solid_label )
     {
         fd->findSolidIdx(solid_selection, solid_label); 
+
+        std::stringstream ss ; 
+        ss << "(" ; 
+        for(int i=0 ; i < int(solid_selection.size()) ; i++) ss << solid_selection[i] << " " ; 
+        ss << ")" ; 
+        std::string solsel = ss.str() ; 
+
         LOG(error) 
             << " --solid_label " << solid_label
             << " solid_selection.size  " << solid_selection.size() 
+            << " solid_selection " << solsel 
             ;
     }
     unsigned num_select = solid_selection.size();  

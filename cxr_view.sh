@@ -25,5 +25,6 @@ version=$(CSGOptiXVersion)
 export TOPLINE="./cxr_view.sh $MOI      # EYE $EYE EMM $EMM  $stamp  $version " 
 
 source ./cxr.sh     
-#source cxr_rsync.sh 
+
+exit 0
 
