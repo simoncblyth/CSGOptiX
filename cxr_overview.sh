@@ -32,5 +32,5 @@ export TOPLINE="./cxr_overview.sh    # EYE $EYE   $stamp  $version "
 
 source ./cxr.sh  
 
-   
+exit 0    
 

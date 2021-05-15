@@ -7,6 +7,7 @@ cxr_solid.sh
 Single solid renders of standard solids selected by solid label eg r1@ 
 the "@" is an alternate for "$" meaning to match the end of the string::
 
+    ./cxr_solid.sh r0@
     ./cxr_solid.sh r1@
     ./cxr_solid.sh r2@
     ./cxr_solid.sh r3@
@@ -38,9 +39,17 @@ sla="${1:-r1p}"
 eye="0,-5,0,1"
 look="0,0,0,1"
 tmin=0.1
+zoom=1.0
+quality=50
 
 [ "${sla:(-1)}" == "@" ] && eye="0,-1,0,1"
 [ "${sla:(-1)}" == "@" ] && tmin=1.0
+
+if [ "$sla" == "r0@" ]; then 
+   zoom=2.0
+   quality=80
+fi 
+
 
 
 export SLA="$sla"
@@ -48,6 +57,8 @@ export CAM=1
 export EYE=${EYE:-$eye} 
 export LOOK=${LOOK:-$look}
 export TMIN=${TMIN:-$tmin}
+export ZOOM=${ZOOM:-$zoom}
+export QUALITY=${QUALITY:-$quality}
 
 #export GDB=lldb_ 
 
