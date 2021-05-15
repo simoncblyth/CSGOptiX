@@ -71,4 +71,5 @@ for var in $vars ; do printf "%-20s : %s \n" $var "${!var}" ; done
 echo $msg invoke ./cxr.sh 
 ./cxr.sh 
 
+exit 0
 
