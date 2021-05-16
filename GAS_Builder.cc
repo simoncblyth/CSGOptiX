@@ -63,8 +63,6 @@ GAS_Builder::MakeCustomPrimitivesBI_11N
 Uploads the aabb for all prim (aka layers) of the Shape 
 and arranges for separate SBT records for each prim.
 
-Hmm : separate aabb allocations for every GAS ?
-
 **/
 
 BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
@@ -78,6 +76,9 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
     bi.flags = new unsigned[ps.num_prim];
     for(unsigned i=0 ; i < ps.num_prim ; i++) bi.flags[i] = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ; 
 
+    assert( ps.device == true ); 
+
+/*
     if( ps.device == false )
     {
         std::vector<float> tmp ; 
@@ -95,6 +96,7 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
         CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>(bi.d_sbt_index), bi.sbt_index, sizeof(unsigned)*ps.num_prim, cudaMemcpyHostToDevice ) ); 
     }
     else
+*/
     {
         // http://www.cudahandbook.com/2013/08/why-does-cuda-cudeviceptr-use-unsigned-int-instead-of-void/ 
         // CUdeviceptr is typedef to unsigned long long 
