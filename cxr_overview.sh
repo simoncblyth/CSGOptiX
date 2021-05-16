@@ -22,7 +22,7 @@ export QUALITY=90
 [ "$(uname)" == "Darwin" ] && emm=1, || emm=t8,
 export EMM=${EMM:-$emm}
 
-export NAMEPREFIX=cxr_overview_emm_${EMM}_moi_${MOI}_
+export NAMEPREFIX=cxr_overview_emm_${EMM}_moi_      # MOI gets appended by the executable
 export RELDIR=cxr_overview/cam_${CAM}_tmin_${TMIN}
 
 stamp=$(date +"%Y-%m-%d %H:%M")
