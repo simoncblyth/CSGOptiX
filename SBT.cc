@@ -373,16 +373,11 @@ NB layer_idx is local to the solid.
 
 unsigned SBT::getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const 
 {
-    unsigned num_gas = vgas.size(); 
-    unsigned num_solid = foundry->getNumSolid(); 
-    //assert( num_gas == num_solid );   // not when emm active
-
     unsigned offset_sbt = _getOffset(solid_idx_, layer_idx_ ); 
  
     bool dump = false ; 
     if(dump) std::cout 
         << "SBT::getOffset"
-        << " num_gas " <<  num_gas
         << " solid_idx_ " << solid_idx_
         << " layer_idx_ " << layer_idx_
         << " offset_sbt " << offset_sbt 
@@ -412,6 +407,7 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
 
         //assert( ok->isEnabledMergedMesh(gas_idx) ); 
         unsigned num_bi = gas.bis.size(); 
+        assert(num_bi == 1); 
 
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
@@ -636,7 +632,7 @@ void SBT::checkHitgroup()
     unsigned num_sbt = sbt.hitgroupRecordCount ;
 
     LOG(info)
-        << " num_sbt " << num_sbt
+        << " num_sbt (sbt.hitgroupRecordCount) " << num_sbt
         << " num_solid " << num_solid
         << " num_prim " << num_prim
         ; 

@@ -41,6 +41,7 @@ elif [ "$GEOMETRY" == "scaled_box3" ]; then
    moi=-1
    eye=-1,-1,0.5
    tmin=1.1 
+   #tmin=1.8 
    cam=1
 else
    moi=-1                               # -1 entire-IAS default as it applies to any geometry               

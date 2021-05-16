@@ -84,9 +84,11 @@ int main(int argc, char** argv)
         int rc = 0 ; 
         float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
         if(solid_selection.size() > 0)
-        {
-            unsigned target = solid_selection.size()/2 ;  // target the middle selected solid
-            fd->gasCE(ce, solid_selection[target] );  
+        {   
+            // HMM: solid selection leads to creation of an IAS referencing each of the 
+            //      selected solids so for generality should be using IAS targetting 
+            //
+            fd->gasCE(ce, solid_selection );    
         }
         else
         {

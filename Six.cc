@@ -161,14 +161,12 @@ optix::Geometry Six::createGeometry(unsigned solid_idx)
     unsigned numPrim = so->numPrim ; 
     CSGPrim* d_pr = foundry->d_prim + primOffset ; 
 
-    /*
     LOG(info) 
         << " solid_idx " << std::setw(3) << solid_idx
         << " numPrim " << std::setw(3) << numPrim 
         << " primOffset " << std::setw(3) << primOffset
         << " d_pr " << d_pr
         ;
-    */
 
     optix::Geometry solid = context->createGeometry();
     solid->setPrimitiveCount( numPrim );
@@ -217,7 +215,9 @@ void Six::createGAS_Standard()
 
 void Six::createGAS_Selection()
 {
-    for(unsigned i=0 ; i < solid_selection.size() ; i++)
+    unsigned num_solid = solid_selection.size() ;   
+    LOG(info) << "num_solid " << num_solid ;  
+    for(unsigned i=0 ; i < num_solid ; i++)
     {
         unsigned solidIdx = solid_selection[i] ; 
         optix::Geometry solid = createGeometry(solidIdx); 

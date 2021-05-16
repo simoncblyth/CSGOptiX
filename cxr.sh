@@ -103,6 +103,8 @@ render()
    printf "\n\n\nRC $rc\n\n\n" >> $log 
 
    echo $msg rc $rc
+
+   return $rc
 }
 
 
@@ -123,10 +125,14 @@ if [ "$MOI" == "ALL" ]; then
 else
     render $*                               ## single MOI via envvar 
 
-    ls -1rt `find $OUTDIR -name '*.jpg' `
-    jpg=$(ls -1rt `find $OUTDIR -name '*.jpg' ` | tail -1)
-    echo $msg jpg $jpg 
-    ls -l $jpg
-    [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg
+    if [ $? -eq 0 ]; then 
+        ls -1rt `find $OUTDIR -name '*.jpg' `
+        jpg=$(ls -1rt `find $OUTDIR -name '*.jpg' ` | tail -1)
+        echo $msg jpg $jpg 
+        ls -l $jpg
+        [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg
+    else
+        echo $msg non-zero RC from render 
+    fi 
 fi 
 
