@@ -1,7 +1,8 @@
 #!/bin/bash -l 
 
-basedir=/tmp/$USER/opticks/CSGOptiX/CSGOptiXRender/70000/render/CSG_GGeo/1/i0
-reldir=-1
 
-snap.py --basedir $basedir --reldir -1 --refjpgpfx /env/presentation/cxr/cxr_overview $*
+globptn="/tmp/blyth/opticks/CSGOptiX/CSGOptiXRender/CSG_GGeo/cvd1/70000/cxr_overview/cam_0_emm_*/*.jpg"
+
+#ipython -i $(which snap.py) --  --globptn "$globptn" --refjpgpfx /env/presentation/cxr/cxr_overview $*
+snap.py  --globptn "$globptn" --refjpgpfx /env/presentation/cxr/cxr_overview $*
 
