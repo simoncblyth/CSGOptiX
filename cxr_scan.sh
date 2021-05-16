@@ -2,6 +2,7 @@
 
 nmm=${NMM:-9}   # geometry specific 
 script=${SCRIPT:-cxr_overview}
+export SCANNER="cxr_scan.sh"
 
 usage(){ cat << EOU
 ::

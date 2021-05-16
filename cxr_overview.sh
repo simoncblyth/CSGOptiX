@@ -29,7 +29,7 @@ stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion)
 
 export TOPLINE="./cxr_overview.sh    # EYE $EYE MOI $MOI ZOOM $ZOOM   $stamp  $version " 
-export BOTLINE=" RELDIR $RELDIR NAMEPREFIX $NAMEPREFIX  "
+export BOTLINE=" RELDIR $RELDIR NAMEPREFIX $NAMEPREFIX SCANNER $SCANNER "
 
 source ./cxr.sh  
 
