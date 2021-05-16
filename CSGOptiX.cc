@@ -256,10 +256,11 @@ double CSGOptiX::render()
 }
 
 
-std::string CSGOptiX::Annotation( double dt )  // static 
+std::string CSGOptiX::Annotation( double dt, const char* bot_line )  // static 
 {
     std::stringstream ss ; 
-    ss << std::fixed << std::setw(10) << std::setprecision(4) << dt ;  
+    ss << std::fixed << std::setw(10) << std::setprecision(4) << dt ;
+    if(bot_line) ss << std::setw(30) << " " << bot_line ; 
     std::string anno = ss.str(); 
     return anno ; 
 }

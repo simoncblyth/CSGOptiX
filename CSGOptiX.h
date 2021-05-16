@@ -78,6 +78,6 @@ struct CSGOptiX : public SRenderer
 
     void saveMeta(const char* jpg_path) const ;
 
-    static std::string Annotation( double dt ); 
+    static std::string Annotation( double dt, const char* bot_line ); 
 };
 

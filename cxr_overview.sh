@@ -28,7 +28,8 @@ export RELDIR=cxr_overview/cam_${CAM}_emm_${EMM}
 stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion)
 
-export TOPLINE="./cxr_overview.sh    # EYE $EYE   $stamp  $version " 
+export TOPLINE="./cxr_overview.sh    # EYE $EYE MOI $MOI ZOOM $ZOOM   $stamp  $version " 
+export BOTLINE=" RELDIR $RELDIR NAMEPREFIX $NAMEPREFIX  "
 
 source ./cxr.sh  
 

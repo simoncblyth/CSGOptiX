@@ -64,7 +64,8 @@ int main(int argc, char** argv)
 
     bool flight = ok.hasArg("--flightconfig") ; 
     const std::vector<std::string>& arglist = ok.getArgList() ;  // --arglist /path/to/arglist.txt
-    std::string top_line = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
+    const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
+    const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
 
     std::vector<std::string> args ; 
     if( arglist.size() > 0 )
@@ -115,8 +116,8 @@ int main(int argc, char** argv)
                 const char* path = ok.getOutPath(namestem, ext, index ); 
                 LOG(error) << " path " << path ; 
 
-                std::string bottom_line = CSGOptiX::Annotation(dt); 
-                cx.snap(path, bottom_line.c_str(), top_line.c_str() );   
+                std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
+                cx.snap(path, bottom_line.c_str(), topline  );   
             }
         }
         else
