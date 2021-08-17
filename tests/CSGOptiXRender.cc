@@ -28,6 +28,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
     Opticks ok(argc, argv); 
     ok.configure(); 
+    ok.setRaygenMode(0); // override --raygenmode option 
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
@@ -61,6 +62,12 @@ int main(int argc, char** argv)
 
     CSGOptiX cx(&ok, fd); 
     cx.setTop(top); 
+
+    if( cx.raygenmode > 0 )
+    {
+        LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::simulate cx.raygenmode " << cx.raygenmode ; 
+        assert(0); 
+    }
 
     bool flight = ok.hasArg("--flightconfig") ; 
     const std::vector<std::string>& arglist = ok.getArgList() ;  // --arglist /path/to/arglist.txt

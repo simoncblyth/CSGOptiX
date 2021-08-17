@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <optix.h>
 
 #include "sutil_vec_math.h"
@@ -142,16 +143,19 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 {
     // generate single photon from input params.gensteps[0]  
     // propagate photon 
+    printf("//simulate idx.x %d \n", idx.x ); 
 }
 
 extern "C" __global__ void __raygen__rg()
 {
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
-    render( idx, dim ); 
-}
-
-
+    switch( params.raygenmode )
+    {
+        case 0: render(   idx, dim ) ; break ;  
+        case 1: simulate( idx, dim ) ; break ;  
+    }
+} 
 
 
 extern "C" __global__ void __miss__ms()

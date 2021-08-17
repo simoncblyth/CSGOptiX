@@ -58,9 +58,15 @@ void Params::setCamera(float tmin_, float tmax_, unsigned cameratype_ )
 }
 
 
-Params::Params(unsigned width, unsigned height, unsigned depth)
+Params::Params(int raygenmode_, unsigned width, unsigned height, unsigned depth)
 {
+    setRaygenMode(raygenmode_); 
     setSize(width, height, depth); 
+}
+
+void Params::setRaygenMode(int raygenmode_)
+{
+    raygenmode = raygenmode_ ; 
 }
 
 void Params::setSize(unsigned width_, unsigned height_, unsigned depth_ )

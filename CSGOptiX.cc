@@ -44,7 +44,7 @@
 #include "CSGOptiX.h"
 
 
-const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "DEBUG" ); 
+const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "INFO" ); 
 
 #if OPTIX_VERSION < 70000 
 const char* CSGOptiX::PTXNAME = "OptiX6Test" ; 
@@ -66,6 +66,7 @@ const char* CSGOptiX::ENV(const char* key, const char* fallback)
 CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_) 
     :
     ok(ok_),
+    raygenmode(ok->getRaygenMode()),
     flight(ok->hasArg("--flightconfig")),
     width(ok->getWidth()),
     height(ok->getHeight()),
@@ -83,7 +84,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
 #endif
     tmin_model(SSys::getenvfloat("TMIN",0.1)), 
     jpg_quality(SStr::GetEValue<int>("QUALITY", 50)),
-    params(new Params(width, height, depth)),
+    params(new Params(raygenmode, width, height, depth)),
 #if OPTIX_VERSION < 70000
     six(new Six(ok, ptxpath, geoptxpath, params)),
 #else
@@ -107,7 +108,8 @@ void CSGOptiX::init()
     LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ; 
 
     initGeometry();
-    initFrame(); 
+    initRender(); 
+    initSimulate(); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -132,7 +134,7 @@ void CSGOptiX::initGeometry()
 
 }
 
-void CSGOptiX::initFrame()
+void CSGOptiX::initRender()
 {
 #if OPTIX_VERSION < 70000
     six->initFrame();     // sets params->pixels, isect from optix device pointers
@@ -141,6 +143,19 @@ void CSGOptiX::initFrame()
     params->isect  = frame->getDeviceIsect(); 
 #endif
 }
+
+void CSGOptiX::initSimulate()
+{
+    params->gensteps = nullptr ; 
+    params->photons = nullptr ; 
+
+    if( raygenmode > 0 )
+    {
+        LOG(LEVEL) << " raygenmode " << raygenmode ;         
+        params->num_photons = 0 ;  // TODO: get from input gensteps 
+    }
+}
+
 
 
 
@@ -234,8 +249,9 @@ void CSGOptiX::updateView()
 
 double CSGOptiX::render()
 {
+    assert( raygenmode == 0 ); 
     updateView(); 
-
+  
     LOG(LEVEL) << "[" ; 
     double t0, t1 ; 
     t0 = BTimeStamp::RealTime();
@@ -249,11 +265,35 @@ double CSGOptiX::render()
 #endif
     t1 = BTimeStamp::RealTime();
     double dt = t1 - t0 ; 
-    frame_times.push_back(dt);  
+    render_times.push_back(dt);  
 
     LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
     return dt ; 
 }
+
+
+double CSGOptiX::simulate()
+{
+    assert( raygenmode > 0 ); 
+    LOG(LEVEL) << "[" ; 
+    double t0, t1 ; 
+    t0 = BTimeStamp::RealTime();
+#if OPTIX_VERSION < 70000
+    six->launch(); 
+#else
+    CUstream stream;
+    CUDA_CHECK( cudaStreamCreate( &stream ) );
+    OPTIX_CHECK( optixLaunch( pip->pipeline, stream, ctx->d_param, sizeof( Params ), &(sbt->sbt), params->num_photons, 1u, 1u ) );
+    CUDA_SYNC_CHECK();
+#endif
+    t1 = BTimeStamp::RealTime();
+    double dt = t1 - t0 ; 
+    simulate_times.push_back(dt);  
+
+    LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
+    return dt ; 
+}
+
 
 
 std::string CSGOptiX::Annotation( double dt, const char* bot_line )  // static 
@@ -294,7 +334,7 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
 {
     const char* json_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".json"); 
 
-    const std::vector<double>& t = frame_times ;
+    const std::vector<double>& t = render_times ;
     double mn, mx, av ;
     SVec<double>::MinMaxAvg(t,mn,mx,av);
 
