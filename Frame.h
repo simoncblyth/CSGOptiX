@@ -23,7 +23,7 @@ struct Frame
     uchar4* d_pixels = nullptr ; 
     float4* d_isect = nullptr ; 
 
-    Frame(int width, int height );
+    Frame(int width, int height, int depth );
  
     void init(); 
     void init_pixels();

@@ -34,9 +34,6 @@ struct CSGOptiX : public SRenderer
     Opticks*          ok ;  
     int               raygenmode ; 
     bool              flight ; 
-    unsigned          width ; 
-    unsigned          height ; 
-    unsigned          depth ; 
     Composition*      composition ; 
  
     const CSGFoundry* foundry ; 
@@ -74,7 +71,11 @@ struct CSGOptiX : public SRenderer
     // render related 
     void setCE(const float4& ce); 
     void setCE(const glm::vec4& ce); 
-    void updateView(); 
+
+    void prepareRenderParam(); 
+    void prepareSimulateParam(); 
+    void prepareParam(); 
+
     int  render_flightpath(); 
     void saveMeta(const char* jpg_path) const ;
     static std::string Annotation( double dt, const char* bot_line ); 
@@ -86,6 +87,7 @@ struct CSGOptiX : public SRenderer
 
 
     double simulate();    
+    double launch(unsigned width, unsigned height, unsigned depth) ; 
 
 };
 

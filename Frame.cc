@@ -16,11 +16,11 @@
 const plog::Severity Frame::LEVEL = PLOG::EnvLevel("Frame", "DEBUG" ); 
 
 
-Frame::Frame(int width_, int height_)
+Frame::Frame(int width_, int height_, int depth_)
     :
     width(width_),
     height(height_),
-    depth(1),
+    depth(depth_),
     channels(4),
     img(new SIMG(width, height, channels,  nullptr )) 
 {
@@ -37,6 +37,7 @@ Allocates pixels and isect on device.
 
 void Frame::init()
 {
+    assert( depth == 1 ); 
     init_pixels(); 
     init_isect(); 
 }

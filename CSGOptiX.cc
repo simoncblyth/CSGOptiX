@@ -68,9 +68,6 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     ok(ok_),
     raygenmode(ok->getRaygenMode()),
     flight(ok->hasArg("--flightconfig")),
-    width(ok->getWidth()),
-    height(ok->getHeight()),
-    depth(1),
     composition(ok->getComposition()),
     foundry(foundry_),
     prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
@@ -84,14 +81,14 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
 #endif
     tmin_model(SSys::getenvfloat("TMIN",0.1)), 
     jpg_quality(SStr::GetEValue<int>("QUALITY", 50)),
-    params(new Params(raygenmode, width, height, depth)),
+    params(new Params(raygenmode, ok->getWidth(), ok->getHeight(), ok->getDepth() )),
 #if OPTIX_VERSION < 70000
     six(new Six(ok, ptxpath, geoptxpath, params)),
 #else
     ctx(new Ctx(params)),
     pip(new PIP(ptxpath)), 
     sbt(new SBT(ok, pip)),
-    frame(new Frame(width, height)),  // CUDA holds the pixels 
+    frame(new Frame(params->width, params->height, params->depth)),  // CUDA holds the pixels 
 #endif
     meta(new SMeta)
 {
@@ -204,7 +201,7 @@ void CSGOptiX::setCE(const glm::vec4& ce )
 }
 
 
-void CSGOptiX::updateView()
+void CSGOptiX::prepareRenderParam()
 {
     float extent = composition->getExtent(); 
 
@@ -234,62 +231,73 @@ void CSGOptiX::updateView()
     params->setView(eye, U, V, W);
     params->setCamera(tmin, tmax, cameratype ); 
 
+    if(!flight) LOG(info)
+        << "composition.desc " << std::endl 
+        << composition->desc() 
+        ; 
+}
+
+void CSGOptiX::prepareSimulateParam()
+{
+    unsigned num_photons = params->num_photons ; 
+    if( num_photons == 0 )
+    {
+        params->num_photons = 1 ; 
+    }
+    LOG(info) << " params.num_photons " << params->num_photons ; 
+}
+
+void CSGOptiX::prepareParam()
+{
+    switch(raygenmode)
+    {
+       case 0:prepareRenderParam() ; break ; 
+       case 1:prepareSimulateParam() ; break ; 
+    }
+
 #if OPTIX_VERSION < 70000
     six->updateContext(); 
 #else
     ctx->uploadParams();  
 #endif
+}
 
-    if(!flight) LOG(info)
-        << "composition.desc " << std::endl 
-        << composition->desc() 
-        ; 
-
+double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
+{
+    double t0, t1 ; 
+    t0 = BTimeStamp::RealTime();
+#if OPTIX_VERSION < 70000
+    // hmm width, heigth, deth not used pre-7 ?
+    six->launch(); 
+#else
+    CUstream stream;
+    CUDA_CHECK( cudaStreamCreate( &stream ) );
+    OPTIX_CHECK( optixLaunch( pip->pipeline, stream, ctx->d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+    CUDA_SYNC_CHECK();
+#endif
+    t1 = BTimeStamp::RealTime();
+    double dt = t1 - t0 ; 
+    return dt ; 
 }
 
 double CSGOptiX::render()
 {
+    prepareParam(); 
     assert( raygenmode == 0 ); 
-    updateView(); 
-  
     LOG(LEVEL) << "[" ; 
-    double t0, t1 ; 
-    t0 = BTimeStamp::RealTime();
-#if OPTIX_VERSION < 70000
-    six->launch(); 
-#else
-    CUstream stream;
-    CUDA_CHECK( cudaStreamCreate( &stream ) );
-    OPTIX_CHECK( optixLaunch( pip->pipeline, stream, ctx->d_param, sizeof( Params ), &(sbt->sbt), frame->width, frame->height, frame->depth ) );
-    CUDA_SYNC_CHECK();
-#endif
-    t1 = BTimeStamp::RealTime();
-    double dt = t1 - t0 ; 
+    double dt = launch(params->width, params->height, params->depth );
     render_times.push_back(dt);  
-
     LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
     return dt ; 
 }
 
-
 double CSGOptiX::simulate()
 {
+    prepareParam(); 
     assert( raygenmode > 0 ); 
     LOG(LEVEL) << "[" ; 
-    double t0, t1 ; 
-    t0 = BTimeStamp::RealTime();
-#if OPTIX_VERSION < 70000
-    six->launch(); 
-#else
-    CUstream stream;
-    CUDA_CHECK( cudaStreamCreate( &stream ) );
-    OPTIX_CHECK( optixLaunch( pip->pipeline, stream, ctx->d_param, sizeof( Params ), &(sbt->sbt), params->num_photons, 1u, 1u ) );
-    CUDA_SYNC_CHECK();
-#endif
-    t1 = BTimeStamp::RealTime();
-    double dt = t1 - t0 ; 
+    double dt = launch(params->num_photons, 1u, 1u );
     simulate_times.push_back(dt);  
-
     LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
     return dt ; 
 }
