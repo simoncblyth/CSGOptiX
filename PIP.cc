@@ -55,7 +55,7 @@ OptixProgramGroupOptions PIP::CreateProgramGroupOptions() // static
 }
 
  
-PIP::PIP(const char* ptx_path_) 
+PIP::PIP(const char* ptx_path_ ) 
     :
     max_trace_depth(2),
     num_payload_values(8),
@@ -68,10 +68,18 @@ PIP::PIP(const char* ptx_path_)
 }
 
 
+/**
+PIP::init
+-----------
+
+Names the programs to form the pipeline  
+
+**/
+
 void PIP::init()
 {
-    std::cout << "PIP::init " << std::endl ;
-    createRaygenPG("rg"); 
+    std::cout << "PIP::init " << std::endl ; 
+    createRaygenPG("rg");
     createMissPG("ms"); 
     createHitgroupPG("is", "ch", nullptr); 
     linkPipeline(max_trace_depth);
@@ -281,15 +289,4 @@ void PIP::linkPipeline(unsigned max_trace_depth)
     if(sizeof_log > 0) std::cout << log << std::endl ; 
     assert( sizeof_log == 0); 
 }
-
-
-
-
-
-
-
-
-
-
-
 

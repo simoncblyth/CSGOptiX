@@ -140,6 +140,12 @@ void SBT::updateMiss()
                 ) );
 }
 
+/**
+Raygen is typedef to SbtRecord<RaygenData> 
+so this is setting up access to raygen data : but that 
+is just a placeholder with most everything coming from params 
+**/
+
 void SBT::createRaygen()
 {
     raygen = new Raygen ; 

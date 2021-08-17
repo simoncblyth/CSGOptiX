@@ -28,7 +28,7 @@ Renders selecting the special debug ONE_NODE_SOLID selected by solid labels star
     ./cxr_solid.sh R2P0N
     ./cxr_solid.sh R8P0N11,R8P0N13,R8P0N14,R8P0N16,R8P0N17,R8P0N18,R8P0N19,R8P0N20,R8P0N21,R8P0N22,R8P0N15,R8P0N26
 
-For multpile invokations of this script see::
+For multiple invokations of this script see::
 
     ./cxr_solids.sh
 

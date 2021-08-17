@@ -12,7 +12,7 @@ usage(){ cat << EOU
 The EYE, LOOK, UP envvars set the okc/View::home defaults 
 
 Sometimes necessary to rerun creation of the Demo geometry 
-to get this to work after model changes::
+for the choice of GEOMETRY, to get this to work after reboots/cleanups::
 
    cd ~/CSG
    ./CSGDemoTest.sh 
@@ -24,10 +24,10 @@ TODO: pick between multiple IAS with midx -1,-2,...
 EOU
 }
 
-#geometry=parade
+geometry=parade
 #geometry=layered_sphere
 #geometry=sphere_containing_grid_of_spheres
-geometry=scaled_box3
+#geometry=scaled_box3
 
 export GEOMETRY=${GEOMETRY:-$geometry}
 cfname=CSGDemoTest/$GEOMETRY            # picks the CSGFoundry geometry to load

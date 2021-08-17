@@ -72,9 +72,10 @@ struct CSGOptiX : public SRenderer
     void updateView(); 
     int  render_flightpath(); 
 
-    // fulfil SRenderer protocol
+    // [ fulfil SRenderer protocol base
     double render();    
     void snap(const char* path, const char* bottom_line, const char* top_line=nullptr, unsigned line_height=24); 
+    // ]
 
     void saveMeta(const char* jpg_path) const ;
 

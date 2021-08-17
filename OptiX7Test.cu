@@ -95,11 +95,10 @@ __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned ide
             );
 }
 
-extern "C" __global__ void __raygen__rg()
-{
-    const uint3 idx = optixGetLaunchIndex();
-    const uint3 dim = optixGetLaunchDimensions();
 
+
+static __forceinline__ __device__ void render( const uint3& idx, const uint3& dim )
+{
     float2 d = 2.0f * make_float2(
             static_cast<float>( idx.x ) / static_cast<float>( dim.x ),
             static_cast<float>( idx.y ) / static_cast<float>( dim.y )
@@ -107,8 +106,6 @@ extern "C" __global__ void __raygen__rg()
 
     const bool yflip = true ;
     if(yflip) d.y = -d.y ;
-
-
 
     const unsigned cameratype = params.cameratype ;  
     const float3 dxyUV = d.x * params.U + d.y * params.V ; 
@@ -139,6 +136,23 @@ extern "C" __global__ void __raygen__rg()
     params.pixels[index] = color ; 
     params.isect[index] = make_float4( position.x, position.y, position.z, uint_as_float(identity)) ; 
 }
+ 
+
+static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim )
+{
+    // generate single photon from input params.gensteps[0]  
+    // propagate photon 
+}
+
+extern "C" __global__ void __raygen__rg()
+{
+    const uint3 idx = optixGetLaunchIndex();
+    const uint3 dim = optixGetLaunchDimensions();
+    render( idx, dim ); 
+}
+
+
+
 
 extern "C" __global__ void __miss__ms()
 {
