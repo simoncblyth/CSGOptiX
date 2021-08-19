@@ -15,6 +15,9 @@ CSGOptiXSimulate
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
 
+#include "QCtx.hh"
+
+
 int main(int argc, char** argv)
 {
     for(int i=0 ; i < argc ; i++ ) std::cout << argv[i] << std::endl; 
@@ -29,6 +32,10 @@ int main(int argc, char** argv)
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
+
+    // create GPU textures 
+    QCtx<float>::Init(fd->icdf, fd->bnd ); 
+
 
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
